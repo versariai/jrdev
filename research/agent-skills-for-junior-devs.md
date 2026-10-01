@@ -1,6 +1,6 @@
 # Agent Skills With Possible Value for Junior Developers
 
-*Compiled 2026-10-01 and revised the same day after seven adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md), [round 3](adversarial-review-round-3.md), [round 4](adversarial-review-round-4.md), [round 5](adversarial-review-round-5.md), [round 6](adversarial-review-round-6.md), [round 7](adversarial-review-round-7.md)). Companion to [ai-for-junior-devs.md](ai-for-junior-devs.md).*
+*Compiled 2026-10-01 and revised the same day after eight adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md), [round 3](adversarial-review-round-3.md), [round 4](adversarial-review-round-4.md), [round 5](adversarial-review-round-5.md), [round 6](adversarial-review-round-6.md), [round 7](adversarial-review-round-7.md), [round 8](adversarial-review-round-8.md)). Companion to [ai-for-junior-devs.md](ai-for-junior-devs.md).*
 
 "Skills" here means **agent skills**: `SKILL.md` folders and plugins for Claude Code, plus similar mechanisms in Copilot, Codex and other tools.
 
