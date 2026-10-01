@@ -1,6 +1,6 @@
 # Good Practices for Using AI as a Junior Developer
 
-*Compiled 2026-10-01 and revised the same day after six adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md), [round 3](adversarial-review-round-3.md), [round 4](adversarial-review-round-4.md), [round 5](adversarial-review-round-5.md), [round 6](adversarial-review-round-6.md)). It draws on the 5 links you supplied plus about 20 more sources: trials, surveys, observational and labor data, vendor reports and practitioner writing.*
+*Compiled 2026-10-01 and revised the same day after seven adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md), [round 3](adversarial-review-round-3.md), [round 4](adversarial-review-round-4.md), [round 5](adversarial-review-round-5.md), [round 6](adversarial-review-round-6.md), [round 7](adversarial-review-round-7.md)). It draws on the 5 links you supplied plus about 20 more sources: trials, surveys, observational and labor data, vendor reports and practitioner writing.*
 
 **How to read this report.** Inline tags describe **study design** only:
 
@@ -272,6 +272,8 @@ Onboarding has some of the more specific evidence in this report. It is also whe
 - [notthecode: The Silent Silo](https://notthecode.com/silent-silo-mentoring-junior-developers-ai/)
 - [Harvard Gazette: Taming the Duck (CS50 AI tutor)](https://news.harvard.edu/gazette/story/2026/09/taming-the-duck-for-starters/) · [Liu et al.: Improving AI in CS50 (SIGCSE 2025)](https://cs.harvard.edu/malan/publications/fp0627-liu.pdf)
 - [Claude Code output styles](https://docs.anthropic.com/en/docs/claude-code/output-styles) · [Claude Code best practices](https://code.claude.com/docs/en/best-practices)
+
+**Corrected after review round 7:** wording fixes in the skills report only. The plugin links moved out of the subagent note, and the `.env` checks now explain that `git check-ignore` skips tracked files.
 
 **Corrected after review round 6:** a note that output styles don't carry into ordinary subagents. The skills report now separates the two onboarding packages (one writes `CLAUDE.md`, the other runs Python scripts) and flags a `.env` false-positive in one package's setup validator.
 
