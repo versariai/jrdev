@@ -1,6 +1,6 @@
 # Agent Skills With Possible Value for Junior Developers
 
-*Compiled 2026-10-01 and revised the same day after five adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md), [round 3](adversarial-review-round-3.md), [round 4](adversarial-review-round-4.md), [round 5](adversarial-review-round-5.md)). Companion to [ai-for-junior-devs.md](ai-for-junior-devs.md).*
+*Compiled 2026-10-01 and revised the same day after six adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md), [round 3](adversarial-review-round-3.md), [round 4](adversarial-review-round-4.md), [round 5](adversarial-review-round-5.md), [round 6](adversarial-review-round-6.md)). Companion to [ai-for-junior-devs.md](ai-for-junior-devs.md).*
 
 "Skills" here means **agent skills**: `SKILL.md` folders and plugins for Claude Code, plus similar mechanisms in Copilot, Codex and other tools.
 
@@ -63,7 +63,8 @@ In programming education specifically, CS50's tutor is instructed not to give so
   - **Built-in output style:** configured in Claude Code itself. Per current docs, the built-in Learning style has its own contribution-and-resume behavior.
   - **Plugin:** a **SessionStart hook** that adds context at session start. The [pinned hook script](https://github.com/anthropics/claude-plugins-official/blob/ab024cdcfa7ca80be204acd4907656ba5a968589/plugins/learning-output-style/hooks-handlers/session-start.sh) says it combines an earlier, unshipped Learning style with Explanatory-style "Insights".
   - **Choose one.** There's no evidence that running both adds learning value.
-- **Where to get it:** set an output style in Claude Code (`/config → Output style` as of 2026-10; check the [output styles docs](https://docs.anthropic.com/en/docs/claude-code/output-styles)). Or use the plugins: [learning-output-style](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/learning-output-style) and [explanatory-output-style](https://github.com/anthropics/claude-code/tree/main/plugins/explanatory-output-style).
+- **Where to get it:** set an output style in Claude Code with `/output-style learning` or `/config → Output style`. In the desktop app, set `"outputStyle": "Learning"` in a settings file. These are the routes as of 2026-10; check the [output styles docs](https://code.claude.com/docs/en/output-styles).
+- **Doesn't reach ordinary subagents.** Per the [docs](https://code.claude.com/docs/en/output-styles#how-output-styles-work), an output style applies to the main conversation and to *forks*, but other subagents run their own system prompt. Work you delegate to a subagent may come back fully done rather than with a `TODO(human)` for you. If a delegated task should keep the tutoring interaction, say so in the subagent's instructions and check what comes back. Or use the plugins: [learning-output-style](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/learning-output-style) and [explanatory-output-style](https://github.com/anthropics/claude-code/tree/main/plugins/explanatory-output-style).
 - **Verification:** descriptions are from Anthropic's repos and docs. A public post by an Anthropic employee recommends it for staying hands-on ([X post](https://x.com/lydiahallie/status/2056420694087594283)). That post was not independently authenticated.
 
 ### `mentoring-juniors` ("Sensei") from [github/awesome-copilot](https://github.com/github/awesome-copilot/blob/main/skills/mentoring-juniors/SKILL.md)
@@ -173,7 +174,8 @@ See the [Onboarding mode playbook](ai-for-junior-devs.md#onboarding-mode-playboo
 | **Plan mode** | Claude Code built-in | Exploration without code edits | Blocks *edits*. If you also allow commands, scripts and tests can still have side effects, so run them in a disposable environment. |
 | **`/init`** | Claude Code built-in | Generates a starter CLAUDE.md | Compare it with your notes and with a teammate's understanding. |
 | **Subagents** | Claude Code built-in | Broad investigations | Keeps your main session focused. |
-| **`codebase-onboarding`** skills | Community ([affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code/blob/main/skills/codebase-onboarding/SKILL.md), [borghei/Claude-Skills](https://github.com/borghei/Claude-Skills/blob/main/engineering/codebase-onboarding/SKILL.md)) | Architecture overview, file map, setup steps | **AI-only output.** Have a maintainer review it where practical. |
+| **`codebase-onboarding`** ([everything-claude-code @ `c70874f`](https://github.com/affaan-m/everything-claude-code/blob/c70874fae9eb0e5ad0365beb7e2955899fd1d30f/skills/codebase-onboarding/SKILL.md)) | Community; prompt instructions | Onboarding guide printed in the conversation; **creates or updates a `CLAUDE.md` in the project root** (instructions say to preserve existing content) | **Writes a file**, so it isn't pure exploration. Ask for findings in the conversation first, and review the proposed `CLAUDE.md` diff before keeping it. AI-only output: have a maintainer review it where practical. |
+| **`codebase-onboarding`** ([borghei/Claude-Skills @ `5318eda`](https://github.com/borghei/Claude-Skills/blob/5318eda16c134c500c237425404975545c0eedd2/engineering/codebase-onboarding/SKILL.md)) | Community; prompt **plus three bundled Python scripts** (`architecture_mapper.py`, `onboarding_generator.py`, `setup_validator.py`) | Architecture map, onboarding guide, setup-completeness score | **Runs code.** Inspect the scripts, not just the SKILL.md. **Known issue (static read):** `setup_validator.py` reports "`.env` file is committed!" whenever a local `.env` exists and `.gitignore` lacks one of a few literal lines. It never asks git. So it can flag an untracked, globally ignored `.env`, and it misses a tracked `.env` that's absent from disk. Check tracking yourself with `git ls-files --error-unmatch -- .env` and ignore status with `git check-ignore -v .env`. Don't use its score as a gate. |
 | **`grill-with-docs`** | mattpocock/skills | Builds a glossary and ADRs | Have a maintainer check the domain definitions. |
 | **Explanatory output style** | Anthropic official | Explains codebase patterns during first changes | Explanations can be wrong. Verify them in the code. |
 | **`quiz-me`** | rodbv/socratic-skills | Checks your understanding | One check among several. Not a gate on its own. |
@@ -211,7 +213,7 @@ Begin with **one tutoring workflow and one independent check**. Add more only if
 
 **Onboarding mode** (new job or codebase)
 - *Minimal:* plan mode and subagents for exploration, plus a weekly session with a human buddy to review your architecture sketch
-- *Optional additions:* `/init` or a codebase-onboarding skill (review its output with a maintainer); `grill-with-docs` for the glossary
+- *Optional additions:* `/init` or a codebase-onboarding skill. Review its output with a maintainer, and check which files it writes or scripts it runs; neither community workflow is guaranteed to stay read-only or work in plan mode. Plus `grill-with-docs` for the glossary.
 
 **Delivery mode** (familiar work)
 - *Minimal:* your normal agent, plus your own review of the diff before any AI review
@@ -262,7 +264,7 @@ Repeat after any model, prompt or skill-version change. CS50 found code-block ra
 ## Remaining verification gaps
 
 - No skill was installed or run. Runtime behavior, install commands and compatibility across Claude Code, Copilot and Codex were not tested. The `git-guardrails-claude-code`, `scaffold-exercises`, `agent-tutor-skill` and Learning plugin descriptions are based on **static reads** of the pinned revisions below.
-- Revisions statically read (in review rounds 3 and 5; not installed): `mattpocock/skills@d81f3a1` (`git-guardrails-claude-code`, `scaffold-exercises`, `tdd`, `code-review`, `teach`), `Bhala-Srinivash/agent-tutor-skill@e273585`, `anthropics/claude-plugins-official@ab024cd`, `rodbv/socratic-skills@dda051c`. Other skills' descriptions come from their current READMEs and may change.
+- Revisions statically read (in review rounds 3, 5 and 6; not installed): `mattpocock/skills@d81f3a1` (`git-guardrails-claude-code`, `scaffold-exercises`, `tdd`, `code-review`, `teach`, `diagnosing-bugs`, `improve-codebase-architecture`), `Bhala-Srinivash/agent-tutor-skill@e273585`, `anthropics/claude-plugins-official@ab024cd`, `rodbv/socratic-skills@dda051c`, `affaan-m/everything-claude-code@c70874f` (codebase-onboarding), `borghei/Claude-Skills@5318eda` (codebase-onboarding and `setup_validator.py`). Other skills' descriptions come from their current READMEs and may change.
 - The X post was not authenticated.
 - This review's non-systematic search found no learning-outcome evaluations for the specific skills listed. A systematic search (defined terms, databases and inclusion criteria) could find some.
 

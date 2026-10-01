@@ -1,6 +1,6 @@
 # Good Practices for Using AI as a Junior Developer
 
-*Compiled 2026-10-01 and revised the same day after five adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md), [round 3](adversarial-review-round-3.md), [round 4](adversarial-review-round-4.md), [round 5](adversarial-review-round-5.md)). It draws on the 5 links you supplied plus about 20 more sources: trials, surveys, observational and labor data, vendor reports and practitioner writing.*
+*Compiled 2026-10-01 and revised the same day after six adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md), [round 3](adversarial-review-round-3.md), [round 4](adversarial-review-round-4.md), [round 5](adversarial-review-round-5.md), [round 6](adversarial-review-round-6.md)). It draws on the 5 links you supplied plus about 20 more sources: trials, surveys, observational and labor data, vendor reports and practitioner writing.*
 
 **How to read this report.** Inline tags describe **study design** only:
 
@@ -148,7 +148,7 @@ Onboarding has some of the more specific evidence in this report. It is also whe
 **Early days: Map**
 - Start with exploration that doesn't change code, e.g. Claude Code's plan mode. **Note:** "read-only" covers code edits. Running tests, scripts or setup commands can still have side effects, such as touching databases, calling external services or migrating data. Run them only in a disposable local or dev environment with minimal credentials.
 - Ask the questions you'd ask a senior engineer: what the project does and for whom; the top-level architecture; how logging, config, auth and errors work; how to add an endpoint, with a good example to copy; and *"summarize the git history of Y"*.
-- Use subagents for broad questions so your main session stays focused.
+- Use subagents for broad questions so your main session stays focused. Note that ordinary subagents **don't inherit your output style**: a Learning-style session's subagent won't leave `TODO(human)` gaps unless you ask it to.
 - Sketch the architecture yourself, then compare it with the AI's version and, more importantly, with a teammate's.
 - **Don't wait a full week to contribute.** A small, well-scoped fix on day one or two can teach a lot.
 
@@ -272,6 +272,8 @@ Onboarding has some of the more specific evidence in this report. It is also whe
 - [notthecode: The Silent Silo](https://notthecode.com/silent-silo-mentoring-junior-developers-ai/)
 - [Harvard Gazette: Taming the Duck (CS50 AI tutor)](https://news.harvard.edu/gazette/story/2026/09/taming-the-duck-for-starters/) · [Liu et al.: Improving AI in CS50 (SIGCSE 2025)](https://cs.harvard.edu/malan/publications/fp0627-liu.pdf)
 - [Claude Code output styles](https://docs.anthropic.com/en/docs/claude-code/output-styles) · [Claude Code best practices](https://code.claude.com/docs/en/best-practices)
+
+**Corrected after review round 6:** a note that output styles don't carry into ordinary subagents. The skills report now separates the two onboarding packages (one writes `CLAUDE.md`, the other runs Python scripts) and flags a `.env` false-positive in one package's setup validator.
 
 **Corrected after review round 5:** a checklist item now covers the scope of AI review tools. In the skills report, the `code-review` diff scope, the `tdd` loop and the `teach` workspace are described from source.
 
