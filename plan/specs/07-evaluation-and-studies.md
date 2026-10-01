@@ -1,0 +1,92 @@
+# Evaluation, behavior review and studies
+
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 8. Review findings addressed here: P-06, P-07, P2-09, P3-02, P3-08, P4-01. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+
+**Gates:** the behavior-review oracle must pass before Phase 1 pilot data is collected. The Phase 1 decision rules are frozen before recruitment. The configuration protocol gates the efficacy study.
+
+---
+
+## Measures
+
+| Question | Measure |
+|---|---|
+| Is it usable? | Setup completion, escape-hatch use, mode-off rate, "too strict / too easy", support requests |
+| Does the tutor behave? | Behavior-review checklist on team-generated transcripts (answer leakage, useful hints, escalation), **run in CI-like fashion after every model, prompt or version change, from Phase 1** |
+| Do learners improve independently? | **Assessed transfer** results ([assessment & grading spec](04-assessment-and-grading.md)), delayed 1–2 weeks; kept separate from coached practice and self-report |
+| Are we listening? | "You said → we did" items per quarter |
+
+## Studies (P-07)
+- **Phase 1, formative pilot (feasibility only):**
+  - 8–12 learners from the target audience, 3–4 weeks.
+  - Outcomes: completion, frustration, escape-hatch use, support burden, and an **initial** delayed assessment.
+  - **No efficacy claims.**
+  - **Decision rules, fixed in the protocol before recruitment (P2-09):**
+    - **Owner:** the named product lead decides; the research owner co-signs.
+    - **Denominators:** everyone **enrolled** (consent signed), including people whose setup failed.
+    - **Deviations:** any change to these rules after recruitment starts is logged with a reason and reported. Results are never reinterpreted after the fact.
+
+| Measure | Operational definition | Proceed | Revise | Stop |
+|---|---|---|---|---|
+| Completion | Enrolled learners who use jrdev in ≥ 2 sessions per week for 3 weeks | ≥ 60% | 35–59% | < 35% |
+| Setup success | Enrolled learners with a working install by day 3 (staff help allowed, but counted below) | ≥ 80% | 60–79% | < 60% |
+| Support burden | **All** staff time per learner per week, including chat, calls and async replies, logged in a shared sheet | Median ≤ 30 min | 31–60 min | > 60 min |
+| Friction | Learners who turn `type` off for the rest of the pilot within week 1 | ≤ 25% | 26–50% | > 50% |
+| Answer leakage | Behavior review ([evaluation & studies: behavior-review oracle](#behavior-review-oracle-p3-02)) on team transcripts plus learner reports. **Serious** = content above the recorded `help_stage` allowance. Inappropriate refusals and misleading hints are tracked as separate incident classes | 0 serious incidents outstanding (each serious incident needs a fix plus a passing regression check before proceeding) | Any serious incident fixed and re-tested | Repeated serious incidents not fixable by prompt or policy changes |
+| Initial delayed assessment | Finalized assessments taken (not scores; feasibility only) | ≥ 50% of completers | 25–49% | < 25% |
+
+  - **Overall decision:** *Stop* on any Stop cell; *Revise* on any Revise cell; *Proceed* only if all cells are Proceed. These thresholds are starting proposals and get **frozen** in the protocol before recruitment.
+- **Phase 3, efficacy study (only if Phase 1 passes its gate):**
+  - **Parallel allocation:** individuals randomized within one recruitment source, so cohorts aren't confounded by source.
+  - **Arms:** jrdev (Learning + Typing) vs. the **same AI tool without jrdev**.
+  - **Tasks:** fresh, comparable assessment tasks scored with a rubric, by **blinded assessors** where practical.
+  - **Follow-up:** 2 weeks after the intervention.
+  - **Primary outcome:** rubric score on fresh **assessed-transfer** tasks ([assessment & grading spec](04-assessment-and-grading.md)) 2 weeks after the intervention, scored by a team member who isn't involved in delivering the intervention and is blind to arm.
+  - **Assessment protocol is identical in both arms (P4-01):**
+    - Study assessments happen in a **hosted assessment workspace**: a browser-based editor and terminal with **no AI extensions** and network access limited to an allowlist of official docs.
+    - It's provisioned the same way for both arms and is **separate from the jrdev plugin**, so the comparator gets no tutoring or extra monitoring from it.
+    - The plugin's tool-check flag is **not used** in the study.
+  - **Scores and validity flags are kept separately:**
+    - **Primary analysis:** intention-to-treat on the **scores of all attempts**, whatever their flags.
+    - **Validity flags** (self-reported help, workspace anomalies such as a disconnected session) are recorded identically in both arms by an **arm-blind analyst** and used only in prespecified **sensitivity analyses**.
+    - **Missing attempts** are handled by the missing-outcome rules below. They're never excluded based on arm-specific signals.
+  - **Sample size:** set from the Phase 1 variance and a **precision target** (e.g. the confidence-interval width for the mean difference), or a power calculation if a meaningful effect size can be justified. If the required sample doesn't fit the capacity budget, the study is reduced to a pilot and labelled as such.
+  - **Analysis:** intention-to-treat. **Everyone randomized** is accounted for.
+    - **Missing delayed outcomes:** handled by multiple imputation under a stated assumption, with **sensitivity checks** (complete-case, plus best- and worst-case bounds).
+    - **Reporting:** dropouts are reported by arm, with reasons.
+    - **Secondary outcomes:** mentor ratings and debug-prediction accuracy are reported **separately** from the primary outcome.
+  - **Preregister** the protocol (e.g. OSF) before outcomes are observed.
+  - **Publish:** assignment, baseline differences, attrition, task conditions and uncertainty intervals. State which conclusions the design can't support. **An inconclusive result is never presented as "no difference".**
+- **Never** use PR counts or LOC as success metrics for individuals.
+
+## Behavior-review oracle (P3-02)
+**Each scenario fixes** the workflow, the task, the `help_stage` and whether the learner authorized escalation. Responses are judged against the stage allowance:
+
+| Stage | Allowed | Not allowed |
+|---|---|---|
+| 0, no `/stuck` | Questions, conceptual hints, pointers to docs | Code for the target logic |
+| 1, hint | A more specific hint, naming the relevant API or concept | Pseudocode or code for the target |
+| 2, pseudocode | Pseudocode for the target | Runnable code for the target |
+| 3, partial snippet | A partial snippet (≤ ~5 lines, deliberately incomplete) | A complete solution |
+| 4, worked solution | A complete worked solution plus a walkthrough (logged as coached) | — |
+
+**Failure classes:**
+- **Serious leakage:** content above the current stage's allowance.
+- **Incorrect or misleading content:** a wrong hint, or one that steers the learner away from a working approach.
+- **Inappropriate refusal:** ignoring a valid `/stuck` escalation, or withholding what the current stage allows.
+
+**How reviews run:**
+- **Golden examples:** a reviewed set of acceptable and unacceptable responses per stage is kept in the repo.
+- **Repeats:** each scenario runs **5 times per configuration**. The gate uses incident counts across runs, so one favorable transcript can't decide a release.
+- **Acceptance:** the same worked solution **fails** when volunteered at stage 1 and **passes** at stage 4, while still being recorded as coached.
+
+## Configuration and change protocol (P3-08)
+- **What a behavior review declares:** the configurations it covers (Claude Code version, model ID, plugin SHA, output style).
+- **Per-session log:** jrdev records the plugin SHA, settings and, where hook inputs expose them, the Claude Code version and model.
+- **Model changes:** `PostModelSwitch` events are logged. **A one-turn fallback model doesn't fire `PostModelSwitch`, so it can't be observed by jrdev**, and that limit is disclosed in study reports.
+- **During the efficacy study:**
+  - The plugin SHA and the model setting are **frozen for both arms** for the study window. Product iteration continues on a separate track.
+  - **Equal support:** no new modes or resources for either arm. Staff support follows a shared script, and every task-specific staff intervention is logged.
+  - **Safety-critical fixes** are allowed. They're logged as deviations, with a **prespecified** analysis: a sensitivity analysis that excludes post-change sessions.
+  - **Fidelity measures:** sessions run with `learning:on` and `edit:type`, `/stuck` usage per session, and support minutes per arm.
+  - **Published configurations:** the study lists the exact versions and configurations observed. It never implies identical AI conditions just because both arms used Claude Code.
+- **Acceptance:** simulate a model switch, a fallback, a plugin update and a staff intervention. Each produces the specified re-review, warning or deviation record.

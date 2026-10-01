@@ -1,6 +1,6 @@
-# jrdev.ai: Product Plan
+# jrdev.ai: Product Plan (overview)
 
-*Draft, 2026-10-01. Revised after two adversarial reviews ([round 1](adversarial-review.md): P-01–P-10; [round 2](adversarial-review-round-2.md): P2-01–P2-09; [round 3](adversarial-review-round-3.md): P3-01–P3-09; [round 4](adversarial-review-round-4.md): P4-01–P4-07; [round 5](adversarial-review-round-5.md): P5-01–P5-06; referenced inline). Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md).*
+*Draft, 2026-10-01. This is the **overview**. Detailed designs live in [`specs/`](specs/), one file per area. Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md). The plan went through five adversarial review rounds; see [Review history](#review-history).*
 
 ## 1. Mission and principles
 
@@ -41,99 +41,7 @@ Public GitHub repo (github.com/<org>/jrdev)
 └── Contribution process for community packs
 ```
 
----
-
-## 3. Website (jrdev.ai)
-
-### 3.1 Pages
-| Page | Purpose | Phase |
-|---|---|---|
-| **Home** | Value proposition; the three modes of using AI (learning / onboarding / delivery); subscribe and install CTAs | 0 |
-| **Newsletter** | Double opt-in signup, archive | 0 |
-| **Feedback** | See 3.3 | 0 |
-| **Privacy & data flows** | The data-flow inventory (section 6) in plain language | 0 |
-| **Guides** | The research reports rewritten for juniors, keeping the evidence tags | 1 |
-| **Skills catalog** | For each pack or mode: what it does; **what is enforced and what is advisory**; what it writes to disk; **what it sends to the model**; supported tool and versions; pinned SHA; known limitations | 1 |
-| **Install & verify** | Per-tool install steps, plus how to verify the installed version (section 7.4) | 1 |
-| **Changelog** | Release notes plus "you said → we did" items | 1 |
-| **For mentors/teams** | Rollout guidance, the behavior-review practice | 2+ |
-
-### 3.2 Newsletter
-- **Cadence:** every 2 weeks. Fixed sections:
-  - one practice
-  - one tool or mode tip
-  - one "stuck of the week" (a paraphrased theme, never a quoted submission without consent)
-  - a changelog
-- **Segmentation:** by the learning tracks chosen at signup.
-- **Every issue ends with a one-question pulse survey.**
-
-### 3.3 Feedback system
-**Inputs:**
-1. **Onboarding survey**, about 3 minutes:
-   - role and experience
-   - tools
-   - stack
-   - how they use AI
-   - top 3 difficulties
-   - learning goals
-2. **"What are you stuck on?"**, a free-text box that can be anonymous.
-3. **Per-skill feedback** from the catalog page, and `/jrdev:feedback` in the tool, which opens a prefilled form with **no code or transcripts attached**.
-4. **Interviews** with consenting volunteers.
-5. **GitHub issues and Discussions** (public; section 7.5).
-
-**Processing loop (monthly):**
-```
-collect → tag → cluster themes → prioritize (frequency × severity × feasibility) → backlog → ship → announce → re-survey
-```
-**Rules** (P-03):
-- **LLM-assisted clustering** of feedback is disclosed on the form. Submitters can opt out of LLM processing, and opted-out items are clustered by hand. Clusters get a human review before they drive priorities.
-- **Public themes board:** only paraphrased themes written by the team. **Private feedback is never linked to, or quoted in, public issues or newsletters** unless the submitter explicitly agrees.
-- The form warns submitters not to paste proprietary code or secrets. The team reviews for sensitive content before anything is reused.
-
-**Consent and deletion lifecycle (P3-06):**
-- **Consent record:** each submission stores a versioned consent record with separate scopes: `llm_processing`, `quote_publication`, `contact`.
-- **Checked at the moment of action:** every external processing job and every publication step reads the *current* consent record when it runs, not the consent copied into its queued payload. Consent withdrawn between queueing and running means the job is skipped.
-- **Deletion receipt:** anonymous submitters get an opaque **deletion receipt** (a random token shown once at submission). Without a receipt or an account, we can't promise to locate an anonymous item, and the form says so.
-- **What deletion removes:**
-  - the primary row
-  - queued jobs
-  - cluster memberships
-  - derived summaries that reference the item
-  - interview notes linked by item ID
-
-  Backups age out within 30 days, and that is stated.
-- **Honest limits:**
-  - material already sent to an LLM processor is subject to that processor's retention terms, which are disclosed
-  - newsletters already sent can't be recalled
-- **Publication:**
-  - **Distinctive incidents** (identifiable workplace, person or event) are **never published, even paraphrased**, without `quote_publication` consent.
-  - Generic themes may be paraphrased after a reviewer checks them against an identifiability checklist.
-
-**Counting and triage (P3-07):**
-- **The themes board reports three separate numbers per theme:**
-  - submissions
-  - distinct submitters, best-effort (accounts or hashed emails when given; anonymous items counted as "unverified")
-  - **corroborated observations** (seen in the pilot, interviews or behavior review)
-- **Duplicates:**
-  - near-duplicates and cross-channel copies are merged by a human reviewer
-  - the anonymous form has proportionate abuse controls (a honeypot field and rate limits)
-  - perfect anonymous deduplication is not claimed
-- **Severity is assessed separately and isn't diluted by low frequency.** Any item touching privacy, safety, data loss or a blocked learner gets an explicit decision even if it appears once.
-- **Separate audiences:** feedback from the **pilot audience** is kept apart from public-channel feedback when judging demand.
-- **Transparency:** the board shows the evidence basis and uncertainty, never an unsupported "affected users" count.
-
-### 3.4 Suggested stack (lightweight, swappable)
-- **Site:** Astro or Next.js with MDX content, hosted on Vercel or Cloudflare Pages.
-- **Newsletter:** Buttondown, Resend or ConvertKit. The subscriber list must be exportable.
-- **Feedback:** a native form posting to a small API with Postgres (e.g. Supabase). Set a retention policy (section 6).
-- **Analytics:** privacy-friendly (Plausible or cookieless PostHog).
-- **Before committing:** check that `jrdev.ai` is available and what it costs, and run a trademark search on "jrdev".
-
----
-
-## 4. Skills and packs
-
-### 4.1 Packs (phased)
+### Skill packs
 | Pack | Contents | Phase |
 |---|---|---|
 | **Starter** | Setup, Typing mode (explicit), minimal Learning profile, `/jrdev:stuck`, pre-commit self-review checklist | 1 |
@@ -143,667 +51,46 @@ collect → tag → cluster themes → prioritize (frequency × severity × feas
 | **Fundamentals drills** | Short exercises with edits denied (uses Typing mode) | 2+ |
 | **Mentor/Team** | Team defaults, a behavior-review sampler for team-generated transcripts, consent-based progress export | 3+ |
 
-### 4.2 Reuse vs. build
+### Reuse vs. build
 - **Reuse ideas, with attribution, from MIT-licensed skills** after a full read: `grill-me`, `teach`, `diagnosing-bugs`, `mentoring-juniors`, `quiz-me`.
 - **Build ourselves:** the profile, modes, hooks, router and anything enforced or tracked over time.
 - **Don't bundle third-party code unread.** Pin it, read every file, and re-publish under our own versioning.
 
 ---
 
-## 5. The plugin: commands, policy and modes
+## 3. Specs
 
-### 5.1 Three independent settings (P2-01)
-**What you're working on and whether the agent may edit files are separate settings.** Changing one never silently changes the other.
-
-| Setting | Values | What it controls |
+| Spec | What it covers | Key decisions |
 |---|---|---|
-| **Edit policy** | `open` · `type` | Whether the agent's file edits are **denied** (the only *enforced* setting) |
-| **Workflow** | `none` · `debug` · `map` · `test` | Which guided workflow the agent follows (advisory) |
-| **Learning** | `on` · `off` | Profile features: goal injection, recap, reviews (advisory) |
-
-**Composition rules:**
-- Workflows never change the edit policy. Debug + `type` means the learner inserts breakpoints themselves; Debug + `open` means the agent may insert them.
-- `/jrdev:off` sets **all three** to off/none/open, and says explicitly: "Edit enforcement is now OFF."
-- **Any** change to the edit policy is announced in the conversation and shown in the status line.
-- The study treatment "Learning + Typing" = `learning:on` + `edit:type` with any workflow. Each session's configuration is logged, so the study can verify which treatment a participant actually received.
-
-**Acceptance:**
-- Start with `edit:type`, switch the workflow to `debug`, then turn learning on. The next Edit must still be denied, matching the status display.
-- A study session's log shows `learning:on, edit:type`.
-
-### 5.2 Command contract and the trusted channel for state changes (P-10, P2-03)
-Plugin skills are invoked as `/jrdev:<skill>`.
-
-| Command | Effect | Invocable by |
-|---|---|---|
-| `/jrdev:setup` | First-run interview (with a preview of what will be injected; 6.2) | User |
-| `/jrdev:type on\|off` | Sets the edit policy for this session | User only |
-| `/jrdev:workflow <none\|debug\|map\|test>` | Sets the workflow | User only |
-| `/jrdev:learn on\|off` | Turns profile features on or off | User only |
-| `/jrdev:off` | Turns everything off for this session, with an explicit notice | User only |
-| `/jrdev:task start <name>` / `/jrdev:task done` | Opens or closes the task that help stages and exceptions are bound to (5.4) | User only |
-| `/jrdev:stuck` | Escalates help within the active task; the last step grants a one-call exception (5.4) | User only |
-| `/jrdev:status [--context]` | Shows the three settings, enforced vs. advisory rules, pending items, and with `--context` the exact text injected into the session | User or model |
-| `/jrdev:feedback` | Opens the feedback form | User or model |
-
-**Trusted channel (design; the Phase 0 prototype must confirm it):**
-- **State changes happen only in a `UserPromptExpansion` hook.** That hook fires when the *user types* a slash command. It receives `session_id`, `command_name` and `command_args`, and it can block the command or add context. It **doesn't fire when the model invokes a skill**, which goes through the `Skill` tool and `PreToolUse` instead.
-- The hook handler validates the arguments and writes the session state atomically (5.3). A state change is therefore a hook decision, not a shell command that permission rules could reject or that the model could imitate.
-- **Model-invoked attempts are denied** by `PreToolUse` on the `Skill` tool for the user-only commands. `disable-model-invocation: true` is set as well, as a second layer.
-- **Writes to protected files:**
-  - **Paths are normalized** (realpath, case on macOS) before matching. Any model `Edit`/`Write`/`MultiEdit` targeting jrdev control files is denied.
-  - The control files are session, config, and exception state.
-  - **Control-file protection takes precedence over every allowlist.** jrdev scaffold files are written by hook code, never through model edit tools, so they need no allowlist entry.
-- **Model `Bash` calls:** denied when they reference the jrdev control paths or the CLI's state-changing subcommands. **This is a seatbelt.** Indirect writes, such as through a script the model creates, aren't fully preventable. This limit is documented.
-- **Recovery CLI:** `jrdev off` asks for confirmation typed at the terminal (`/dev/tty`). The agent's non-interactive Bash can't answer that prompt.
-- **What we promise:** enforcement holds on the **tested tool paths** (the acceptance cases in this section and 5.3). We don't claim the model can never switch enforcement off.
-
-**Acceptance:**
-- A user-typed command changes state exactly once.
-- Model attempts are denied and state stays unchanged: Skill tool calls, Edit/Write to control files, and Bash invoking the CLI.
-- Test paths with spaces, symlinks or aliases to control files, and conflicts with the allowlist.
-- If the hook fails, the command reports failure and state is unchanged.
-
-### 5.3 State layers and the edit decision table (P-05)
-**Layers**, highest precedence first:
-1. **Recovery override:** written by `jrdev off` or the kill switch. When present, lower layers aren't parsed at all.
-2. **Session state:** private, outside the repo (6.1), keyed by `session_id`.
-3. **Project defaults:** `.jrdev/config.json` in the repo. This is shareable and may be committed. It contains **no** learner data.
-4. **User defaults:** `~/.jrdev/config.json`.
-
-Each file has a schema version, is written via a temporary file plus rename under a lock, and is validated on read.
-
-**Edit decision** for `Edit|Write|MultiEdit|NotebookEdit`:
-
-| # | Condition (evaluated in order) | Decision |
-|---|---|---|
-| 1 | Kill switch file `~/.jrdev/DISABLED` exists | Allow, with a "jrdev disabled" notice |
-| 2 | Target is a jrdev control file | **Deny** (always) |
-| 3 | A recovery override exists for this session | Allow |
-| 4 | Session, project or user state can't be parsed | **Deny**, with recovery steps in the message |
-| 5 | Effective edit policy ≠ `type` | Allow |
-| 6 | Path is on the hard allowlist (lockfiles, generated dirs) | Allow |
-| 7 | A valid one-call stuck exception covers this session + file (5.4) | Allow and consume the exception |
-| 8 | Otherwise | **Deny**, with coaching instructions |
-| — | Hook runtime is missing or crashes | Claude Code treats the failure as non-blocking, so the edit **is allowed**. This is a documented limit, and `/jrdev:status` reports the problem |
-
-- **"Smart" topic-based triggering is advisory** until its classifier and failure behavior are specified and tested.
-
-**Recovery (P2-04):**
-
-| Situation | Steps | Scope |
-|---|---|---|
-| Typing is too strict right now | `/jrdev:type off` | This session |
-| Project default forces `type` | `/jrdev:type off` writes a session override above the project default | This session; the project file is untouched |
-| Malformed session, project or user file | `jrdev off --session <id>` (or `--latest`) writes a recovery override, so row 3 applies before row 4 | That session only. Other sessions' state and **pending records are preserved** |
-| Runtime (Node/Python) missing | Edits already fall through as allowed (last row). `jrdev off` is a **POSIX `sh` script** with no runtime dependency | — |
-| Everything is broken | `touch ~/.jrdev/DISABLED`. Each hook call is a new process, so running sessions see it immediately | **All sessions**, as documented |
-
-`JRDEV_DISABLE=1` only affects sessions **started** with it; that's documented as a restart-based option. **Deleting directories is never presented as session-local recovery.**
-
-**Leaving recovery (P5-02):**
-- **The recovery override is tied to one `session_id`.** New sessions are never affected by it.
-- **Re-enabling a session:** `/jrdev:type on` in that session **first re-validates every lower layer**.
-  - If they all parse, it **removes that session's recovery override** and sets `type`.
-  - If a layer is still malformed, it **refuses** and names the broken file. It never reports `type` as active while edits stay allowed.
-- **The kill switch is global, so a session command never removes it.**
-  - `/jrdev:type on` with `~/.jrdev/DISABLED` present answers: "Enforcement is disabled globally by the kill switch (created at T). Run `jrdev on --global` in a terminal to re-enable it for all sessions."
-  - `jrdev on --global` asks for confirmation typed at the terminal (`/dev/tty`).
-- **`/jrdev:status` shows the *effective* decision and why**, e.g. "edits allowed: recovery override (this session)", "edits allowed: global kill switch" or "edits denied: type (session)". It never shows just the requested setting.
-- **Acceptance cases:**
-  - recover, repair the config, then `/jrdev:type on` while a second session is active; the next Edit matches the status display
-  - the same with the kill switch present: the refusal message appears, and `jrdev on --global` restores enforcement
-
-**Acceptance:**
-- recover from a project default of `type`
-- recover from a malformed project config
-- recover from a malformed user config
-- recover with the runtime missing
-
-In each case a second session stays active, its policy and pending records are unchanged, and the target session can work normally afterwards.
-
-### 5.4 Modes and workflows
-
-#### Typing (edit policy `type`, Phase 1)
-- Edits are denied per 5.3, and the deny reason tells the agent to coach. Bash write patterns are caught as a seatbelt.
-- **`/jrdev:stuck` escalates:** hints, then pseudocode, then a partial snippet, then a worked solution plus a **one-call exception** (P2-05):
-  - **Unit:** one *approved* `PreToolUse` decision for an `Edit`/`Write`/`MultiEdit` whose targets are all within the named file(s). A `MultiEdit` touching any other file is denied.
-  - **Consumption:** the exception is checked and consumed in one critical section under an exclusive lock, and bound to that call's `tool_use_id`. Two simultaneous calls can't both use it.
-  - **If the approved call later fails** (execution error, or another hook or permission rule denies it), the exception is **still spent**. That's documented, and the learner runs `/jrdev:stuck` again. We deliberately avoid reconciling through post-tool events, so there's no state that could grant a second use or leak an exception.
-  - **Expiry:** 15 minutes of wall-clock time, checked when the decision is made, so process death or interruption can't leave an exception open indefinitely.
-  - **Log:** `granted` → `used (tool_use_id)` or `expired`.
-- **Every escalation step is logged as coached practice** (5.5).
-- **Help stage is recorded by hooks, not by the model (P3-02):**
-  - The session state holds `help_stage` ∈ {0 none, 1 hint, 2 pseudocode, 3 partial snippet, 4 worked solution}.
-  - It advances **one step per user-typed `/jrdev:stuck`**, through the `UserPromptExpansion` channel.
-  - **Task-scoped (P4-03):**
-    - **Explicit task boundaries:** help stages and stuck exceptions are keyed by a `task_id`, created with a user-typed `/jrdev:task start <short name>` and closed with `/jrdev:task done`. Starting a new task closes the previous one.
-    - **No active task:** `/jrdev:stuck` asks the learner to name the task first.
-    - **Stage-4 authorization is single-use (P5-03).** Its lifecycle is defined by observable events:
-      - **Created** by the user-typed `/jrdev:stuck` that reaches stage 4, through `UserPromptExpansion`. It's bound to `(session_id, task_id, grant_id)`.
-      - **Covers exactly the turn started by that `/stuck` prompt.** The **next user prompt of any kind** (`UserPromptSubmit` or `UserPromptExpansion`) marks it `consumed`. That holds whatever happened in the turn: full delivery, partial delivery, interrupt or API error.
-      - **Retry:** if the turn failed, the learner types `/jrdev:stuck` again. Stage 4 is terminal, so this creates a **new** grant, logged as a separate worked-solution grant.
-      - **Resume:** at `SessionStart` with source `resume`, any grant whose turn has ended is marked consumed, and the authoritative state ("no active grant") is re-injected. Replayed conversation text saying stage 4 is allowed is overridden by that injection.
-      - **Fork:** state is keyed by `session_id`, so **a forked session gets no grant**. `SessionStart` injects "no active grant", and a fresh `/stuck` is required.
-      - **Compaction:** the state lives outside the conversation and is re-injected.
-      - **Status and other commands** can't create or revive a grant. Only `/jrdev:stuck` can.
-      - **Event ordering** (e.g. whether `UserPromptExpansion` and `UserPromptSubmit` both fire for one slash command) is **to be verified in the Phase 0 prototype**.
-      - **This bookkeeping controls authorization state, not what the model says.** Whether a response stays within its stage remains **advisory**, and is checked by behavior review (8.2).
-    - **Stages 1–3** persist until the task closes.
-    - **Model task-change detection is advisory only.** The coach is instructed to ask "is this the same task?" when a request looks different, but only the user-typed command changes `task_id`.
-    - **Resume and compaction:** the active `task_id` and stage live in hook-managed state, and `SessionStart` re-injects them after resume or compaction.
-    - **Acceptance cases:**
-      - reach stage 4 on task A, then run `/jrdev:task start B` (same file, then another file); B starts at stage 0. **Without the explicit command**, a question about B is only *advisorily* detected, and the promise is limited to the coach asking "same task?"
-      - grant lifecycle: interrupt during partial and complete delivery, resume, compact, fork, and retry after an API error; no two solution turns ever share one grant
-      - resume preserves the binding
-      - compaction preserves the binding
-  - Each stage's allowance is written in the coach instructions and used as the review oracle (8.2).
-
-#### Learning (`learning:on`; Phase 1 minimal, Phase 2 full)
-- **Phase 1:** setup, session recap (pending until the learner confirms it), and injection of **topic identifiers only** (6.2).
-- **Phase 2:** FSRS reviews computed by a library in code, plus a local progress report.
-- **Review-item contract (P3-03), defined before Phase 2:**
-  - **Item fields:** `{item_id, objective_id, format (recall | explain | predict | debug-snippet), prompt_variants[], answer_criteria, version}`.
-  - **One schedule per item.** Variants of an item must share its objective and format.
-  - **Changes:** changing an item's objective or format creates a **new item with a new schedule**. Wording fixes bump `version` and keep the schedule.
-  - **Ratings:**
-    - The learner rates their own recall after seeing the answer criteria, as in classic spaced repetition.
-    - jrdev **caps** the rating by assistance used: any hint caps it at `Hard`, and a shown answer forces `Again`.
-    - The model can't set ratings.
-  - **Storage:** every review stores the FSRS review log (rating, timestamps, assistance), so schedules can be replayed reproducibly.
-  - **Scope:** reviews are **recall practice**. They never create "assessed transfer" evidence or raise demonstrated levels.
-
-#### Debug workflow (Phase 2)
-- **Advisory steps:** symptom, reproduce, the learner's hypothesis, breakpoint (`# jrdev-bp` marker), predict-then-inspect, fix, regression test, remove breakpoints.
-- **Who places breakpoints:** the learner if `edit:type`, otherwise the agent.
-- **Enforcement:** the optional git pre-commit hook blocks commits that contain markers. The `Stop` hook gives one reminder.
-- **Pre-commit details (P3-05):**
-  - **Scope (P4-05):** the hook blocks **every active jrdev breakpoint in the files the commit touches**, not just newly added ones. Files the commit doesn't touch are out of scope, as declared.
-  - **What counts as an active breakpoint** is decided from staged content alone, without local registration:
-    - a line with a recognized breakpoint statement (`breakpoint()`, `pdb.set_trace()`, `debugger;`, `binding.irb`, `runtime.Breakpoint()`, …) **and** a `jrdev-bp:<id>` tag on the same line
-    - marker text without a breakpoint statement (docs, test fixtures) **warns** only
-  - **Optional `--strict` setting:** also blocks breakpoint statements that carry no jrdev tag.
-  - **What it scans:** the **full staged blobs** (`git show :<path>`) of every path in `git diff --cached --name-only -z -M --diff-filter=ACMR`, including pure renames. Never the working tree.
-    - **Verified locally:** a pure `git mv` produces zero added diff lines while the staged blob still contains the marker. That's why blobs are scanned, not diffs.
-  - **Acceptance cases:**
-    - a pure rename
-    - an unchanged marker inside a modified file
-    - a fresh clone with no session history
-    - deleted local registration
-    - a docs example
-  - **Installation never overwrites existing hooks:**
-    - It detects `core.hooksPath`, the `pre-commit` framework, husky and lefthook, and provides a config snippet for the one in use.
-    - With a plain `.git/hooks/pre-commit` already present, it chains into it only with consent, after backing it up.
-    - Uninstalling restores the backup.
-  - **Documented limit:** `--no-verify` bypasses the hook.
-  - **Acceptance cases:**
-    - a staged marker with a clean working file
-    - a clean index with an unstaged marker
-    - renames
-    - paths with spaces
-    - an existing hook
-    - a custom `core.hooksPath`
-    - uninstall
-- **Interactivity:** v1 is learner-driven in their own terminal. v2 would be a DAP-based MCP server (not verified yet).
-
-#### Map workflow (Phase 2–3) and Test workflow (Phase 3)
-Unchanged from the previous revision:
-- **Map:** static analysis with source-labelled edges and explicit "unresolved" markers. It's described as static structure, not runtime flow.
-- **Test:**
-  - disposable local fixtures only
-  - pre-flight checks are **warnings**, and the residual risk is stated
-  - checklist items are `done` / `skipped` / `n/a`, never auto-passed
-  - coverage is shown as "executed lines/branches in this run"; ordered flow only comes from request-scoped tracing
-
-Their acceptance checks also carry over:
-- a fixture that looks local/dev but reaches production-like endpoints or inherits credentials triggers warnings, and undetected paths are documented
-- same coverage with a different order can't be told apart without tracing
-- dynamic dispatch shows as unresolved edges
-
-#### Pending items, recaps and `Stop` (P-04)
-- Human confirmations are **pending states**. The `Stop` hook adds one reminder when `stop_hook_active` is false and then yields.
-- `Stop` doesn't run when the user interrupts, and Claude Code ends the turn after 8 consecutive continuations. Pending items are re-surfaced at the next `SessionStart`.
-- Skipped items are never counted as passed.
-
-### 5.5 Evidence and the assessment lifecycle (P-02, P2-02)
-
-| Category | Source | Raises |
-|---|---|---|
-| **Coached practice** | Any work in a tutored session, including Typing exercises, hints, escalations and visible solutions | "Practised" |
-| **Self-reported independent** | Learner statement | Nothing; shown separately and labelled as self-report |
-| **Assessed transfer** | Only a **finalized** assessment (below) | "Demonstrated" |
-
-**Phase 1: assessments run outside the AI session**, so the tutor can't leak hints and no model grades the work:
-1. **Start:** `jrdev assess start <topic>` in a plain terminal.
-   - The **assessment service** picks a task from a vetted bank that this learner **hasn't been exposed to before**, according to an exposure ledger (see below).
-   - Creates a scratch directory **outside** any repo, records the start time and the allowed resources (e.g. official docs only), and prints the task.
-   - **Hidden tests and reference answers aren't on the learner's machine.**
-2. **Work:** the learner solves it without an AI assistant.
-   - **Self-reported condition:** a submit-time checkbox "I used no AI or other help". **Ticking "I used help" makes the attempt coached.**
-   - **Tool check (product use only, not in studies):** if a jrdev-hooked Claude Code session records tool use inside the scratch directory during the window, the attempt gets a **validity flag**. The **score itself is kept**, and the flag is a separate field.
-3. **Submit:** `jrdev assess submit` packages the submission and runs the public tests.
-   - **Minimal payload (P5-05):**
-     - Each task version declares a **submission manifest**: the exact paths or globs graders need.
-     - Everything else is **excluded by default**: dotfiles, `.env*`, `.git/`, editor and history files, logs, notebook outputs, build artifacts.
-     - **Before upload**, the learner sees the exact file list and sizes and confirms them. Adding anything outside the manifest requires a deliberate choice, with a warning.
-     - **Metadata is stripped:** archives are built with normalized owner, permissions and timestamps, and no VCS metadata.
-     - **Secret-pattern scanning** warns about likely secrets. It's **not presented as guaranteed redaction**.
-     - **Identity stays out of the payload:** the upload token maps to the pseudonymous attempt server-side, so graders receive no account, email or git-author data.
-     - **Acceptance:** scratch seeded with a valid solution, a private `.env`, identifying metadata, generated logs and a required fixture. Only manifest files are sent, the fixture still works, and graders see no identity data.
-4. **Score:** a human scorer applies the rubric and the hidden tests, **blind** to the learner's identity and to whether they're in a study arm.
-5. **Finalize:** the scorer marks the attempt finalized through the assessment service. Only then does an "assessed transfer" record exist.
-
-**Submission identity and finalization authority (P4-02):**
-- **One-time upload token:**
-  - Each attempt has an `attempt_id` and a `submission_revision`.
-  - The service issues a **one-time upload token** bound to `(attempt_id, revision)`. It's **not** a reusable pre-signed URL.
-- **Write-once storage:**
-  - The service computes the **SHA-256 of the received archive** and stores it in **write-once storage** (no overwrite).
-  - **Storage model (P5-04):**
-    - **Immutability is enforced by the application**, through no-overwrite object keys and versioning: `attempts/<attempt_id>/<revision>/<digest>`.
-    - **No compliance-mode retention lock is used**, so prompt deletion stays possible.
-    - **No sharing across attempts:** objects are **not deduplicated** across attempts or learners, so no reference counting is needed and one learner's deletion never affects another's evidence.
-  - Re-uploading the same digest is a no-op.
-  - A **different** digest after acceptance is rejected, unless a scorer reopens the attempt. That creates revision n+1 and is logged.
-- **The grading record binds:**
-  - the submission digest and storage version
-  - task and rubric versions
-  - the grader image digest
-  - the hidden-test version
-  - the result
-- **Grading:**
-  - Runs are idempotent per (digest, grader image, test version).
-  - **Task environment contract (P5-06):**
-    - Each task version pins **one environment image**: the runtime and dependency versions, preinstalled resources, the test command, resource limits, and seeded or deterministic inputs.
-    - **One image everywhere:** the same image is used for local public tests (`jrdev assess start` pulls it), the hosted study workspace and the hidden-test grader. Intentional differences are listed in the task text.
-    - **Infrastructure failures are separate from learner failures.** An image mismatch, a missing dependency, a provisioning error or a grader crash gets the status `infra_error`. It's **never finalized as a learning result**. Retries re-run the **same submission revision**, so no new task exposure is needed.
-    - **Acceptance:** a fixture exercising each declared feature and dependency passes in all three environments. A deliberately mismatched image produces `infra_error`, not a low score.
-  - A database constraint allows **one finalization per revision**, so repeated callbacks can't produce conflicting results.
-- **Signed results:**
-  - Only an authenticated scorer can finalize.
-  - The service **signs** the finalized result, and the local client shows an achievement as *verified* only after checking that signature.
-  - Locally edited or unsigned records are displayed as **unverified**.
-- **Blinding:** scorers see pseudonymous attempt IDs. The identity mapping is stored separately, with restricted access.
-- **Acceptance cases:**
-  - reusing an upload token
-  - changing files after submission
-  - a double upload
-  - importing a fabricated "finalized" record
-  - duplicate grading callbacks
-
-  None may silently change certified evidence, and every achievement resolves to the exact graded bytes.
-
-**Exposure ledger (P4-07):**
-- **Where the record lives:** the **authoritative exposure record is server-side** (the service serves the tasks), keyed by pseudonymous learner ID.
-- **Local backup and restore don't touch it:** the local cache `~/.jrdev/exposure.log` is append-only, and `jrdev restore` and migration snapshots **never rewrite it**.
-- **Missing history means "unknown":** if exposure history is unavailable (offline, deleted, or a new device without login), the attempt's freshness is marked **unknown**. Such attempts can't count as protocol-controlled transfer evidence.
-- **Retention and deletion:** the ledger follows the assessment data's retention. If a learner deletes their data, their ledger goes too. If they rejoin, prior exposure is **unknown** rather than assumed absent. This is disclosed.
-- **Practice on repeated tasks** is allowed, and is labelled "previously exposed".
-
-**Interruption and abandonment:**
-- An attempt stays `in progress` for up to 24 hours, then becomes `abandoned`, which is never counted.
-- A restart always uses a **new** task, and the exposure log is updated.
-- **Delay doesn't establish novelty.** Novelty comes from the exposure log.
-
-**Grading environment (P3-09), required before any pilot submission is executed:**
-- **Where it runs:** a dedicated grading host (a VM or CI runner) with **no credentials or personal files**, separate from scorer workstations. Scorers view results; they don't run submissions on their own machines.
-- **One disposable container per submission:**
-  - no network (`--network none`)
-  - non-root user and a read-only base image
-  - a size-limited writable scratch area (tmpfs)
-  - CPU, memory and process-count limits, and a **wall-clock timeout**
-  - destroyed after each run, so nothing carries over to the next submission
-- **Intake:** archives are size-checked and safely extracted **inside** the container. Absolute paths, `..`, symlinks and device files are rejected.
-- **Test bank protection:**
-  - Hidden tests are mounted read-only for the run. **Reference solutions are never mounted.**
-  - The learner receives only pass/fail counts and the names of public tests. Full output stays with the scorer and is reviewed before anything is shared.
-  - Any task whose hidden tests could have leaked through returned output is marked **exposed** and retired from fresh-task selection.
-- **Transfer:** `jrdev assess submit` uploads the archive over HTTPS with a one-time token to write-once storage (see above). The storage is listed in the data-flow inventory (6.3).
-- **SHA pinning of the plugin says nothing about participant code.** This boundary is what protects the scorer.
-- **Acceptance fixtures**, which must pass before the pilot:
-  - external network access
-  - reading a seeded host secret
-  - writing outside scratch
-  - archive path traversal
-  - an infinite loop
-  - memory exhaustion
-
-  Each must be contained or terminated, leave the next run clean, and leak no reference answer through logs or diagnostics.
-
-**What a passed assessment claims (P3-04):**
-- **Narrow skill IDs:**
-  - Assessments map to **narrow skill IDs** (e.g. `python.exceptions.handling`), declared per task.
-  - A task can raise only the skill IDs it declares, and only through an explicit, documented mapping. **Umbrella labels like "backend" or "debugging" are never raised by a single task.**
-- **Global summary record:**
-  - **Fields:** `{skill_id, task_id, task_version, rubric_version, category, scorer, scored_at, score_band, evidence_ref}`.
-  - **Rubric changes** create a new `rubric_version`. Historical results keep their original version and are displayed with it.
-- **The progress view shows concrete achievements** ("Passed task T v2 under conditions C on date D, scored by a human") with recency.
-- **General levels are deferred** until aggregation and recency rules are defined and reviewed (not before Phase 3).
-
-**Later automated scoring (Phase 3+):**
-- It runs in a skill with `context: fork`, a fresh subagent that **doesn't see the conversation history**. The subagent gets only the rubric and the submission, with the submission marked as untrusted data.
-- Automated grades can raise "demonstrated" only after **agreement with human scores is validated** on a held-out set. Disagreements go to a human.
-
-**Reports** separate protocol-controlled conditions (fresh task, hidden tests, rubric, blind scoring) from self-reported ones (no outside help).
-
-**Acceptance:** none of the following can produce a qualifying record:
-- a worked solution sitting in the chat
-- unsolicited hints (no AI is in the loop in Phase 1)
-- resuming after an interruption
-- an answer that contains grading instructions (human scorer in Phase 1; untrusted-data handling and validation later)
-
-### 5.6 Data compatibility across versions (P3-01)
-**Control state vs. learner records:**
-- **Control state** (session, config, exceptions) carries a `policy_version` and a list of `required_capabilities` (P4-04). Fields are split into two groups:
-  - **Informational** (in an `info` block): safe for older readers to ignore.
-  - **Policy-affecting:** each one is tied to a named capability.
-- **An older engine meeting an unknown required capability doesn't silently apply its older, more permissive rule.** It applies a **safe degraded policy**: edits in the affected scope are treated as `type`, and an explicit notice says an update is needed for full policy support.
-  - **Recovery** (`/jrdev:type off`, `jrdev off`, kill switch) keeps working regardless of capability.
-- **`/jrdev:status` shows** the engine version, its capabilities, and the policy version in effect. Concurrent versions report their own effective policy.
-- **We don't claim every future policy is backward-compatible.**
-- **Acceptance:** an old reader meeting a synthetic new restrictive field applies the degraded policy and reports it. Purely informational fields stay harmless.
-- **Learner records** (profile, logs, assessments, review history) have explicit schema versions.
-
-**Compatibility rules:**
-- Each release **reads** its own schema and the previous one, and **writes only** its own.
-- An older version that finds a newer learner-record schema switches to **read-only profile mode**. Enforcement keeps working from control state, and the user is told to update or restore.
-
-**Migrations:**
-- They run only through `jrdev migrate`, offered at session start and never applied silently.
-- They take an automatic **backup snapshot** first (`~/.jrdev/backups/<timestamp>/`) and run under the global lock, so a second version can't write at the same time. An interrupted migration resumes or rolls back from the snapshot.
-- **Evidence categories, scores and provenance are immutable.** A migration may restructure fields but can never upgrade `coached` to `assessed transfer`.
-
-**Rollback:**
-- Install the older SHA, then either keep using compatible data or restore the pre-migration snapshot with `jrdev restore <timestamp>`.
-- **`jrdev reset` is never the documented fix.**
-
-**Acceptance:**
-- run A → B → A with populated goals, pending recaps, assessments and review history
-- interrupt a migration
-- run two versions concurrently
-
-In every case, records are preserved, recovery works, and evidence categories are unchanged.
-
-### 5.7 Technical layout
-```
-plugins/jrdev/
-  .claude-plugin/plugin.json
-  hooks/hooks.json             # SessionStart, UserPromptSubmit, UserPromptExpansion, PreToolUse(Edit|Write|MultiEdit|NotebookEdit|Bash|Skill), Stop
-  hooks/handlers/              # policy engine (5.3 table), state I/O with locking, exception reservations
-  skills/{setup,type,workflow,learn,off,stuck,status,feedback,debug,map,test}/SKILL.md
-  bin/jrdev                    # POSIX sh: off, status, assess, verify-info (no runtime dependency for off)
-  output-styles/jrdev-coach.md
-  lib/{profile,policy,analysis}/
-  vendor/                      # bundled deps, lockfile-pinned
-  tests/                       # decision-table units, recorded hook inputs, concurrency tests, clean-install command tests
-```
+| [01 · Website, newsletter and feedback](specs/01-website-and-feedback.md) | Site pages, newsletter, feedback inputs, the monthly loop, consent and deletion lifecycle, triage, stack | Feedback is LLM-processed only with consent, checked when each job runs; deletion receipts for anonymous items; the themes board shows its evidence basis, not raw counts |
+| [02 · Commands, state and edit policy](specs/02-commands-and-policy.md) | Three independent settings, the command contract, the trusted `UserPromptExpansion` channel, state layers, the edit decision table, recovery, pending items, data compatibility, layout | Only the edit policy is enforced; the model can't change state through tested paths; recovery works without the runtime; older versions degrade safely |
+| [03 · Modes and workflows](specs/03-modes-and-workflows.md) | Typing (`/stuck` stages, task scope, one-call exceptions, stage-4 grants), Learning (FSRS item contract), Debug (pre-commit marker check), Map, Test | Help stages advance only through user commands and are bound to tasks; reviews are recall practice; Map and Test outputs are labelled honestly |
+| [04 · Evidence, assessment and grading](specs/04-assessment-and-grading.md) | Evidence categories, assessments outside the AI session, submission identity, signed finalization, exposure ledger, grading sandbox, narrow claims | Only finalized, blind-scored assessments count as demonstrated ability; untrusted code runs only in a disposable sandbox |
+| [05 · Data flows and privacy](specs/05-data-flows-and-privacy.md) | Storage locations, project identity, what reaches the AI provider, the data-flow inventory | No private records in the worktree; minimal, previewable injection; a per-field inventory |
+| [06 · Public repository and release trust](specs/06-repo-and-release-trust.md) | Public vs. private, monorepo layout, contribution review, signed manifests, verify-before-enable, CI, GitHub feedback | `defaultEnabled: false` plus independent verification before any jrdev code runs; auto-update off |
+| [07 · Evaluation, behavior review and studies](specs/07-evaluation-and-studies.md) | Measures, the Phase 1 decision table, the efficacy study design, the behavior-review oracle, the configuration protocol | Decision rules are frozen before recruitment; study assessments are symmetric across arms; models and versions are frozen during the study |
 
 ---
 
-## 6. Data flows and privacy (P-03, P2-06, P2-07)
+## 4. Gates
 
-### 6.1 Where data lives
-**Private learner records never live in the repository worktree.**
+Each gate must pass before the milestone it guards. Details and acceptance cases are in the linked specs.
 
-| Location | Contents | Shareable? |
-|---|---|---|
-| `~/.jrdev/global/` | Topic identifiers from a **controlled vocabulary** (e.g. `react-hooks`, `sql-joins`), self-rated levels, review queue (topic IDs), assessment summaries with a **fixed schema** (5.5: `skill_id`, task and rubric versions, category, scorer, date, score band, evidence ref) | No |
-| `~/.jrdev/projects/<project-id>/` | Session state, logs, debug notes, maps, exceptions, project-scoped goals and free-text mission | No |
-| `~/.jrdev/assessments/` | Assessment attempts and the exposure log | No (scores are exported to a mentor only on explicit request) |
-| `<repo>/.jrdev/config.json` | **Team defaults only**: default policy, allowlists, workflow settings. No learner data | Yes, may be committed intentionally |
-
-- Before writing anything inside the repo (only `config.json`, and only on explicit request), jrdev checks the file's tracking and ignore status and tells the user. **It never untracks files automatically.**
-- **If a repo already contains tracked `.jrdev/` logs** from older versions or manual copies, jrdev warns and explains the options (move them out, `git rm --cached`). The user decides.
-- This avoids depending on `.gitignore` consent: routine `git add .` can't stage private records, because none are in the worktree.
-
-**Project identity (P4-06):**
-- **Git projects:**
-  - `project-id` is a random UUID stored in the repository's **common git dir** (`$(git rev-parse --git-common-dir)/jrdev-id`). That location is untracked and never committed.
-  - **Symlink aliases:** the path is resolved with realpath first, so aliases map to the same ID.
-  - **Linked worktrees** share the common dir, so they're **one project**. That's declared.
-  - **Separate clones** get different UUIDs, so they're **separate projects**. That's declared.
-  - **A checkout replaced at the same path** has a new `.git`, so it gets a new ID. Old records show up as orphans in `jrdev projects` for the user to delete or relink.
-- **Non-git directories:**
-  - A mapping in `~/.jrdev/paths.json`, keyed by realpath.
-  - This is weaker (a moved directory gets a new ID), and that's declared.
-- **Monorepos:** one repository is one project. Sub-project scoping is a later option.
-- **Multi-root sessions:**
-  - jrdev injects private context **only for the session's starting project**.
-  - `DirectoryAdded` runs **after** a directory is added and can't prevent it. jrdev then **doesn't inject** the added project's private context and recommends a fresh session for that project.
-- **What we promise:** jrdev controls what **it stores and injects**. It can't remove information already present in a conversation. Changing directories doesn't "un-disclose" context.
-- **Acceptance cases:**
-  - symlink aliases
-  - two clones
-  - linked worktrees
-  - a replaced checkout
-  - `/add-dir` of another repo mid-session
-
-  Each follows its declared identity and injection rule.
-
-### 6.2 What reaches the AI provider
-- **Injected at session start:** `learning:on` topic identifiers, due-review topic IDs, and the current mode rules. **Nothing else by default.**
-- **Free-text mission and goal descriptions are project-scoped by default.** Making one global is an explicit choice in setup, with a warning that global text is injected into *every* project.
-- **Setup shows a preview** of the exact injected text, and `/jrdev:status --context` shows the live injected content at any time.
-- **Controlled-vocabulary topic IDs** reduce, but can't eliminate, the risk of the user typing confidential details into free-text fields. The setup screen states plainly what jrdev controls and what remains the user's responsibility.
-- **Assessments in Phase 1** aren't sent to any model (human scoring).
-
-### 6.3 Data-flow inventory
-| Data | Stored | Sent to AI provider? | Human recipients | Retention | Can become public? |
-|---|---|---|---|---|---|
-| Topic IDs, levels, review queue | `~/.jrdev/global/` | Yes (topic IDs only) | None | Until `jrdev reset` | No |
-| Global free-text goal (opt-in only) | `~/.jrdev/global/` | **Yes, in every project** (warned) | None | Until reset | No |
-| Project goals, logs, debug notes, maps | `~/.jrdev/projects/<hash>/` | Only within that project's sessions, when used | None | Until `jrdev reset --project` | No |
-| Assessment attempts | `~/.jrdev/assessments/` | **No** in Phase 1; Phase 3+ only to the forked scorer if the learner opts in | Human scorer (blind) and a mentor via explicit export | 24 months, or until the learner deletes them | No |
-| Submitted assessment archives | Write-once (application-level), per-attempt keys, via a one-time token; executed only in the grading sandbox (5.5) | No | Human scorer | 24 months. **Deletion** goes through an authorized path that removes **all object versions** and checks at the storage-version level. Backups expire within 30 days (disclosed). The learner can keep the signed result **without** the archive, and it's then labelled "source deleted; graded bytes no longer retrievable" | No |
-| Feedback consent records and deletion receipts | jrdev DB | No | jrdev team | As long as the item exists | No |
-| Assessment exposure ledger | Assessment service (authoritative); local append-only cache | No | jrdev team (pseudonymous) | Same as assessment data; deleted with it (prior exposure then becomes "unknown") | No |
-| Pseudonym ↔ identity mapping | Separate restricted store | No | Study coordinator only | Study duration plus 12 months | No |
-| Feedback form | jrdev DB | Only if the submitter allows LLM processing | jrdev team | 24 months | Only as team-written paraphrased themes, or quotes with explicit consent |
-| Survey and interviews | jrdev DB / notes | Same opt-in rule | jrdev team | 24 months | Aggregates only |
-| Telemetry (opt-in, Phase 2+) | jrdev analytics | No | jrdev team | 12 months | Aggregates only |
-| Conversation transcripts | Not collected in Phases 1–2 | n/a | n/a | n/a | n/a |
-
-**Other rules:**
-- Behavior review uses **transcripts generated by the team**.
-- The hard-off setting disables telemetry and feedback prefill. It doesn't change injection, which section 6.2 covers.
-- Private feedback can reach a public issue or newsletter only with a recorded consent flag.
-
-**Acceptance:**
-- A sensitive identifier placed in a **mission, a goal title, an assessment summary and a project log** doesn't reach a different project's context unless that field was explicitly made global.
-- The context preview matches what was actually injected.
-- Declining every repo write leaves the worktree untouched.
-- With a pre-existing tracked `.jrdev/` log, jrdev warns and doesn't untrack it.
-- A committed `config.json` works as a team default.
-
----
-
-## 7. Public repository
-
-**Why public:**
-- Anyone can read every hook and script before installing.
-- Contributing is itself a learning path.
-- Feedback becomes visible and traceable.
-
-### 7.1 What lives where
-| Public repo | Private (never committed) |
+| Milestone | Must pass first |
 |---|---|
-| Plugin source, packs, tests | Raw feedback, survey responses, interview notes |
-| Research reports, review history, evidence ledger | Subscriber list |
-| Website content (and optionally code) | Pilot participant data (only aggregated, anonymized results get published) |
-| Public roadmap, changelog, `docs/data-flows.md` | Telemetry, any consented transcripts, secrets |
+| **End of Phase 0** | Prototype acceptance cases for the [three settings, command channel and recovery](specs/02-commands-and-policy.md), and for [task-scoped help stages and grants](specs/03-modes-and-workflows.md#typing-edit-policy-type-phase-1); interviews confirm the problem; the [Phase 1 decision rules](specs/07-evaluation-and-studies.md#studies-p-07) are frozen |
+| **Distributing the Phase 1 pilot build** | [Data-flow and privacy acceptance](specs/05-data-flows-and-privacy.md#data-flow-inventory); [independent verification and verify-before-enable](specs/06-repo-and-release-trust.md#release-trust-from-signing-to-verified-installation-p-09) |
+| **Collecting Phase 1 pilot data** | [Grading sandbox fixtures](specs/04-assessment-and-grading.md); [behavior-review oracle](specs/07-evaluation-and-studies.md#behavior-review-oracle-p3-02); [feedback consent and deletion lifecycle](specs/01-website-and-feedback.md#feedback-system) |
+| **First public update** | [Data-compatibility tests](specs/02-commands-and-policy.md#data-compatibility-across-versions-p3-01) |
+| **Phase 2 progress features** | [Review-item contract](specs/03-modes-and-workflows.md#learning-learningon-phase-1-minimal-phase-2-full); [narrow claims rules](specs/04-assessment-and-grading.md) |
+| **Distributing the pre-commit hook** | [Pre-commit acceptance cases](specs/03-modes-and-workflows.md#debug-workflow-phase-2) |
+| **Efficacy study** | Phase 1 gate says Proceed; [configuration protocol](specs/07-evaluation-and-studies.md#configuration-and-change-protocol-p3-08); preregistration |
 
-### 7.2 Layout (monorepo)
-```
-jrdev/
-├── .claude-plugin/marketplace.json   # entries pinned by git sha (7.4)
-├── plugins/jrdev/  plugins/packs/…
-├── community/                        # reviewed contributed packs
-├── research/  docs/  site/  tests/
-├── .github/{ISSUE_TEMPLATE,workflows,CODEOWNERS}
-└── CONTRIBUTING.md  CODE_OF_CONDUCT.md  SECURITY.md  LICENSE  README.md
-```
-
-### 7.3 Contribution and review
-- **First-time contributors:** "junior-friendly" issues that come with mentoring notes.
-- **PRs touching hooks, policy or scripts need:**
-  - decision-table tests
-  - a disclosure update (enforced/advisory and data-flow changes)
-  - a CODEOWNER review
-- **Community packs** go through a checklist before landing in `community/`:
-  - licence
-  - every file read
-  - no remote instruction fetching
-  - disclosed network use
-  - minimal permissions
-  - data-flow entry
-  - stated learning intent and limits
-- **`SECURITY.md`:** private advisories and a response-time target.
-
-### 7.4 Release trust: from signing to verified installation (P-09)
-- **Immutable identity:** each release has a **commit SHA**. Marketplace entries pin plugins by `sha` (Claude Code supports `ref`/`sha` pinning for git sources), so **a moved tag can't change what's installed**.
-- **Dependencies bundled** in `vendor/` with a lockfile. No install-time fetches beyond the pinned source.
-- **Version reporting and integrity checking are separate things (P2-08):**
-  - **Version reporting:** `jrdev verify-info` (bundled) prints the installed source and commit SHA. It's a **convenience only**: a tampered installation could make it print anything, so it's **never the check for a suspect install**.
-  - **Integrity manifest:** every release publishes `MANIFEST.sha256`, the SHA-256 of **every distributed file**: hooks, handlers, skills, output styles, `plugin.json`, libs, `vendor/` dependencies and the bundled `bin/` scripts, including the verifier.
-  - **Signing the manifest:** the manifest is signed, using Sigstore/cosign keyless signing tied to the repo's release workflow identity, or minisign with a published key.
-  - **Establishing trust:** the signing identity (workflow identity or key fingerprint) is published in the README, on the site and in `SECURITY.md`. Users pin it after first use.
-- **Independent verification procedure**, documented on the "Install & verify" page:
-  1. Locate the installed plugin directory in the plugin cache (`claude plugin details jrdev` shows its source; the exact cache path is **to be confirmed in Phase 0**).
-  2. Verify the manifest signature with **your own** `cosign` or `minisign`.
-  3. Run **your own** `sha256sum -c` (or `shasum -a 256 -c`) against the manifest, from inside the installed directory.
-  4. Report any extra or missing files: anything listed in neither direction fails.
-
-  The procedure **doesn't execute any bundled code** and **doesn't need git metadata** in the installed cache. A copied SHA label can't make altered file contents pass.
-- **We don't assume Claude Code verifies signatures at install.** If it ever does, we'll document it as an additional layer.
-- **Verify before any jrdev code runs (P5-01):**
-  - **Default off:** the plugin manifest sets **`defaultEnabled: false`**, so a fresh install is **installed but off** until `claude plugin enable`. Plugin hooks run only inside sessions in which the plugin is enabled.
-  - **First install:**
-    1. `claude plugin install jrdev@<marketplace>` (the plugin stays disabled).
-    2. Run the independent procedure above on the **installed on-disk copy**: signature, then `sha256sum -c`, then the extra and missing file check.
-    3. Only then run `claude plugin enable jrdev`.
-
-    No jrdev code runs before step 3. The `Setup` hook event doesn't fire on normal startup, and jrdev doesn't use it.
-  - **Updates:**
-    - **Keep marketplace auto-update off.** It's off by default for third-party marketplaces, and the install page says not to turn it on when manual verification is your trust mechanism.
-    - **Update flow:** `claude plugin disable jrdev`, update, verify the new on-disk copy, then `claude plugin enable jrdev`.
-    - **Don't run `/reload-plugins`** in a session until the new copy is verified.
-    - **Rollback** follows the same flow, pinned to the previous SHA.
-  - **Stated limitation:** Claude Code doesn't enforce this gate. It's a **documented procedure**. If a user turns on auto-update, an updated copy loads in the **next session without verification**, and jrdev can't prevent that from inside itself. The install page states this plainly.
-  - **Acceptance:**
-    - On a clean machine, an altered artifact detected in step 2 never reaches a jrdev handler, because the plugin stays disabled.
-    - After a valid install, change the marketplace SHA, then exercise update, reload and restart with the documented flow. New code is verified before it's enabled, and the auto-update caveat is shown.
-    - No bundled verifier is executed to decide whether the bundle is trusted.
-- **Updates and rollback:**
-  - An update is a marketplace change to a new SHA, announced in the changelog, and installed with the disable → update → verify → enable flow above.
-  - A rollback pins the previous SHA, using the same flow.
-  - Both paths are documented and tested.
-- **CI:**
-  - decision-table and hook tests on Linux and macOS
-  - a **clean-install test** that adds the marketplace, installs, runs every command and checks state and hook decisions
-  - a compatibility matrix against the supported Claude Code versions
-  - secret scanning, dependency audit, link check
-- **Acceptance:**
-  - a clean install shows the exact SHA
-  - re-pointing a tag doesn't alter an installation pinned by SHA
-  - update and rollback both work, including the bundled runtime
-  - the independent procedure **detects tampering** with a skill, a lib, a vendored dependency and the bundled verifier itself, and detects an added file
-
-### 7.5 GitHub as a feedback channel
-- **Issue templates:** "I got stuck" (no code), "too strict / too loose", "pack proposal", "bug". Each warns against pasting proprietary code or secrets.
-- **Discussions:** Q&A and learning tracks.
-- **Monthly triage** merges GitHub items with site feedback. Private feedback is never linked to public issues (3.3).
+**Survey responses are tracked but aren't a gate.** Demand is judged from interviews and pilot retention.
 
 ---
 
-## 8. Measuring whether it works
-
-| Question | Measure |
-|---|---|
-| Is it usable? | Setup completion, escape-hatch use, mode-off rate, "too strict / too easy", support requests |
-| Does the tutor behave? | Behavior-review checklist on team-generated transcripts (answer leakage, useful hints, escalation), **run in CI-like fashion after every model, prompt or version change, from Phase 1** |
-| Do learners improve independently? | **Assessed transfer** results (5.5), delayed 1–2 weeks; kept separate from coached practice and self-report |
-| Are we listening? | "You said → we did" items per quarter |
-
-### 8.1 Studies (P-07)
-- **Phase 1, formative pilot (feasibility only):**
-  - 8–12 learners from the target audience, 3–4 weeks.
-  - Outcomes: completion, frustration, escape-hatch use, support burden, and an **initial** delayed assessment.
-  - **No efficacy claims.**
-  - **Decision rules, fixed in the protocol before recruitment (P2-09):**
-    - **Owner:** the named product lead decides; the research owner co-signs.
-    - **Denominators:** everyone **enrolled** (consent signed), including people whose setup failed.
-    - **Deviations:** any change to these rules after recruitment starts is logged with a reason and reported. Results are never reinterpreted after the fact.
-
-| Measure | Operational definition | Proceed | Revise | Stop |
-|---|---|---|---|---|
-| Completion | Enrolled learners who use jrdev in ≥ 2 sessions per week for 3 weeks | ≥ 60% | 35–59% | < 35% |
-| Setup success | Enrolled learners with a working install by day 3 (staff help allowed, but counted below) | ≥ 80% | 60–79% | < 60% |
-| Support burden | **All** staff time per learner per week, including chat, calls and async replies, logged in a shared sheet | Median ≤ 30 min | 31–60 min | > 60 min |
-| Friction | Learners who turn `type` off for the rest of the pilot within week 1 | ≤ 25% | 26–50% | > 50% |
-| Answer leakage | Behavior review (8.2) on team transcripts plus learner reports. **Serious** = content above the recorded `help_stage` allowance. Inappropriate refusals and misleading hints are tracked as separate incident classes | 0 serious incidents outstanding (each serious incident needs a fix plus a passing regression check before proceeding) | Any serious incident fixed and re-tested | Repeated serious incidents not fixable by prompt or policy changes |
-| Initial delayed assessment | Finalized assessments taken (not scores; feasibility only) | ≥ 50% of completers | 25–49% | < 25% |
-
-  - **Overall decision:** *Stop* on any Stop cell; *Revise* on any Revise cell; *Proceed* only if all cells are Proceed. These thresholds are starting proposals and get **frozen** in the protocol before recruitment.
-- **Phase 3, efficacy study (only if Phase 1 passes its gate):**
-  - **Parallel allocation:** individuals randomized within one recruitment source, so cohorts aren't confounded by source.
-  - **Arms:** jrdev (Learning + Typing) vs. the **same AI tool without jrdev**.
-  - **Tasks:** fresh, comparable assessment tasks scored with a rubric, by **blinded assessors** where practical.
-  - **Follow-up:** 2 weeks after the intervention.
-  - **Primary outcome:** rubric score on fresh **assessed-transfer** tasks (5.5) 2 weeks after the intervention, scored by a team member who isn't involved in delivering the intervention and is blind to arm.
-  - **Assessment protocol is identical in both arms (P4-01):**
-    - Study assessments happen in a **hosted assessment workspace**: a browser-based editor and terminal with **no AI extensions** and network access limited to an allowlist of official docs.
-    - It's provisioned the same way for both arms and is **separate from the jrdev plugin**, so the comparator gets no tutoring or extra monitoring from it.
-    - The plugin's tool-check flag is **not used** in the study.
-  - **Scores and validity flags are kept separately:**
-    - **Primary analysis:** intention-to-treat on the **scores of all attempts**, whatever their flags.
-    - **Validity flags** (self-reported help, workspace anomalies such as a disconnected session) are recorded identically in both arms by an **arm-blind analyst** and used only in prespecified **sensitivity analyses**.
-    - **Missing attempts** are handled by the missing-outcome rules below. They're never excluded based on arm-specific signals.
-  - **Sample size:** set from the Phase 1 variance and a **precision target** (e.g. the confidence-interval width for the mean difference), or a power calculation if a meaningful effect size can be justified. If the required sample doesn't fit the capacity budget, the study is reduced to a pilot and labelled as such.
-  - **Analysis:** intention-to-treat. **Everyone randomized** is accounted for.
-    - **Missing delayed outcomes:** handled by multiple imputation under a stated assumption, with **sensitivity checks** (complete-case, plus best- and worst-case bounds).
-    - **Reporting:** dropouts are reported by arm, with reasons.
-    - **Secondary outcomes:** mentor ratings and debug-prediction accuracy are reported **separately** from the primary outcome.
-  - **Preregister** the protocol (e.g. OSF) before outcomes are observed.
-  - **Publish:** assignment, baseline differences, attrition, task conditions and uncertainty intervals. State which conclusions the design can't support. **An inconclusive result is never presented as "no difference".**
-- **Never** use PR counts or LOC as success metrics for individuals.
-
-### 8.2 Behavior-review oracle (P3-02)
-**Each scenario fixes** the workflow, the task, the `help_stage` and whether the learner authorized escalation. Responses are judged against the stage allowance:
-
-| Stage | Allowed | Not allowed |
-|---|---|---|
-| 0, no `/stuck` | Questions, conceptual hints, pointers to docs | Code for the target logic |
-| 1, hint | A more specific hint, naming the relevant API or concept | Pseudocode or code for the target |
-| 2, pseudocode | Pseudocode for the target | Runnable code for the target |
-| 3, partial snippet | A partial snippet (≤ ~5 lines, deliberately incomplete) | A complete solution |
-| 4, worked solution | A complete worked solution plus a walkthrough (logged as coached) | — |
-
-**Failure classes:**
-- **Serious leakage:** content above the current stage's allowance.
-- **Incorrect or misleading content:** a wrong hint, or one that steers the learner away from a working approach.
-- **Inappropriate refusal:** ignoring a valid `/stuck` escalation, or withholding what the current stage allows.
-
-**How reviews run:**
-- **Golden examples:** a reviewed set of acceptable and unacceptable responses per stage is kept in the repo.
-- **Repeats:** each scenario runs **5 times per configuration**. The gate uses incident counts across runs, so one favorable transcript can't decide a release.
-- **Acceptance:** the same worked solution **fails** when volunteered at stage 1 and **passes** at stage 4, while still being recorded as coached.
-
-### 8.3 Configuration and change protocol (P3-08)
-- **What a behavior review declares:** the configurations it covers (Claude Code version, model ID, plugin SHA, output style).
-- **Per-session log:** jrdev records the plugin SHA, settings and, where hook inputs expose them, the Claude Code version and model.
-- **Model changes:** `PostModelSwitch` events are logged. **A one-turn fallback model doesn't fire `PostModelSwitch`, so it can't be observed by jrdev**, and that limit is disclosed in study reports.
-- **During the efficacy study:**
-  - The plugin SHA and the model setting are **frozen for both arms** for the study window. Product iteration continues on a separate track.
-  - **Equal support:** no new modes or resources for either arm. Staff support follows a shared script, and every task-specific staff intervention is logged.
-  - **Safety-critical fixes** are allowed. They're logged as deviations, with a **prespecified** analysis: a sensitivity analysis that excludes post-change sessions.
-  - **Fidelity measures:** sessions run with `learning:on` and `edit:type`, `/stuck` usage per session, and support minutes per arm.
-  - **Published configurations:** the study lists the exact versions and configurations observed. It never implies identical AI conditions just because both arms used Claude Code.
-- **Acceptance:** simulate a model switch, a fallback, a plugin update and a staff intervention. Each produces the specified re-review, warning or deviation record.
-
-
----
-
-## 9. Roadmap (recut for validation first, P-06)
+## 5. Roadmap
 
 **Capacity assumption:** 1–2 people part-time. Fill in the budget table before Phase 0 ends:
 
@@ -815,19 +102,15 @@ jrdev/
 
 | Phase | Scope | Exit gate (proceed / revise / stop) |
 |---|---|---|
-| **0. Discovery + prototype** (~3–4 weeks) | Domain and trademark check. Public repo skeleton. Landing page + newsletter + feedback + privacy page. **Recruitment plan**: channels (bootcamps, Discord/Slack communities, university clubs, partner companies), incentives, consent forms. 10 junior + 5 mentor interviews. **Prototype:** command router + session state + Typing-mode decision table, tested from a clean install. **Interaction tests** cover the `UserPromptExpansion` command channel, the three-setting composition, recovery and one-call exception consumption **together** (5.1–5.4). Draft the behavior-review checklist and **freeze** the Phase 1 pilot protocol and decision rules (8.1) | **Proceed** if interviews confirm the "AI does it for me" difficulty as a top problem for the target audience *and* the prototype passes the 5.1–5.4 acceptance cases. **Revise** if the friction concept is rejected in interviews. **Stop or pivot** if neither holds |
-| **1. Narrow MVP + formative pilot** (~6–8 weeks) | **Claude Code only, one stack** (Python *or* JS). Edit policy `type` (explicit), `/jrdev:stuck` with one-call exceptions, minimal Learning profile, `jrdev assess` (outside the AI session; a small vetted task bank, blind human scoring), data-flow disclosure. Behavior-review regression **from the first release**. Formative pilot with 8–12 learners. Site: guides + catalog + install & verify. Newsletter every 2 weeks | Apply the **frozen decision table in 8.1**. Data-flow and privacy acceptance (6.3) and the independent verification procedure (7.4) must pass **before** the pilot build is distributed. No new modes until the gate says Proceed |
-| **2. Debug + full Learning** (~6–8 weeks) | Debug mode v1, FSRS reviews, progress report, a second stack, opt-in telemetry, research into the DAP option | Debug flow works end to end in two stacks. Second pilot round still passes the Phase 1 gates |
+| **0. Discovery + prototype** (~3–4 weeks) | Domain and trademark check. Public repo skeleton. Landing page + newsletter + feedback + privacy page. **Recruitment plan:** channels (bootcamps, Discord/Slack communities, university clubs, partner companies), incentives, consent forms. 10 junior and 5 mentor interviews. **Prototype:** command router, session state and the edit decision table, tested from a clean install, with interaction tests covering the command channel, the three settings, recovery and exception consumption together. Draft the behavior-review checklist and freeze the Phase 1 pilot protocol and decision rules | **Proceed** if interviews confirm the "AI does it for me" difficulty as a top problem for the target audience *and* the prototype passes its acceptance cases. **Revise** if the friction concept is rejected in interviews. **Stop or pivot** if neither holds |
+| **1. Narrow MVP + formative pilot** (~6–8 weeks) | **Claude Code only, one stack** (Python *or* JS). Edit policy `type`, `/jrdev:stuck` with one-call exceptions, a minimal Learning profile, `jrdev assess` (outside the AI session, with a small vetted task bank and blind human scoring; see decision 11), data-flow disclosure. Behavior-review regression **from the first release**. Formative pilot with 8–12 learners. Site: guides, catalog, install & verify. Newsletter every 2 weeks | Apply the [frozen decision table](specs/07-evaluation-and-studies.md#studies-p-07), plus the gates in section 4. No new modes until the gate says Proceed |
+| **2. Debug + full Learning** (~6–8 weeks) | Debug mode v1, FSRS reviews, progress report, a second stack, opt-in telemetry, research into the DAP option | Debug flow works end to end in two stacks. A second pilot round still passes the Phase 1 gates |
 | **3. Map + Test + efficacy study** (~8–10 weeks) | Map mode (static, labelled edges), Test mode (disposable fixtures, warnings, executed-lines view, optional tracing). Mentor/Team pack. Preregistered efficacy study | Study run and published as preregistered |
-| **4. Expand** | Other tools (honest per-tool enforcement labels), sandboxed test execution boundary, Debug v2, community packs | Each addition ships with its own acceptance checks |
-
-**Pre-pilot gates added by review round 3:** the grading sandbox (5.5), the behavior-review oracle (8.2) and the feedback consent and deletion lifecycle (3.3) must pass their acceptance checks before Phase 1 pilot data is collected. Data-compatibility tests (5.6) gate the first public **update**. The review-item contract (5.4) and the narrow claims rules (5.5) gate Phase 2 progress features. The pre-commit integration (5.4) gates its distribution. The configuration protocol (8.3) gates the efficacy study.
-
-**Survey responses are tracked but aren't a gate.** Demand is judged from interviews and pilot retention.
+| **4. Expand** | Other tools (with honest per-tool enforcement labels), a sandboxed test execution boundary, Debug v2, community packs | Each addition ships with its own acceptance checks |
 
 ---
 
-## 10. Risks and mitigations
+## 6. Risks and mitigations
 | Risk | Mitigation |
 |---|---|
 | Friction makes learners turn modes off | Explicit opt-in mode, scoped stuck exceptions, formative pilot before expanding |
@@ -843,7 +126,7 @@ jrdev/
 
 ---
 
-## 11. Open decisions (need your input)
+## 7. Open decisions (need your input)
 1. **Tool order:** Claude Code only for Phases 1–2 (proposed).
 2. **First stack:** Python or JavaScript for Phase 1?
 3. **Business model:** free/OSS, freemium (team features), or sponsorship?
@@ -853,4 +136,34 @@ jrdev/
 7. **Brand:** test "jrdev" with the target audience, since it could feel patronizing.
 8. **GitHub org and repo name**, and whether the site code is public.
 9. **Research history:** publish all review rounds as they are, or an evidence ledger plus a link to the history.
-10. **Capacity budget:** fill in the table in section 9.
+10. **Capacity budget:** fill in the table in [Roadmap](#5-roadmap).
+11. **Phase 1 assessment scope:** use the full assessment service (signed results, write-once storage, environment images) in Phase 1, or a **manual** process for the small formative pilot (one scorer, a hash log, emailed submissions) and build the service before the efficacy study? *(Recommended: manual for Phase 1.)*
+
+---
+
+## Review history
+
+| Round | Findings | File |
+|---|---|---|
+| 1 | P-01 to P-10 | [adversarial-review.md](adversarial-review.md) |
+| 2 | P2-01 to P2-09 | [adversarial-review-round-2.md](adversarial-review-round-2.md) |
+| 3 | P3-01 to P3-09 | [adversarial-review-round-3.md](adversarial-review-round-3.md) |
+| 4 | P4-01 to P4-07 | [adversarial-review-round-4.md](adversarial-review-round-4.md) |
+| 5 | P5-01 to P5-06 | [adversarial-review-round-5.md](adversarial-review-round-5.md) |
+
+Each spec's header lists the findings it addresses, and the finding IDs appear in the relevant headings.
+
+**Section map:** the reviews cite section numbers of the old single-file plan. Here is where each one lives now.
+
+| Old section | Now |
+|---|---|
+| 1 Mission and principles, 2 Product surfaces, 4 Skills and packs | This overview (sections 1–2) |
+| 3 Website (3.1–3.4) | [specs/01](specs/01-website-and-feedback.md) |
+| 5.1–5.3 Settings, commands, state and recovery | [specs/02](specs/02-commands-and-policy.md) |
+| 5.4 Modes and workflows (pending items moved to specs/02) | [specs/03](specs/03-modes-and-workflows.md) |
+| 5.5 Evidence and assessment | [specs/04](specs/04-assessment-and-grading.md) |
+| 5.6 Data compatibility, 5.7 Technical layout | [specs/02](specs/02-commands-and-policy.md) |
+| 6 Data flows and privacy (6.1–6.3) | [specs/05](specs/05-data-flows-and-privacy.md) |
+| 7 Public repository (7.1–7.5) | [specs/06](specs/06-repo-and-release-trust.md) |
+| 8 Measuring, studies, oracle, configuration (8.1–8.3) | [specs/07](specs/07-evaluation-and-studies.md) |
+| 9 Roadmap, 10 Risks, 11 Open decisions | This overview (sections 4–7) |
