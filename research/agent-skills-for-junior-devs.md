@@ -1,6 +1,6 @@
 # Agent Skills With Possible Value for Junior Developers
 
-*Compiled 2026-10-01 and revised the same day after three adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md), [round 3](adversarial-review-round-3.md)). Companion to [ai-for-junior-devs.md](ai-for-junior-devs.md).*
+*Compiled 2026-10-01 and revised the same day after four adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md), [round 3](adversarial-review-round-3.md), [round 4](adversarial-review-round-4.md)). Companion to [ai-for-junior-devs.md](ai-for-junior-devs.md).*
 
 "Skills" here means **agent skills**: `SKILL.md` folders and plugins for Claude Code, plus similar mechanisms in Copilot, Codex and other tools.
 
@@ -36,7 +36,9 @@ In the [study](ai-for-junior-devs.md#b-interaction-patterns-associated-with-bett
 | **Generate, then comprehend:** *the learner* asks follow-up questions about generated code | Any assistant; `quiz-me` can prompt the follow-up step | `quiz-me` *reverses* the actor: the agent asks. That is related, but it's not what the study observed. |
 
 ### B. Additional proposed supports (not among the patterns the study observed)
-These come from wider pedagogy and engineering practice. A **Socratic tutor that questions the learner** is a *related* design idea, supported in other domains by the safeguarded-tutor results in math and physics ([see report 1](ai-for-junior-devs.md#1-what-the-evidence-says)). It is not a direct implementation of "conceptual inquiry".
+These come from wider pedagogy and engineering practice. Structured tutoring has promising evidence in math and physics ([see report 1](ai-for-junior-devs.md#1-what-the-evidence-says)). A **Socratic tutor that questions the learner** is one proposed way to implement it. Those studies evaluated whole tutoring packages: they **don't isolate** what Socratic questioning contributes, and they didn't test the skills listed here. It is also not a direct implementation of "conceptual inquiry". Treat these candidates as hypotheses to pilot.
+
+In programming education specifically, CS50's tutor is instructed not to give solutions, yet about 22% of its responses and 48% of conversations contained code blocks ([Liu et al., SIGCSE 2025](https://cs.harvard.edu/malan/publications/fp0627-liu.pdf)). **Prompts alone don't guarantee tutoring behavior.** Whatever you pilot, check it with conversation review (see [section 7](#7-example-starter-setups-adapt-start-small)).
 
 | Proposed support | What the skill is designed to do | Candidate skills |
 |---|---|---|
@@ -204,6 +206,13 @@ Begin with **one tutoring workflow and one independent check**. Add more only if
 
 **For teams:** keep an internal list of approved skills, pinned to reviewed versions. Consider making the Learning output style the *default* (not mandatory) for people new to an area. Treat skill output as material for mentoring conversations, not as a substitute for them.
 
+**Check tutoring behavior, not just intent.** For any tutoring skill or Learning-style setup you roll out, periodically review a small sample of real conversations (with consent and in line with privacy policy). Look for:
+- **Answer leakage:** full solutions where hints were intended. Define in advance which code examples are acceptable.
+- **Useful hints:** do they move the learner forward?
+- **Escalation:** does the learner get enough help, or a human, when truly stuck?
+
+Repeat after any model, prompt or skill-version change. CS50 found code-block rates *rose* after a model switch. This checks behavior. It does not measure learning outcomes.
+
 ---
 
 ## 8. Installing and running skills safely
@@ -260,6 +269,7 @@ Begin with **one tutoring workflow and one independent check**. Add more only if
 - [trailofbits/skills](https://github.com/trailofbits/skills)
 - [codebase-onboarding (everything-claude-code)](https://github.com/affaan-m/everything-claude-code/blob/main/skills/codebase-onboarding/SKILL.md) · [borghei/Claude-Skills](https://github.com/borghei/Claude-Skills/blob/main/engineering/codebase-onboarding/SKILL.md)
 - [LACY (FSE 2026)](https://arxiv.org/abs/2603.25391)
+- [Liu et al.: Improving AI in CS50 (SIGCSE 2025)](https://cs.harvard.edu/malan/publications/fp0627-liu.pdf)
 - [Snyk ToxicSkills study](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/)
 - [Claude Code skills docs](https://code.claude.com/docs/en/skills) · [Claude Code best practices](https://code.claude.com/docs/en/best-practices)
 - [Firecrawl: 14 best Claude Code skills](https://www.firecrawl.dev/blog/best-claude-code-skills)
