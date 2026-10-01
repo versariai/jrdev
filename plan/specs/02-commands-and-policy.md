@@ -1,6 +1,6 @@
 # Plugin commands, state and edit policy
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.1–5.3, 5.6, 5.7 and part of 5.4. Review findings addressed here: P-04, P-05, P-10, P2-01, P2-03, P2-04, P3-01, P4-04, P5-02. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.1–5.3, 5.6, 5.7 and part of 5.4. Review findings addressed here: P-04, P-05, P-10, P2-01, P2-03, P2-04, P3-01, P4-04, P5-02, P6-04. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates:** the Phase 0 prototype must pass the acceptance cases for the three settings, the command channel and the recovery paths. Data-compatibility tests gate the first public **update**.
 
@@ -153,14 +153,52 @@ In each case a second session stays active, its policy and pending records are u
 
 In every case, records are preserved, recovery works, and evidence categories are unchanged.
 
+## Interface registry (P6-04)
+**This table is the single source of truth** for every command and hook the plugin registers. The layout below is derived from it.
+
+- **Clean-install check:** enumerates this registry and invokes every row active in the current phase.
+- **Review rule:** spec reviews compare each consumer spec against it, so a missing entry fails review.
+- **Minimum client versions:** recorded per row during the Phase 0 prototype ("TBD" until then).
+
+### Commands
+| Command | Kind | Implemented in | Consumers | Phase |
+|---|---|---|---|---|
+| `/jrdev:setup` | Skill (user) | `skills/setup` + `UserPromptExpansion` handler | specs 02, 05 | 1 |
+| `/jrdev:type on\|off` | Skill (user only) | `skills/type` + expansion handler | specs 02, 03 | 0 (prototype), 1 |
+| `/jrdev:workflow …` | Skill (user only) | `skills/workflow` + expansion handler | specs 02, 03 | 2 |
+| `/jrdev:learn on\|off` | Skill (user only) | `skills/learn` + expansion handler | specs 02, 03 | 1 |
+| `/jrdev:off` | Skill (user only) | `skills/off` + expansion handler | spec 02 | 0, 1 |
+| `/jrdev:task start\|done` | Skill (user only) | `skills/task` + expansion handler | spec 03 (help stages, grants), spec 07 (oracle fixtures) | 0, 1 |
+| `/jrdev:stuck` | Skill (user only) | `skills/stuck` + expansion handler | specs 03, 07 | 0, 1 |
+| `/jrdev:status [--context]` | Skill (user or model) | `skills/status` | specs 02, 05 | 0, 1 |
+| `/jrdev:feedback` | Skill (user or model) | `skills/feedback` | spec 01 | 1 |
+| `/jrdev:debug`, `/jrdev:map`, `/jrdev:test` | Skills (workflow guides) | `skills/{debug,map,test}` | spec 03 | 2–3 |
+| `jrdev off [--session\|--latest]`, `jrdev on --global` | CLI (POSIX sh, TTY-confirmed) | `bin/jrdev` | spec 02 | 0, 1 |
+| `jrdev assess start\|submit [--manual]` | CLI | `bin/jrdev` | specs 04, 05 | 1 (manual), 3 (service) |
+| `jrdev migrate`, `jrdev restore`, `jrdev reset`, `jrdev projects`, `jrdev verify-info` | CLI | `bin/jrdev` | specs 02, 05, 06 | 1+ |
+
+### Hook events
+| Event | Matcher | Handler responsibility | Consumers | Phase |
+|---|---|---|---|---|
+| `SessionStart` | — | Inject minimal context, re-inject task, stage and grant state, surface pending items, health check | specs 02, 03, 05 | 0, 1 |
+| `UserPromptExpansion` | `jrdev:*` commands | **Trusted state changes**, grant creation | specs 02, 03 | 0, 1 |
+| `UserPromptSubmit` | — | Mark stage-4 grants consumed on the next prompt | spec 03 | 0, 1 |
+| `PreToolUse` | `Edit\|Write\|MultiEdit\|NotebookEdit` | Edit decision table, one-call exceptions | specs 02, 03 | 0, 1 |
+| `PreToolUse` | `Bash` | Write-pattern seatbelt, control-path protection | spec 02 | 0, 1 |
+| `PreToolUse` | `Skill` | Deny model invocation of user-only commands | spec 02 | 0, 1 |
+| `Stop` | — | One reminder for pending items | specs 02, 03 | 1 |
+| `PostModelSwitch` | — | Log model changes for configuration records | spec 07 | 1 (logging), 3 (study) |
+| `DirectoryAdded` | — | Record the added root; **don't** inject its private context; recommend a fresh session | spec 05 | 1 |
+
 ## Technical layout
+*Derived from the [interface registry](#interface-registry-p6-04). If the two disagree, the registry wins.*
 ```
 plugins/jrdev/
   .claude-plugin/plugin.json
-  hooks/hooks.json             # SessionStart, UserPromptSubmit, UserPromptExpansion, PreToolUse(Edit|Write|MultiEdit|NotebookEdit|Bash|Skill), Stop
+  hooks/hooks.json             # SessionStart, UserPromptSubmit, UserPromptExpansion, PreToolUse(Edit|Write|MultiEdit|NotebookEdit|Bash|Skill), Stop, PostModelSwitch, DirectoryAdded
   hooks/handlers/              # policy engine (edit decision table), state I/O with locking, exception reservations
-  skills/{setup,type,workflow,learn,off,stuck,status,feedback,debug,map,test}/SKILL.md
-  bin/jrdev                    # POSIX sh: off, status, assess, verify-info (no runtime dependency for off)
+  skills/{setup,type,workflow,learn,off,task,stuck,status,feedback,debug,map,test}/SKILL.md
+  bin/jrdev                    # POSIX sh: off, on --global, status, assess, migrate, restore, reset, projects, verify-info (no runtime dependency for off/on)
   output-styles/jrdev-coach.md
   lib/{profile,policy,analysis}/
   vendor/                      # bundled deps, lockfile-pinned

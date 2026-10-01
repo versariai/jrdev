@@ -1,6 +1,6 @@
 # Public repository and release trust
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 7. Review findings addressed here: P-09, P2-08, P5-01. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 7. Review findings addressed here: P-09, P2-08, P5-01, P6-02. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates:** the independent verification procedure and the verify-before-enable flow must pass before the Phase 1 pilot build is distributed.
 
@@ -63,7 +63,22 @@ jrdev/
   The procedure **doesn't execute any bundled code** and **doesn't need git metadata** in the installed cache. A copied SHA label can't make altered file contents pass.
 - **We don't assume Claude Code verifies signatures at install.** If it ever does, we'll document it as an additional layer.
 - **Verify before any jrdev code runs (P5-01):**
-  - **Default off:** the plugin manifest sets **`defaultEnabled: false`**, so a fresh install is **installed but off** until `claude plugin enable`. Plugin hooks run only inside sessions in which the plugin is enabled.
+  - **Default off:** the plugin manifest sets **`defaultEnabled: false`**, and so does **our marketplace entry**. A marketplace entry's value overrides the manifest's, so both are set. Plugin hooks run only inside sessions in which the plugin is enabled.
+  - **Default-off only holds on supported routes (P6-02).** Claude Code's documented exceptions are:
+    - a marketplace entry can override the default
+    - an existing `enabledPlugins` choice persists
+    - a plugin that an enabled plugin **depends on** starts enabled regardless
+
+    So the verification flow is supported **only** when **all** of these hold:
+    - jrdev is installed **directly from the jrdev marketplace**, whose entry sets `defaultEnabled: false`
+    - **no** `enabledPlugins` entry for jrdev is `true` in user, project or local settings. The **pre-flight** on the install page checks this by running `claude plugin list` and reading the settings files. If an entry exists, run `claude plugin disable jrdev@<marketplace>` first
+    - jrdev is **not** installed as a dependency of another plugin. jrdev declares no dependents, and installing it as someone else's dependency is an **unsupported route**, as the install page says
+  - **Alternative staging, for any route we can't confirm:** verify **before installing**.
+    1. `git clone` the marketplace repo at the pinned SHA, with no Claude Code involved.
+    2. Verify the signed manifest against the clone.
+    3. Register that **verified local clone** as the marketplace (`claude plugin marketplace add ./verified-clone`) and install from it.
+    4. Confirm `claude plugin list` shows jrdev **disabled**, and re-verify the installed copy.
+    5. Enable it.
   - **First install:**
     1. `claude plugin install jrdev@<marketplace>` (the plugin stays disabled).
     2. Run the independent procedure above on the **installed on-disk copy**: signature, then `sha256sum -c`, then the extra and missing file check.
@@ -80,6 +95,10 @@ jrdev/
     - On a clean machine, an altered artifact detected in step 2 never reaches a jrdev handler, because the plugin stays disabled.
     - After a valid install, change the marketplace SHA, then exercise update, reload and restart with the documented flow. New code is verified before it's enabled, and the auto-update caveat is shown.
     - No bundled verifier is executed to decide whether the bundle is trusted.
+    - **Route matrix (P6-02):** test a clean direct install, a conflicting marketplace default, a retained `enabledPlugins: true`, and installation as an enabled plugin's dependency.
+      - **Instrumentation:** a test build's handlers write a marker file when they run.
+      - **Supported routes** must produce **zero** markers before verification and enable.
+      - **Unsupported routes** must be detected by the pre-flight **before** installation, not covered by a blanket promise.
 - **Updates and rollback:**
   - An update is a marketplace change to a new SHA, announced in the changelog, and installed with the disable → update → verify → enable flow above.
   - A rollback pins the previous SHA, using the same flow.

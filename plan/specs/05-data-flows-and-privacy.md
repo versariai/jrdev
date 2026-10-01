@@ -1,6 +1,6 @@
 # Data flows and privacy
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 6. Review findings addressed here: P-03, P2-06, P2-07, P4-06. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 6. Review findings addressed here: P-03, P2-06, P2-07, P4-06, P6-01. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates:** data-flow and privacy acceptance must pass before the Phase 1 pilot build is distributed.
 
@@ -62,6 +62,11 @@
 | Feedback consent records and deletion receipts | jrdev DB | No | jrdev team | As long as the item exists | No |
 | Assessment exposure ledger | Assessment service (authoritative); local append-only cache | No | jrdev team (pseudonymous) | Same as assessment data; deleted with it (prior exposure then becomes "unknown") | No |
 | Pseudonym ↔ identity mapping | Separate restricted store | No | Study coordinator only | Study duration plus 12 months | No |
+| **Phase 1 manual route:** exposure sheet | Private spreadsheet (coordinator) | No | Coordinator | Pilot duration plus 6 months; deleted on request (exposure then becomes "unknown") | No |
+| **Phase 1 manual route:** drop-folder uploads | Upload-only, per-pseudonym file-request folder | No | Coordinator | Emptied as soon as transfer to the grading host is confirmed | No |
+| **Phase 1 manual route:** custody log and pilot scores | Private sheet (coordinator, scorer) | No | Coordinator, scorer (pseudonymous) | Pilot duration plus 6 months; deleted on request | No |
+| **Phase 1 manual route:** archives on the grading host | Grading host only (never on personal machines) | No | Scorer (pseudonymous) | Deleted after scoring plus the appeal window (30 days); deleted on request | No |
+| **Phase 1 manual route:** coordinator messages (task codes, hashes, results) | Coordinator's chat or mail account | No | Coordinator | Deleted at pilot end; deleted on request | No |
 | Feedback form | jrdev DB | Only if the submitter allows LLM processing | jrdev team | 24 months | Only as team-written paraphrased themes, or quotes with explicit consent |
 | Survey and interviews | jrdev DB / notes | Same opt-in rule | jrdev team | 24 months | Aggregates only |
 | Telemetry (opt-in, Phase 2+) | jrdev analytics | No | jrdev team | 12 months | Aggregates only |

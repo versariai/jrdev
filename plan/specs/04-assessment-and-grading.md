@@ -1,8 +1,12 @@
 # Evidence, assessment and grading
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.5. Review findings addressed here: P-02, P2-02, P3-04, P3-09, P4-02, P4-07, P5-04, P5-05, P5-06. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.5. Review findings addressed here: P-02, P2-02, P3-04, P3-09, P4-02, P4-07, P5-04, P5-05, P5-06, P6-01, P6-06. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
-**Gates:** the grading sandbox fixtures must pass before any pilot submission is executed. The narrow-claims rules gate Phase 2 progress features.
+**Gates:** the grading sandbox fixtures must pass before any pilot submission is executed, on **both** routes. The Phase 1 manual route must pass its trace test before the pilot opens. The narrow-claims and eligibility rules gate Phase 2 progress features.
+
+**Two routes (decision 11, resolved 2026-10-01):**
+- **Phase 1 uses the [manual route](#phase-1-manual-route-p6-01)**, sized for 8–12 learners and 1–2 part-time people.
+- **The service route** (everything from "Service route" onward) is built **before the Phase 3 efficacy study**. The service-only guarantees are explicitly **deferred**, not approximated: one-time upload tokens, write-once storage, signed finalization and the server-side exposure ledger.
 
 ---
 
@@ -12,9 +16,84 @@
 |---|---|---|
 | **Coached practice** | Any work in a tutored session, including Typing exercises, hints, escalations and visible solutions | "Practised" |
 | **Self-reported independent** | Learner statement | Nothing; shown separately and labelled as self-report |
-| **Assessed transfer** | Only a **finalized** assessment (below) | "Demonstrated" |
+| **Pilot-scored** | A Phase 1 manual-route assessment, scored blind but **not signed** | Nothing in the product; shown as "Pilot assessment (manually scored)". Used for the pilot's feasibility measures |
+| **Assessed transfer** | Only a **finalized, signed** service-route assessment that is **eligible as independent evidence** ([rules](#result-fields-and-eligibility-p6-06)) | "Demonstrated" |
 
-**Phase 1: assessments run outside the AI session**, so the tutor can't leak hints and no model grades the work:
+## Phase 1 manual route (P6-01)
+**What it is:** the same learner experience (`jrdev assess start` / `submit`, a minimal payload, blind scoring in the sandbox), but with **people and a few simple tools** instead of the assessment service.
+
+**Roles:**
+- **Coordinator:** holds the pseudonym ↔ identity mapping, assigns tasks, and moves archives to the grading host.
+- **Scorer:** sees only pseudonyms and archives. The coordinator and scorer are **different people**. If the team has only one person, blinding is **not possible**, and the pilot report says so.
+
+**Lifecycle:**
+1. **Assignment and exposure:**
+   - The coordinator assigns tasks from the vetted bank using an **exposure sheet** (a private spreadsheet keyed by pseudonym: task, version, date served).
+   - A task already in a learner's row is never served as fresh.
+   - The sheet is the authoritative exposure record for Phase 1. Local `jrdev restore` can't touch it.
+2. **Starting:** `jrdev assess start --manual <task-code>` creates the scratch directory, using the task code the coordinator sent. Public tests and the task text ship in the task package. Hidden tests and reference solutions stay on the grading host.
+3. **Submitting:**
+   - `jrdev assess submit --manual` builds the archive with the **same minimal-payload rules** as the service route: manifest-only files, metadata stripped, a secret-pattern warning and a confirmed file list.
+   - It prints the archive's SHA-256.
+   - It writes the "I used no AI or other help" answer into `meta.json`, which contains only the pseudonym and task code.
+4. **Transfer, never by email:**
+   - The learner uploads the archive to a **per-pseudonym, upload-only file-request link**, such as a cloud-drive file request, where uploaders can't see other files.
+   - The learner also sends the hash shown in step 3 through the same form, if it supports a text field, or otherwise in a separate message to the coordinator.
+5. **Custody:**
+   - The coordinator moves each archive from the drop folder to the grading host and records it in a **custody log**: pseudonym, task code, SHA-256 on receipt, SHA-256 on the grading host, and timestamps.
+   - **A hash mismatch stops the attempt.**
+   - **Nothing is downloaded to personal machines.** The drop folder is emptied once transfer is confirmed.
+6. **Scoring:**
+   - The scorer runs the hidden tests in the **same grading sandbox** (see [Grading environment](#grading-environment-both-routes-p3-09)) and applies the rubric, blind to identity.
+   - The result goes into the custody log as `pilot-scored`, together with the rubric version and grader image.
+7. **What the learner sees:** the coordinator returns pass/fail counts and the rubric band. The result shows in the learner's progress view as "Pilot assessment (manually scored)", with **no "verified" badge**.
+
+**Deletion:**
+- **Who deletes what:** on request, the coordinator removes the learner's archives from the drop folder and the grading host, their rows in the exposure sheet and custody log, and the mapping entry.
+- **Backups:** retention for the drive and host backups is documented (target: 30 days).
+- **What happens to exposure:** deleted exposure becomes "unknown" if the learner rejoins.
+
+**What a manual result can and can't support:**
+- **Can support:** pilot feasibility measures (assessments taken, completion) and the scorer's qualitative notes.
+- **Can't support:**
+  - it never becomes "assessed transfer" evidence
+  - it raises no demonstrated level
+  - it's never presented as signed or verified
+
+**Acceptance (trace test before the pilot opens):** run one synthetic attempt end to end: assignment, start, submit, upload, custody, sandboxed scoring, the result shown to the learner, its count in the pilot denominator, and deletion.
+- **Copies:** every identity-bearing copy has a named owner and retention rule. These are the mapping, the drop-folder upload, the coordinator's messages and the grading-host files.
+- **Mismatches:** a hash mismatch stops the attempt.
+- **Blinding:** the scorer never sees identity.
+
+## Result fields and eligibility (P6-06)
+Every scored attempt, on either route, stores **three separate properties**:
+
+| Field | Values | Meaning |
+|---|---|---|
+| `finalization` | `pilot-scored` · `finalized-signed` | How authoritative the score is (route-dependent) |
+| `assistance_status` | `none-reported` · `self-reported-help` · `tool-flag` · `monitoring-unavailable` | What we know about help during the attempt |
+| `eligible_independent` | `true` / `false`, with a reason | Whether it can count as independent evidence |
+
+**What counts as a tool flag:** a jrdev hook recorded a tool call whose `cwd` or target path was **inside the attempt's scratch directory** during the attempt window. That says AI tooling touched the attempt; it **doesn't prove** the help was material.
+
+**Eligibility rule:**
+- **Eligible:** `eligible_independent = true` only if **all** of these hold:
+  - `finalization = finalized-signed`
+  - `assistance_status` is `none-reported` or `monitoring-unavailable`
+  - freshness is **known**
+- **Precludes eligibility:** `self-reported-help` and `tool-flag`. The score and provenance are kept and shown.
+- **Discloses uncertainty only:** `monitoring-unavailable` (jrdev not installed, or hooks not running). The claim shows a "help monitoring unavailable" note.
+- **Not eligible yet:** manual-route results (`pilot-scored`).
+
+**Study results:**
+- Study analysis follows its own protocol ([evaluation & studies](07-evaluation-and-studies.md)): **all** attempted scores are used, whatever these fields say.
+- Study results are **not** automatically imported as product achievements. Importing one requires the learner's consent, and the attempt must pass this eligibility rule.
+
+**Acceptance:** assisted, tool-flagged, clean and monitoring-unavailable attempts all keep their scores and provenance. Only eligible ones raise independent evidence. The study's all-attempt analysis is unaffected.
+
+## Service route (built before the Phase 3 efficacy study)
+
+**Assessments run outside the AI session**, so the tutor can't leak hints and no model grades the work:
 1. **Start:** `jrdev assess start <topic>` in a plain terminal.
    - The **assessment service** picks a task from a vetted bank that this learner **hasn't been exposed to before**, according to an exposure ledger (see below).
    - Creates a scratch directory **outside** any repo, records the start time and the allowed resources (e.g. official docs only), and prints the task.
@@ -86,7 +165,8 @@
 - A restart always uses a **new** task, and the exposure log is updated.
 - **Delay doesn't establish novelty.** Novelty comes from the exposure log.
 
-**Grading environment (P3-09), required before any pilot submission is executed:**
+## Grading environment, both routes (P3-09)
+**Required before any pilot submission is executed**, on the manual route as well as the service route:
 - **Where it runs:** a dedicated grading host (a VM or CI runner) with **no credentials or personal files**, separate from scorer workstations. Scorers view results; they don't run submissions on their own machines.
 - **One disposable container per submission:**
   - no network (`--network none`)
@@ -99,7 +179,7 @@
   - Hidden tests are mounted read-only for the run. **Reference solutions are never mounted.**
   - The learner receives only pass/fail counts and the names of public tests. Full output stays with the scorer and is reviewed before anything is shared.
   - Any task whose hidden tests could have leaked through returned output is marked **exposed** and retired from fresh-task selection.
-- **Transfer:** `jrdev assess submit` uploads the archive over HTTPS with a one-time token to write-once storage (see above). The storage is listed in the data-flow inventory ([data flows & privacy: data-flow inventory](05-data-flows-and-privacy.md#data-flow-inventory)).
+- **Transfer:** on the service route, `jrdev assess submit` uploads over HTTPS with a one-time token to write-once storage (see above). On the manual route it goes through the upload-only drop folder and the custody log ([manual route](#phase-1-manual-route-p6-01)). The storage is listed in the data-flow inventory ([data flows & privacy: data-flow inventory](05-data-flows-and-privacy.md#data-flow-inventory)).
 - **SHA pinning of the plugin says nothing about participant code.** This boundary is what protects the scorer.
 - **Acceptance fixtures**, which must pass before the pilot:
   - external network access
@@ -111,7 +191,7 @@
 
   Each must be contained or terminated, leave the next run clean, and leak no reference answer through logs or diagnostics.
 
-**What a passed assessment claims (P3-04):**
+## What a passed assessment claims (P3-04)
 - **Narrow skill IDs:**
   - Assessments map to **narrow skill IDs** (e.g. `python.exceptions.handling`), declared per task.
   - A task can raise only the skill IDs it declares, and only through an explicit, documented mapping. **Umbrella labels like "backend" or "debugging" are never raised by a single task.**

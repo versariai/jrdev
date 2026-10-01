@@ -1,6 +1,6 @@
 # jrdev.ai: Product Plan (overview)
 
-*Draft, 2026-10-01. This is the **overview**. Detailed designs live in [`specs/`](specs/), one file per area. Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md). The plan went through five adversarial review rounds; see [Review history](#review-history).*
+*Draft, 2026-10-01. This is the **overview**. Detailed designs live in [`specs/`](specs/), one file per area. Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md). The plan went through six adversarial review rounds; see [Review history](#review-history).*
 
 ## 1. Mission and principles
 
@@ -65,7 +65,7 @@ Public GitHub repo (github.com/<org>/jrdev)
 | [01 · Website, newsletter and feedback](specs/01-website-and-feedback.md) | Site pages, newsletter, feedback inputs, the monthly loop, consent and deletion lifecycle, triage, stack | Feedback is LLM-processed only with consent, checked when each job runs; deletion receipts for anonymous items; the themes board shows its evidence basis, not raw counts |
 | [02 · Commands, state and edit policy](specs/02-commands-and-policy.md) | Three independent settings, the command contract, the trusted `UserPromptExpansion` channel, state layers, the edit decision table, recovery, pending items, data compatibility, layout | Only the edit policy is enforced; the model can't change state through tested paths; recovery works without the runtime; older versions degrade safely |
 | [03 · Modes and workflows](specs/03-modes-and-workflows.md) | Typing (`/stuck` stages, task scope, one-call exceptions, stage-4 grants), Learning (FSRS item contract), Debug (pre-commit marker check), Map, Test | Help stages advance only through user commands and are bound to tasks; reviews are recall practice; Map and Test outputs are labelled honestly |
-| [04 · Evidence, assessment and grading](specs/04-assessment-and-grading.md) | Evidence categories, assessments outside the AI session, submission identity, signed finalization, exposure ledger, grading sandbox, narrow claims | Only finalized, blind-scored assessments count as demonstrated ability; untrusted code runs only in a disposable sandbox |
+| [04 · Evidence, assessment and grading](specs/04-assessment-and-grading.md) | Evidence categories, the Phase 1 manual route, result eligibility, the service route (Phase 3), assessments outside the AI session, submission identity, signed finalization, exposure ledger, grading sandbox, narrow claims | Only finalized, blind-scored assessments count as demonstrated ability; untrusted code runs only in a disposable sandbox |
 | [05 · Data flows and privacy](specs/05-data-flows-and-privacy.md) | Storage locations, project identity, what reaches the AI provider, the data-flow inventory | No private records in the worktree; minimal, previewable injection; a per-field inventory |
 | [06 · Public repository and release trust](specs/06-repo-and-release-trust.md) | Public vs. private, monorepo layout, contribution review, signed manifests, verify-before-enable, CI, GitHub feedback | `defaultEnabled: false` plus independent verification before any jrdev code runs; auto-update off |
 | [07 · Evaluation, behavior review and studies](specs/07-evaluation-and-studies.md) | Measures, the Phase 1 decision table, the efficacy study design, the behavior-review oracle, the configuration protocol | Decision rules are frozen before recruitment; study assessments are symmetric across arms; models and versions are frozen during the study |
@@ -78,13 +78,14 @@ Each gate must pass before the milestone it guards. Details and acceptance cases
 
 | Milestone | Must pass first |
 |---|---|
+| **Opening any data collection** (newsletter, feedback form, survey, interviews, from Phase 0) | That channel's [consent and deletion checks](specs/01-website-and-feedback.md#per-channel-readiness-p6-03) pass on team fixtures **before its first real participant or subscriber** (P6-03) |
 | **End of Phase 0** | Prototype acceptance cases for the [three settings, command channel and recovery](specs/02-commands-and-policy.md), and for [task-scoped help stages and grants](specs/03-modes-and-workflows.md#typing-edit-policy-type-phase-1); interviews confirm the problem; the [Phase 1 decision rules](specs/07-evaluation-and-studies.md#studies-p-07) are frozen |
-| **Distributing the Phase 1 pilot build** | [Data-flow and privacy acceptance](specs/05-data-flows-and-privacy.md#data-flow-inventory); [independent verification and verify-before-enable](specs/06-repo-and-release-trust.md#release-trust-from-signing-to-verified-installation-p-09) |
-| **Collecting Phase 1 pilot data** | [Grading sandbox fixtures](specs/04-assessment-and-grading.md); [behavior-review oracle](specs/07-evaluation-and-studies.md#behavior-review-oracle-p3-02); [feedback consent and deletion lifecycle](specs/01-website-and-feedback.md#feedback-system) |
+| **Distributing the Phase 1 pilot build** | [Data-flow and privacy acceptance](specs/05-data-flows-and-privacy.md#data-flow-inventory); [independent verification and verify-before-enable](specs/06-repo-and-release-trust.md#release-trust-from-signing-to-verified-installation-p-09), on **supported install routes**, with the route pre-flight (P6-02); the [interface registry](specs/02-commands-and-policy.md#interface-registry-p6-04) passes the clean-install check (P6-04) |
+| **Collecting Phase 1 pilot data** | [Grading sandbox fixtures](specs/04-assessment-and-grading.md); [behavior-review oracle](specs/07-evaluation-and-studies.md#behavior-review-oracle-p3-02); [manual-route trace test](specs/04-assessment-and-grading.md#phase-1-manual-route-p6-01) |
 | **First public update** | [Data-compatibility tests](specs/02-commands-and-policy.md#data-compatibility-across-versions-p3-01) |
 | **Phase 2 progress features** | [Review-item contract](specs/03-modes-and-workflows.md#learning-learningon-phase-1-minimal-phase-2-full); [narrow claims rules](specs/04-assessment-and-grading.md) |
 | **Distributing the pre-commit hook** | [Pre-commit acceptance cases](specs/03-modes-and-workflows.md#debug-workflow-phase-2) |
-| **Efficacy study** | Phase 1 gate says Proceed; [configuration protocol](specs/07-evaluation-and-studies.md#configuration-and-change-protocol-p3-08); preregistration |
+| **Efficacy study** | Phase 1 gate says Proceed; the assessment **service route** is built and passes its acceptance cases; [configuration protocol](specs/07-evaluation-and-studies.md#configuration-and-change-protocol-p3-08); preregistration |
 
 **Survey responses are tracked but aren't a gate.** Demand is judged from interviews and pilot retention.
 
@@ -103,7 +104,7 @@ Each gate must pass before the milestone it guards. Details and acceptance cases
 | Phase | Scope | Exit gate (proceed / revise / stop) |
 |---|---|---|
 | **0. Discovery + prototype** (~3–4 weeks) | Domain and trademark check. Public repo skeleton. Landing page + newsletter + feedback + privacy page. **Recruitment plan:** channels (bootcamps, Discord/Slack communities, university clubs, partner companies), incentives, consent forms. 10 junior and 5 mentor interviews. **Prototype:** command router, session state and the edit decision table, tested from a clean install, with interaction tests covering the command channel, the three settings, recovery and exception consumption together. Draft the behavior-review checklist and freeze the Phase 1 pilot protocol and decision rules | **Proceed** if interviews confirm the "AI does it for me" difficulty as a top problem for the target audience *and* the prototype passes its acceptance cases. **Revise** if the friction concept is rejected in interviews. **Stop or pivot** if neither holds |
-| **1. Narrow MVP + formative pilot** (~6–8 weeks) | **Claude Code only, one stack** (Python *or* JS). Edit policy `type`, `/jrdev:stuck` with one-call exceptions, a minimal Learning profile, `jrdev assess` (outside the AI session, with a small vetted task bank and blind human scoring; see decision 11), data-flow disclosure. Behavior-review regression **from the first release**. Formative pilot with 8–12 learners. Site: guides, catalog, install & verify. Newsletter every 2 weeks | Apply the [frozen decision table](specs/07-evaluation-and-studies.md#studies-p-07), plus the gates in section 4. No new modes until the gate says Proceed |
+| **1. Narrow MVP + formative pilot** (~6–8 weeks) | **Claude Code only, one stack** (Python *or* JS). Edit policy `type`, `/jrdev:stuck` with one-call exceptions, a minimal Learning profile, `jrdev assess` on the **[manual route](specs/04-assessment-and-grading.md#phase-1-manual-route-p6-01)** (outside the AI session; a small vetted task bank; a coordinator plus a separate blind scorer; results are pilot-scored and unsigned), data-flow disclosure. Behavior-review regression **from the first release**. Formative pilot with 8–12 learners. Site: guides, catalog, install & verify. Newsletter every 2 weeks | Apply the [frozen decision table](specs/07-evaluation-and-studies.md#studies-p-07), plus the gates in section 4. No new modes until the gate says Proceed |
 | **2. Debug + full Learning** (~6–8 weeks) | Debug mode v1, FSRS reviews, progress report, a second stack, opt-in telemetry, research into the DAP option | Debug flow works end to end in two stacks. A second pilot round still passes the Phase 1 gates |
 | **3. Map + Test + efficacy study** (~8–10 weeks) | Map mode (static, labelled edges), Test mode (disposable fixtures, warnings, executed-lines view, optional tracing). Mentor/Team pack. Preregistered efficacy study | Study run and published as preregistered |
 | **4. Expand** | Other tools (with honest per-tool enforcement labels), a sandboxed test execution boundary, Debug v2, community packs | Each addition ships with its own acceptance checks |
@@ -137,7 +138,7 @@ Each gate must pass before the milestone it guards. Details and acceptance cases
 8. **GitHub org and repo name**, and whether the site code is public.
 9. **Research history:** publish all review rounds as they are, or an evidence ledger plus a link to the history.
 10. **Capacity budget:** fill in the table in [Roadmap](#5-roadmap).
-11. **Phase 1 assessment scope:** use the full assessment service (signed results, write-once storage, environment images) in Phase 1, or a **manual** process for the small formative pilot (one scorer, a hash log, emailed submissions) and build the service before the efficacy study? *(Recommended: manual for Phase 1.)*
+11. ~~**Phase 1 assessment scope**~~ **Resolved 2026-10-01: manual route** for Phase 1. The assessment service is built before the Phase 3 efficacy study. See [specs/04](specs/04-assessment-and-grading.md#phase-1-manual-route-p6-01).
 
 ---
 
@@ -150,6 +151,7 @@ Each gate must pass before the milestone it guards. Details and acceptance cases
 | 3 | P3-01 to P3-09 | [adversarial-review-round-3.md](adversarial-review-round-3.md) |
 | 4 | P4-01 to P4-07 | [adversarial-review-round-4.md](adversarial-review-round-4.md) |
 | 5 | P5-01 to P5-06 | [adversarial-review-round-5.md](adversarial-review-round-5.md) |
+| 6 | P6-01 to P6-06 (first review of the split plan) | [adversarial-review-round-6.md](adversarial-review-round-6.md) |
 
 Each spec's header lists the findings it addresses, and the finding IDs appear in the relevant headings.
 

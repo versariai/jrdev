@@ -1,6 +1,6 @@
 # Modes and workflows: Typing, Learning, Debug, Map, Test
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.4. Review findings addressed here: P2-05, P3-02, P3-03, P3-05, P4-03, P4-05, P5-03; Map/Test: P-01, P-08. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.4. Review findings addressed here: P2-05, P3-02, P3-03, P3-05, P4-03, P4-05, P5-03, P6-05; Map/Test: P-01, P-08. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates:** the help-stage and task acceptance cases are part of the Phase 0 prototype. The review-item contract gates Phase 2 progress features. The pre-commit integration gates its distribution.
 
@@ -32,7 +32,8 @@
       - **Status and other commands** can't create or revive a grant. Only `/jrdev:stuck` can.
       - **Event ordering** (e.g. whether `UserPromptExpansion` and `UserPromptSubmit` both fire for one slash command) is **to be verified in the Phase 0 prototype**.
       - **This bookkeeping controls authorization state, not what the model says.** Whether a response stays within its stage remains **advisory**, and is checked by behavior review ([evaluation & studies: behavior-review oracle](07-evaluation-and-studies.md#behavior-review-oracle-p3-02)).
-    - **Stages 1–3** persist until the task closes.
+    - **After a stage-4 grant is consumed (P6-05):** the task stays at stage 4, but with **no valid grant** the coach may only explain the solution already shown and give stage-3-level help. Another complete solution needs a new `/jrdev:stuck`. The behavior-review oracle judges responses by **stage plus grant validity**, per [evaluation & studies](07-evaluation-and-studies.md#behavior-review-oracle-p3-02).
+- **Stages 1–3** persist until the task closes.
     - **Model task-change detection is advisory only.** The coach is instructed to ask "is this the same task?" when a request looks different, but only the user-typed command changes `task_id`.
     - **Resume and compaction:** the active `task_id` and stage live in hook-managed state, and `SessionStart` re-injects them after resume or compaction.
     - **Acceptance cases:**
