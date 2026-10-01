@@ -11,6 +11,7 @@
 3. **Debugging is the skill that suffers most, and the one that matters most.** The biggest gap in the Anthropic study was on debugging questions. Evaluators rank "catching and fixing AI mistakes" as the top skill they look for.
 4. **The bar is "can you explain it?", not "does it run?"** The most common rule from experienced devs on Reddit: *if you can't explain the code, it doesn't pass review.*
 5. **The job market raises the stakes.** Employment of 22–25-year-old developers is down about 20% from its late-2022 peak (Stanford), and entry-level postings are down about 28% (SSRN). Juniors who can *supervise* AI stand out. Juniors who only *produce output* with it are easy to replace.
+6. **Onboarding is where AI helps most.** New hires using AI daily reached their 10th PR in **49 days vs. 91** (DX). Use AI to map *what/where* in a codebase, and ask humans *why*. See the [Onboarding mode playbook](#onboarding-mode-playbook).
 
 ---
 
@@ -47,15 +48,18 @@ Every source arrives at the same framing, worded differently:
 
 ## 3. Practices for junior developers
 
-### A. Learning mode vs. delivery mode
+### A. Three modes: learning, onboarding, delivery
 Decide which mode you're in **before** you open the AI.
 
-| | **Learning mode** (new concept, library or codebase) | **Delivery mode** (things you already understand) |
-|---|---|---|
-| Goal | Understanding | Throughput |
-| AI role | Tutor: conceptual questions, explanations, Socratic hints | Pair programmer: boilerplate, scaffolding, refactors |
-| Rule | Write the code yourself. Ask *why*, not *give me*. | Read every line of the diff. Test it. Be able to explain it. |
-| Tools | Claude **Learning** output style (`/config → Output style → Learning` in Claude Code, which leaves `TODO(human)` parts for you to write), ChatGPT **Study Mode** | Normal agent/editor modes |
+| | **Learning mode** (new concept, language or library) | **Onboarding mode** (new job, team or codebase) | **Delivery mode** (things you already understand) |
+|---|---|---|---|
+| Goal | Understanding a *concept* | Building a *mental model of a system* and its people | Throughput |
+| AI role | Tutor: conceptual questions, explanations, Socratic hints | Guide: answers "where/how/why" questions, read-only exploration, code tours | Pair programmer: boilerplate, scaffolding, refactors |
+| Rule | Write the code yourself. Ask *why*, not *give me*. | Explore read-only first. Check every AI claim against the code and the humans who own it. | Read every line of the diff. Test it. Be able to explain it. |
+| Tools | Claude **Learning** output style (`/config → Output style → Learning` in Claude Code, which leaves `TODO(human)` parts for you to write), ChatGPT **Study Mode** | Plan mode (read-only), subagents for investigation, `/init` → CLAUDE.md, codebase-onboarding skills | Normal agent/editor modes |
+| Exit when | You can explain the concept and use it without help | You can draw the architecture, trace a request end to end, and ship small PRs on your own | n/a |
+
+See **[Onboarding mode playbook](#onboarding-mode-playbook)** below for details.
 
 ### B. Usage patterns to copy (from the Anthropic RCT)
 - ✅ **Conceptual inquiry:** ask only conceptual questions, then write the code yourself. This was the highest-scoring pattern *and* the fastest of the high scorers.
@@ -91,6 +95,59 @@ Decide which mode you're in **before** you open the AI.
 - **Month 1:** Learn one AI editor in depth and verify every suggestion. Do one fundamentals exercise a week with no AI.
 - **Month 2:** Ship a project end to end. Document your AI workflow and decision log.
 - **Month 3:** Focus on judgment: review others' PRs, write ADRs, debug real issues with AI as your *second* step.
+
+---
+
+## Onboarding mode playbook
+
+Onboarding is where AI's upside is **largest and best measured**. It is also where a "Silent Silo" forms fastest, because a new hire has the most reason to avoid asking people.
+
+### Evidence
+- **About 2x faster ramp-up.** Across six enterprises, new hires who used AI **daily** reached their **10th PR in 49 days vs. 91 days** for non-users. Only 20% of daily users were still under 10 PRs after 3 months, vs. 50% of non-users. ([DX](https://getdx.com/blog/ai-cuts-developer-onboarding-time-in-half/)) *Caveat:* this is observational with no published sample sizes. AI enthusiasts may simply be faster learners.
+- **Early patterns persist.** A Microsoft researcher quoted by DX says that by the 10th PR you can predict a developer's output patterns two years out with better than 50% accuracy. Habits formed during onboarding stick, good or bad.
+- **Anthropic's own guidance** treats Claude Code as an onboarding tool: ask it "the questions you'd ask a senior engineer", which reduces load on other engineers. ([Claude Code best practices](https://code.claude.com/docs/en/best-practices))
+- **AI-generated code tours** that simulate expert mentoring are an active research area. ([LACY, FSE 2026](https://arxiv.org/pdf/2603.25391)) Information overload from docs is a known onboarding barrier that LLMs can reduce. ([ASE 2024](https://dl.acm.org/doi/abs/10.1145/3691620.3695286))
+- **The risk:** 38% of engineers say AI has *reduced* direct senior–junior mentoring (LeadDev AI Impact Report 2025, via a secondary source; not verified). Onboarding is where tacit knowledge (*why* things are the way they are) gets passed on, and AI can't see most of it.
+
+### For the new hire: a 4-week structure
+
+**Week 1: Map (read-only)**
+- Work in **plan mode** or a read-only setting. The goal is to understand, not to change anything.
+- Ask the questions you'd ask a senior engineer:
+  - *"What does this project do and who uses it?"*
+  - *"Map the top-level architecture: services, data stores, external dependencies."*
+  - *"How does logging, config, auth, error handling work here?"*
+  - *"How do I add a new API endpoint? Point me to a good existing example."*
+  - *"Why does X call foo() instead of bar()?"* and *"Look through the git history of Y and summarize how its API came to be."*
+- Use **subagents** for broad questions ("use subagents to investigate how auth handles token refresh") so your main session stays focused.
+- **Draw the architecture yourself** on paper or in a whiteboard tool *before* asking AI for a diagram. Then compare. The differences show you what you misunderstood.
+
+**Week 2: Trace and verify**
+- Pick one real user flow and **trace a request end to end by hand**, using AI only to answer questions along the way.
+- **Check every AI claim** by opening the file it cites or running the code. AI explanations of *your* codebase can be confidently wrong, especially about conventions and history.
+- Run the app and tests locally. Break something on purpose and watch what fails.
+- Keep an **onboarding log**: questions you asked, the answers, and which ones AI got wrong. It becomes your notes and helps the next hire.
+
+**Week 3: Small contributions**
+- Do "good first issues", small bug fixes and test additions. Use the **learning** style here: AI scaffolds, you write the key logic.
+- Before each PR, explain the change and *where it sits in the architecture* to your buddy, or use `quiz-me` (see the [skills report](agent-skills-for-junior-devs.md)).
+
+**Week 4: Give back**
+- Update the README, onboarding docs or CLAUDE.md with what was missing or wrong. New hires see the gaps most clearly, and fixing them is a high-value first contribution. (Dave Stevens: juniors "force teams to articulate assumptions".)
+- Gradually move into **delivery mode** for areas you now understand.
+
+**Rules throughout:**
+- **Ask humans about *why*, ask AI about *what/where*.** AI can locate code. Only people know the history, politics, past incidents and unwritten rules.
+- **Book regular time with a buddy or mentor** and bring your onboarding log. Don't let AI replace those conversations.
+- Never paste internal code or secrets into unapproved AI tools. Learn the company's AI policy on day one.
+
+### For the team: making the codebase easy to onboard (for humans *and* agents)
+- **Keep a short, maintained `CLAUDE.md` / `AGENTS.md`** (start with `/init`): build and test commands, conventions that differ from defaults, gotchas and env quirks. The same file speeds up new humans and AI agents. (Stevens: codebases that are easy for juniors to understand are also easy for agents.)
+- **Keep ADRs and a glossary** so the *why* is written down where both people and AI can read it.
+- **Provide a curated starter set:** 3–5 example PRs that show "how we do things here", one reference implementation per pattern, and a labeled list of good first issues.
+- **Pair AI exploration with a human buddy.** The buddy reviews the new hire's architecture sketch and onboarding log weekly and corrects AI-sourced misconceptions.
+- **Track time-to-10th-PR** (DX's metric). Also check *understanding*, not just speed: can they whiteboard the system and debug an incident in their area?
+- **Have new hires update the onboarding docs** as part of onboarding. Each cohort leaves them better.
 
 ---
 
@@ -133,7 +190,7 @@ Decide which mode you're in **before** you open the AI.
 ## 6. One-page checklist
 
 **Before prompting**
-- [ ] Am I in learning mode or delivery mode?
+- [ ] Am I in learning, onboarding or delivery mode?
 - [ ] Have I tried it or sketched it myself first?
 - [ ] Do I have a hypothesis (when debugging)?
 
@@ -175,3 +232,7 @@ Decide which mode you're in **before** you open the AI.
 - [notthecode: The Silent Silo, mentoring junior developers in the age of AI](https://notthecode.com/silent-silo-mentoring-junior-developers-ai/)
 - [Harvard Gazette: Taming the Duck (CS50 AI tutor)](https://news.harvard.edu/gazette/story/2026/09/taming-the-duck-for-starters/)
 - [Claude Code output styles (Learning mode)](https://docs.anthropic.com/en/docs/claude-code/output-styles)
+- [DX: AI cuts onboarding time in half](https://getdx.com/blog/ai-cuts-developer-onboarding-time-in-half/)
+- [Claude Code best practices (onboarding, plan mode, subagents, CLAUDE.md)](https://code.claude.com/docs/en/best-practices)
+- [LACY: Simulating Expert Mentoring for Software Onboarding with Code Tours (FSE 2026)](https://arxiv.org/pdf/2603.25391)
+- [Towards Leveraging LLMs for Reducing Open Source Onboarding Information Overload (ASE 2024)](https://dl.acm.org/doi/abs/10.1145/3691620.3695286)

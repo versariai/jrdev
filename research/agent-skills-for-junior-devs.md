@@ -107,10 +107,25 @@ The first report found that **how** a junior uses AI decides whether they learn.
 
 ---
 
-## 5. Onboarding and codebase comprehension
+## 5. Onboarding mode: new hires and new codebases
 
-- **`codebase-onboarding`** skills come in several versions, e.g. [affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code/blob/main/skills/codebase-onboarding/SKILL.md) and [borghei/Claude-Skills](https://github.com/borghei/Claude-Skills/blob/main/engineering/codebase-onboarding/SKILL.md). They scan a repo and produce an architecture overview, an annotated file map, setup steps, common-task runbooks and a CLAUDE.md.
-- **Caution:** reading a generated guide is passive. Pair it with `quiz-me`, or trace one request through the code by hand, so the knowledge sticks.
+See the [Onboarding mode playbook](ai-for-junior-devs.md#onboarding-mode-playbook) for the full 4-week structure. These are the tools for it:
+
+| Tool | Type | Use in onboarding |
+|---|---|---|
+| **Plan mode** (`Shift+Tab`) | Claude Code built-in | Read-only exploration. Ask questions without the agent changing anything. |
+| **`/init`** | Claude Code built-in | Generates a starter CLAUDE.md from the repo. As a new hire, compare it with your own notes and fix what's wrong. |
+| **Subagents** ("use subagents to investigate…") | Claude Code built-in | Broad "how does X work" investigations without filling your main context. |
+| **`codebase-onboarding`** skills | Community ([affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code/blob/main/skills/codebase-onboarding/SKILL.md), [borghei/Claude-Skills](https://github.com/borghei/Claude-Skills/blob/main/engineering/codebase-onboarding/SKILL.md)) | Scan the repo and produce an architecture overview, annotated file map, setup steps, task runbooks and a CLAUDE.md. |
+| **`grill-with-docs`** | mattpocock/skills | Turns Q&A into a GLOSSARY.md and ADRs, so the domain language you learn gets written down. |
+| **`explanatory-output-style`** | Anthropic official | Adds codebase-pattern "Insights" while you make your first changes. |
+| **`quiz-me`** | rodbv/socratic-skills | Checks your understanding of the system or of your first PRs. |
+| **`agent-tutor-skill`** | Bhala-Srinivash | Spaced repetition for domain concepts and internal terminology. |
+| **`mentor.agent.md`** | github/awesome-copilot | Mentor mode with no edits that challenges your assumptions about the codebase. |
+
+**Caution:** a generated onboarding guide is passive reading, and AI explanations of *your* codebase can be wrong about conventions and history. Draw the architecture yourself first, trace one request by hand, check claims against the code, and ask humans the *why* questions.
+
+**Team-side skill idea:** write a project-specific `onboarding` skill in `.claude/skills/` that holds the curated example PRs, good first issues, who owns what, and the "unwritten rules". It is reusable for every new hire, and new hires keep it up to date.
 
 ---
 
@@ -139,6 +154,13 @@ No registry publishes installs by experience level. Based on audience, marketing
 2. `mentoring-juniors` or `guide-me` when you're stuck
 3. `quiz-me` before every commit
 4. `agent-tutor-skill` for spaced repetition on concepts you keep forgetting
+
+**Onboarding mode** (new job or new codebase):
+1. Plan mode and subagents for read-only exploration. `/init` for a starter CLAUDE.md.
+2. A `codebase-onboarding` skill for a first map, then check it yourself
+3. `grill-with-docs` to build the glossary and domain model
+4. `quiz-me` on the architecture and your first PRs
+5. Your team's own `onboarding` skill, if there is one
 
 **Delivery mode** (work you already understand):
 1. `grill-me` before starting a feature
@@ -174,6 +196,7 @@ From [Snyk ToxicSkills](https://snyk.io/blog/toxicskills-malicious-ai-agent-skil
 - [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills)
 - [trailofbits/skills](https://github.com/trailofbits/skills)
 - [Firecrawl: 14 best Claude Code skills](https://www.firecrawl.dev/blog/best-claude-code-skills)
-- [codebase-onboarding (everything-claude-code)](https://github.com/affaan-m/everything-claude-code/blob/main/skills/codebase-onboarding/SKILL.md)
+- [codebase-onboarding (everything-claude-code)](https://github.com/affaan-m/everything-claude-code/blob/main/skills/codebase-onboarding/SKILL.md) · [borghei/Claude-Skills](https://github.com/borghei/Claude-Skills/blob/main/engineering/codebase-onboarding/SKILL.md)
+- [Claude Code best practices](https://code.claude.com/docs/en/best-practices)
 - [Snyk ToxicSkills study](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/)
 - [Claude Code skills docs](https://code.claude.com/docs/en/skills)
