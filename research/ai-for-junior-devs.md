@@ -1,6 +1,6 @@
 # Good Practices for Using AI as a Junior Developer
 
-*Compiled 2026-10-01 and revised the same day after four adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md), [round 3](adversarial-review-round-3.md), [round 4](adversarial-review-round-4.md)). It draws on the 5 links you supplied plus about 20 more sources: trials, surveys, observational and labor data, vendor reports and practitioner writing.*
+*Compiled 2026-10-01 and revised the same day after five adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md), [round 3](adversarial-review-round-3.md), [round 4](adversarial-review-round-4.md), [round 5](adversarial-review-round-5.md)). It draws on the 5 links you supplied plus about 20 more sources: trials, surveys, observational and labor data, vendor reports and practitioner writing.*
 
 **How to read this report.** Inline tags describe **study design** only:
 
@@ -237,6 +237,7 @@ Onboarding has some of the more specific evidence in this report. It is also whe
 - [ ] Security-sensitive parts were checked against official docs *and* reviewed by someone competent.
 - [ ] I simplified where I could.
 - [ ] I noted what I rejected and why.
+- [ ] If an AI review tool checked my change, I confirmed it covered my *uncommitted* edits. Some review skills only diff committed changes.
 
 ---
 
@@ -271,6 +272,8 @@ Onboarding has some of the more specific evidence in this report. It is also whe
 - [notthecode: The Silent Silo](https://notthecode.com/silent-silo-mentoring-junior-developers-ai/)
 - [Harvard Gazette: Taming the Duck (CS50 AI tutor)](https://news.harvard.edu/gazette/story/2026/09/taming-the-duck-for-starters/) · [Liu et al.: Improving AI in CS50 (SIGCSE 2025)](https://cs.harvard.edu/malan/publications/fp0627-liu.pdf)
 - [Claude Code output styles](https://docs.anthropic.com/en/docs/claude-code/output-styles) · [Claude Code best practices](https://code.claude.com/docs/en/best-practices)
+
+**Corrected after review round 5:** a checklist item now covers the scope of AI review tools. In the skills report, the `code-review` diff scope, the `tdd` loop and the `teach` workspace are described from source.
 
 **Corrected after review round 4:** the physics trial's sample, crossover design and post-lesson timing are stated, and it is framed as evidence for a package. CS50's published behavioral evaluations are added, along with a conversation-review step.
 

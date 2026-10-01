@@ -1,6 +1,6 @@
 # Agent Skills With Possible Value for Junior Developers
 
-*Compiled 2026-10-01 and revised the same day after four adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md), [round 3](adversarial-review-round-3.md), [round 4](adversarial-review-round-4.md)). Companion to [ai-for-junior-devs.md](ai-for-junior-devs.md).*
+*Compiled 2026-10-01 and revised the same day after five adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md), [round 3](adversarial-review-round-3.md), [round 4](adversarial-review-round-4.md), [round 5](adversarial-review-round-5.md)). Companion to [ai-for-junior-devs.md](ai-for-junior-devs.md).*
 
 "Skills" here means **agent skills**: `SKILL.md` folders and plugins for Claude Code, plus similar mechanisms in Copilot, Codex and other tools.
 
@@ -46,7 +46,7 @@ In programming education specifically, CS50's tutor is instructed not to give so
 | Retrieval practice / spaced repetition | Quiz on concepts over time | agent-tutor-skill (heuristic scheduling; see below), `quiz-me` |
 | Design interview before coding | Agent interviews the human about the plan | grill-me, grill-with-docs, superpowers `brainstorming` |
 | Structured debugging | Hypothesis-driven debugging loop | diagnosing-bugs, superpowers `systematic-debugging` |
-| Test-first workflow | Red-green-refactor | tdd, superpowers `test-driven-development` |
+| Test-first workflow | Write a failing test, then make it pass (implementations differ; see section 3) | tdd, superpowers `test-driven-development` |
 | Security checks | Flag insecure defaults and footguns | trailofbits `insecure-defaults`, `sharp-edges` |
 
 **Known failure mode:** an AI-written quiz, explanation or test can repeat the same mistake as the AI-written code. Check against something independent: the original requirement, the docs, a human reviewer, or the code's actual behavior.
@@ -86,7 +86,18 @@ In programming education specifically, CS50's tutor is instructed not to give so
 - **Note:** spaced repetition and retrieval practice are well supported in learning research in general. This review found no evaluation of this particular implementation. Keep independent practice checks.
 
 ### `teach` from [`mattpocock/skills`](https://github.com/mattpocock/skills) (about 739K installs)
-- **What it does:** "teach new skills/concepts using the directory as a workspace" (from the README).
+- **What it does (static read of the [pinned SKILL.md](https://github.com/mattpocock/skills/blob/d81f3a183412e71a5b1e84ca21bc1a35eea03a60/skills/productivity/teach/SKILL.md)):** a **multi-session, stateful** teaching workflow that treats the *current directory* as a learning workspace. It writes:
+  - `MISSION.md` (why you want to learn this)
+  - `RESOURCES.md`
+  - numbered `learning-records/*.md`
+  - short self-contained HTML `lessons/` and `reference/` sheets
+  - shared `assets/` such as stylesheets and quiz widgets
+  - `NOTES.md`
+
+  It asks the agent to ground teaching in high-quality sources, distinguish fluency from long-term retention, and use retrieval practice, spacing and interleaving.
+- **Invocation:** user-invoked only (`disable-model-invocation: true`). Run it with `/teach`.
+- **Practical note:** run it in a **dedicated learning directory**, not in your application repo, unless you want those files committed alongside your code.
+- **Evidence:** this review found no learning-outcome evaluation. Producing lessons and records doesn't show that a skill was retained.
 - The same repo lists **`scaffold-exercises`** (about 402K installs) under Learning. Its [SKILL.md](https://github.com/mattpocock/skills/blob/d81f3a183412e71a5b1e84ca21bc1a35eea03a60/skills/misc/scaffold-exercises/SKILL.md) (static read) is an **exercise-authoring workflow** for a particular course environment. It creates section and exercise folders with `problem/`, `solution/` and `explainer/` readmes, requires `pnpm ai-hero-cli internal lint` to pass, and then makes a git commit. It's a tool for *course authors*, not an adaptive tutor for learners.
 
 ### Other Socratic skills (small; not verified beyond their READMEs)
@@ -117,13 +128,15 @@ In programming education specifically, CS50's tutor is instructed not to give so
 
 | Skill | Source | Installs (2026-10-01) | Designed to | How it works |
 |---|---|---|---|---|
-| `tdd` | mattpocock/skills | about 1M | Red-green-refactor workflow | Prompt instructions |
+| `tdd` | mattpocock/skills | about 1M | **Red → green only** ([pinned](https://github.com/mattpocock/skills/blob/d81f3a183412e71a5b1e84ca21bc1a35eea03a60/skills/engineering/tdd/SKILL.md)). It agrees the public test boundaries ("seams") with the user before writing any test, then works one failing behavior test and minimal code at a time. It explicitly says **refactoring is not part of the loop**; that belongs to the review stage (its `code-review` skill). | Prompt instructions |
 | `diagnosing-bugs` / `diagnose` | mattpocock/skills | about 696K / 240K | Structured bug diagnosis | Prompt instructions |
 | `systematic-debugging` | obra/superpowers | n/a | Find the root cause before fixing | Prompt instructions |
 | `test-driven-development` | obra/superpowers | n/a | Watch the test fail, then make it pass | Prompt instructions |
-| `code-review` | mattpocock/skills | about 648K | Review against coding standards and the spec | Prompt instructions |
+| `code-review` | mattpocock/skills | about 648K | Parallel reviews against documented standards (plus a code-smell baseline) and against the originating spec ([pinned](https://github.com/mattpocock/skills/blob/d81f3a183412e71a5b1e84ca21bc1a35eea03a60/skills/engineering/code-review/SKILL.md)). **Reviews committed branch changes only** (see note below). Needs a base reference, and its issue-tracker setup (`/setup-matt-pocock-skills`). | Prompt instructions |
 | `improve-codebase-architecture` | mattpocock/skills | about 1M | Suggest refactoring opportunities (HTML report) | Prompt instructions |
 | `/code-review`, `/debug` | Claude Code (bundled) | n/a | Built-in review and debugging workflows | Bundled skills ([docs](https://code.claude.com/docs/en/skills)) |
+
+**Scope of `code-review` (mattpocock).** The skill runs `git diff <fixed-point>...HEAD`. A three-dot diff compares the merge base with the **committed** `HEAD` ([git docs](https://git-scm.com/docs/git-diff)). It **does not include staged, unstaged or untracked changes**, and it stops if the committed diff is empty. So if you run it before committing, it reviews your earlier commits and **misses your current edits**, or stops entirely. Its description mentions "work-in-progress changes", but the prescribed command doesn't cover them. An agent *might* deviate from it; don't count on that. Use it as a **committed-branch / PR review**. For pre-commit review, use a workflow that explicitly includes the working tree, such as `git diff HEAD` plus any untracked files you mean to add, and **check the list of files it actually reviewed**. Don't commit just to make this skill work. Claude Code's bundled `/code-review` is a separate tool, and this note doesn't apply to it.
 
 **Suggested use:** form your own view first, then run the skill and compare. Write down your bug hypothesis, or do your own review of the PR. AI-generated tests check the AI's *interpretation* of the requirement. Make sure the acceptance criteria come from the requirement itself.
 
@@ -181,7 +194,7 @@ No registry reports installs by experience level, so **this report can't say whi
 | `tdd` (mattpocock) | about 1M | Workflow structure. Learning depends on how it's used. |
 | `frontend-design` (anthropics) | about 943K | Mainly delivery. It can support learning if you critique and change its output yourself. |
 | `vercel-react-best-practices` | about 762K | The rule set is readable reference material. |
-| `teach` (mattpocock) | about 739K | Designed for teaching. Not evaluated. |
+| `teach` (mattpocock) | about 739K | Designed as a multi-session teaching workspace. This review found no learning-outcome evaluation. |
 | `caveman` (token reduction) | about 225K | Shorter output. Whether that helps or hurts learning is unknown. Targeted hints can beat long explanations. |
 
 Star counts for small tutoring repos (for example, socratic-skills at about 17★) are a **different unit** and can't be compared with these install counts.
@@ -202,7 +215,7 @@ Begin with **one tutoring workflow and one independent check**. Add more only if
 
 **Delivery mode** (familiar work)
 - *Minimal:* your normal agent, plus your own review of the diff before any AI review
-- *Optional additions:* `tdd` or `diagnosing-bugs`; `code-review` after your own review; Trail of Bits scanners for security-sensitive areas
+- *Optional additions:* `tdd` or `diagnosing-bugs`; mattpocock `code-review` for **committed** branch or PR review, after your own review; Trail of Bits scanners for security-sensitive areas
 
 **For teams:** keep an internal list of approved skills, pinned to reviewed versions. Consider making the Learning output style the *default* (not mandatory) for people new to an area. Treat skill output as material for mentoring conversations, not as a substitute for them.
 
@@ -249,7 +262,7 @@ Repeat after any model, prompt or skill-version change. CS50 found code-block ra
 ## Remaining verification gaps
 
 - No skill was installed or run. Runtime behavior, install commands and compatibility across Claude Code, Copilot and Codex were not tested. The `git-guardrails-claude-code`, `scaffold-exercises`, `agent-tutor-skill` and Learning plugin descriptions are based on **static reads** of the pinned revisions below.
-- Revisions statically read (from review round 3; not installed): `mattpocock/skills@d81f3a1`, `Bhala-Srinivash/agent-tutor-skill@e273585`, `anthropics/claude-plugins-official@ab024cd`, `rodbv/socratic-skills@dda051c`. Other skills' descriptions come from their current READMEs and may change.
+- Revisions statically read (in review rounds 3 and 5; not installed): `mattpocock/skills@d81f3a1` (`git-guardrails-claude-code`, `scaffold-exercises`, `tdd`, `code-review`, `teach`), `Bhala-Srinivash/agent-tutor-skill@e273585`, `anthropics/claude-plugins-official@ab024cd`, `rodbv/socratic-skills@dda051c`. Other skills' descriptions come from their current READMEs and may change.
 - The X post was not authenticated.
 - This review's non-systematic search found no learning-outcome evaluations for the specific skills listed. A systematic search (defined terms, databases and inclusion criteria) could find some.
 
