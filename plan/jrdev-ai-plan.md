@@ -1,6 +1,6 @@
 # jrdev.ai: Product Plan
 
-*Draft, 2026-10-01. Revised after two adversarial reviews ([round 1](adversarial-review.md): P-01–P-10; [round 2](adversarial-review-round-2.md): P2-01–P2-09; [round 3](adversarial-review-round-3.md): P3-01–P3-09; [round 4](adversarial-review-round-4.md): P4-01–P4-07; referenced inline). Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md).*
+*Draft, 2026-10-01. Revised after two adversarial reviews ([round 1](adversarial-review.md): P-01–P-10; [round 2](adversarial-review-round-2.md): P2-01–P2-09; [round 3](adversarial-review-round-3.md): P3-01–P3-09; [round 4](adversarial-review-round-4.md): P4-01–P4-07; [round 5](adversarial-review-round-5.md): P5-01–P5-06; referenced inline). Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md).*
 
 ## 1. Mission and principles
 
@@ -241,6 +241,19 @@ Each file has a schema version, is written via a temporary file plus rename unde
 
 `JRDEV_DISABLE=1` only affects sessions **started** with it; that's documented as a restart-based option. **Deleting directories is never presented as session-local recovery.**
 
+**Leaving recovery (P5-02):**
+- **The recovery override is tied to one `session_id`.** New sessions are never affected by it.
+- **Re-enabling a session:** `/jrdev:type on` in that session **first re-validates every lower layer**.
+  - If they all parse, it **removes that session's recovery override** and sets `type`.
+  - If a layer is still malformed, it **refuses** and names the broken file. It never reports `type` as active while edits stay allowed.
+- **The kill switch is global, so a session command never removes it.**
+  - `/jrdev:type on` with `~/.jrdev/DISABLED` present answers: "Enforcement is disabled globally by the kill switch (created at T). Run `jrdev on --global` in a terminal to re-enable it for all sessions."
+  - `jrdev on --global` asks for confirmation typed at the terminal (`/dev/tty`).
+- **`/jrdev:status` shows the *effective* decision and why**, e.g. "edits allowed: recovery override (this session)", "edits allowed: global kill switch" or "edits denied: type (session)". It never shows just the requested setting.
+- **Acceptance cases:**
+  - recover, repair the config, then `/jrdev:type on` while a second session is active; the next Edit matches the status display
+  - the same with the kill switch present: the refusal message appears, and `jrdev on --global` restores enforcement
+
 **Acceptance:**
 - recover from a project default of `type`
 - recover from a malformed project config
@@ -266,12 +279,22 @@ In each case a second session stays active, its policy and pending records are u
   - **Task-scoped (P4-03):**
     - **Explicit task boundaries:** help stages and stuck exceptions are keyed by a `task_id`, created with a user-typed `/jrdev:task start <short name>` and closed with `/jrdev:task done`. Starting a new task closes the previous one.
     - **No active task:** `/jrdev:stuck` asks the learner to name the task first.
-    - **Stage-4 authorization is single-use.** It covers the **next response only**, within that task. Any further worked solution needs another `/jrdev:stuck`.
+    - **Stage-4 authorization is single-use (P5-03).** Its lifecycle is defined by observable events:
+      - **Created** by the user-typed `/jrdev:stuck` that reaches stage 4, through `UserPromptExpansion`. It's bound to `(session_id, task_id, grant_id)`.
+      - **Covers exactly the turn started by that `/stuck` prompt.** The **next user prompt of any kind** (`UserPromptSubmit` or `UserPromptExpansion`) marks it `consumed`. That holds whatever happened in the turn: full delivery, partial delivery, interrupt or API error.
+      - **Retry:** if the turn failed, the learner types `/jrdev:stuck` again. Stage 4 is terminal, so this creates a **new** grant, logged as a separate worked-solution grant.
+      - **Resume:** at `SessionStart` with source `resume`, any grant whose turn has ended is marked consumed, and the authoritative state ("no active grant") is re-injected. Replayed conversation text saying stage 4 is allowed is overridden by that injection.
+      - **Fork:** state is keyed by `session_id`, so **a forked session gets no grant**. `SessionStart` injects "no active grant", and a fresh `/stuck` is required.
+      - **Compaction:** the state lives outside the conversation and is re-injected.
+      - **Status and other commands** can't create or revive a grant. Only `/jrdev:stuck` can.
+      - **Event ordering** (e.g. whether `UserPromptExpansion` and `UserPromptSubmit` both fire for one slash command) is **to be verified in the Phase 0 prototype**.
+      - **This bookkeeping controls authorization state, not what the model says.** Whether a response stays within its stage remains **advisory**, and is checked by behavior review (8.2).
     - **Stages 1–3** persist until the task closes.
     - **Model task-change detection is advisory only.** The coach is instructed to ask "is this the same task?" when a request looks different, but only the user-typed command changes `task_id`.
     - **Resume and compaction:** the active `task_id` and stage live in hook-managed state, and `SessionStart` re-injects them after resume or compaction.
     - **Acceptance cases:**
-      - reach stage 4 on task A, then ask about task B in the same file, and again in another file; B starts at stage 0
+      - reach stage 4 on task A, then run `/jrdev:task start B` (same file, then another file); B starts at stage 0. **Without the explicit command**, a question about B is only *advisorily* detected, and the promise is limited to the coach asking "same task?"
+      - grant lifecycle: interrupt during partial and complete delivery, resume, compact, fork, and retry after an API error; no two solution turns ever share one grant
       - resume preserves the binding
       - compaction preserves the binding
   - Each stage's allowance is written in the coach instructions and used as the review oracle (8.2).
@@ -359,6 +382,14 @@ Their acceptance checks also carry over:
    - **Self-reported condition:** a submit-time checkbox "I used no AI or other help". **Ticking "I used help" makes the attempt coached.**
    - **Tool check (product use only, not in studies):** if a jrdev-hooked Claude Code session records tool use inside the scratch directory during the window, the attempt gets a **validity flag**. The **score itself is kept**, and the flag is a separate field.
 3. **Submit:** `jrdev assess submit` packages the submission and runs the public tests.
+   - **Minimal payload (P5-05):**
+     - Each task version declares a **submission manifest**: the exact paths or globs graders need.
+     - Everything else is **excluded by default**: dotfiles, `.env*`, `.git/`, editor and history files, logs, notebook outputs, build artifacts.
+     - **Before upload**, the learner sees the exact file list and sizes and confirms them. Adding anything outside the manifest requires a deliberate choice, with a warning.
+     - **Metadata is stripped:** archives are built with normalized owner, permissions and timestamps, and no VCS metadata.
+     - **Secret-pattern scanning** warns about likely secrets. It's **not presented as guaranteed redaction**.
+     - **Identity stays out of the payload:** the upload token maps to the pseudonymous attempt server-side, so graders receive no account, email or git-author data.
+     - **Acceptance:** scratch seeded with a valid solution, a private `.env`, identifying metadata, generated logs and a required fixture. Only manifest files are sent, the fixture still works, and graders see no identity data.
 4. **Score:** a human scorer applies the rubric and the hidden tests, **blind** to the learner's identity and to whether they're in a study arm.
 5. **Finalize:** the scorer marks the attempt finalized through the assessment service. Only then does an "assessed transfer" record exist.
 
@@ -367,7 +398,11 @@ Their acceptance checks also carry over:
   - Each attempt has an `attempt_id` and a `submission_revision`.
   - The service issues a **one-time upload token** bound to `(attempt_id, revision)`. It's **not** a reusable pre-signed URL.
 - **Write-once storage:**
-  - The service computes the **SHA-256 of the received archive** and stores it **content-addressed in write-once storage** (object lock / no overwrite).
+  - The service computes the **SHA-256 of the received archive** and stores it in **write-once storage** (no overwrite).
+  - **Storage model (P5-04):**
+    - **Immutability is enforced by the application**, through no-overwrite object keys and versioning: `attempts/<attempt_id>/<revision>/<digest>`.
+    - **No compliance-mode retention lock is used**, so prompt deletion stays possible.
+    - **No sharing across attempts:** objects are **not deduplicated** across attempts or learners, so no reference counting is needed and one learner's deletion never affects another's evidence.
   - Re-uploading the same digest is a no-op.
   - A **different** digest after acceptance is rejected, unless a scorer reopens the attempt. That creates revision n+1 and is logged.
 - **The grading record binds:**
@@ -378,6 +413,11 @@ Their acceptance checks also carry over:
   - the result
 - **Grading:**
   - Runs are idempotent per (digest, grader image, test version).
+  - **Task environment contract (P5-06):**
+    - Each task version pins **one environment image**: the runtime and dependency versions, preinstalled resources, the test command, resource limits, and seeded or deterministic inputs.
+    - **One image everywhere:** the same image is used for local public tests (`jrdev assess start` pulls it), the hosted study workspace and the hidden-test grader. Intentional differences are listed in the task text.
+    - **Infrastructure failures are separate from learner failures.** An image mismatch, a missing dependency, a provisioning error or a grader crash gets the status `infra_error`. It's **never finalized as a learning result**. Retries re-run the **same submission revision**, so no new task exposure is needed.
+    - **Acceptance:** a fixture exercising each declared feature and dependency passes in all three environments. A deliberately mismatched image produces `infra_error`, not a low score.
   - A database constraint allows **one finalization per revision**, so repeated callbacks can't produce conflicting results.
 - **Signed results:**
   - Only an authenticated scorer can finalize.
@@ -554,7 +594,7 @@ plugins/jrdev/
 | Global free-text goal (opt-in only) | `~/.jrdev/global/` | **Yes, in every project** (warned) | None | Until reset | No |
 | Project goals, logs, debug notes, maps | `~/.jrdev/projects/<hash>/` | Only within that project's sessions, when used | None | Until `jrdev reset --project` | No |
 | Assessment attempts | `~/.jrdev/assessments/` | **No** in Phase 1; Phase 3+ only to the forked scorer if the learner opts in | Human scorer (blind) and a mentor via explicit export | 24 months, or until the learner deletes them | No |
-| Submitted assessment archives | Write-once, content-addressed storage via a one-time token; executed only in the grading sandbox (5.5) | No | Human scorer | 24 months, deleted with the attempt | No |
+| Submitted assessment archives | Write-once (application-level), per-attempt keys, via a one-time token; executed only in the grading sandbox (5.5) | No | Human scorer | 24 months. **Deletion** goes through an authorized path that removes **all object versions** and checks at the storage-version level. Backups expire within 30 days (disclosed). The learner can keep the signed result **without** the archive, and it's then labelled "source deleted; graded bytes no longer retrievable" | No |
 | Feedback consent records and deletion receipts | jrdev DB | No | jrdev team | As long as the item exists | No |
 | Assessment exposure ledger | Assessment service (authoritative); local append-only cache | No | jrdev team (pseudonymous) | Same as assessment data; deleted with it (prior exposure then becomes "unknown") | No |
 | Pseudonym ↔ identity mapping | Separate restricted store | No | Study coordinator only | Study duration plus 12 months | No |
@@ -635,9 +675,27 @@ jrdev/
 
   The procedure **doesn't execute any bundled code** and **doesn't need git metadata** in the installed cache. A copied SHA label can't make altered file contents pass.
 - **We don't assume Claude Code verifies signatures at install.** If it ever does, we'll document it as an additional layer.
+- **Verify before any jrdev code runs (P5-01):**
+  - **Default off:** the plugin manifest sets **`defaultEnabled: false`**, so a fresh install is **installed but off** until `claude plugin enable`. Plugin hooks run only inside sessions in which the plugin is enabled.
+  - **First install:**
+    1. `claude plugin install jrdev@<marketplace>` (the plugin stays disabled).
+    2. Run the independent procedure above on the **installed on-disk copy**: signature, then `sha256sum -c`, then the extra and missing file check.
+    3. Only then run `claude plugin enable jrdev`.
+
+    No jrdev code runs before step 3. The `Setup` hook event doesn't fire on normal startup, and jrdev doesn't use it.
+  - **Updates:**
+    - **Keep marketplace auto-update off.** It's off by default for third-party marketplaces, and the install page says not to turn it on when manual verification is your trust mechanism.
+    - **Update flow:** `claude plugin disable jrdev`, update, verify the new on-disk copy, then `claude plugin enable jrdev`.
+    - **Don't run `/reload-plugins`** in a session until the new copy is verified.
+    - **Rollback** follows the same flow, pinned to the previous SHA.
+  - **Stated limitation:** Claude Code doesn't enforce this gate. It's a **documented procedure**. If a user turns on auto-update, an updated copy loads in the **next session without verification**, and jrdev can't prevent that from inside itself. The install page states this plainly.
+  - **Acceptance:**
+    - On a clean machine, an altered artifact detected in step 2 never reaches a jrdev handler, because the plugin stays disabled.
+    - After a valid install, change the marketplace SHA, then exercise update, reload and restart with the documented flow. New code is verified before it's enabled, and the auto-update caveat is shown.
+    - No bundled verifier is executed to decide whether the bundle is trusted.
 - **Updates and rollback:**
-  - An update is a marketplace change to a new SHA, announced in the changelog.
-  - A rollback pins the previous SHA.
+  - An update is a marketplace change to a new SHA, announced in the changelog, and installed with the disable → update → verify → enable flow above.
+  - A rollback pins the previous SHA, using the same flow.
   - Both paths are documented and tested.
 - **CI:**
   - decision-table and hook tests on Linux and macOS
