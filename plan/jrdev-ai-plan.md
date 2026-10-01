@@ -1,6 +1,6 @@
 # jrdev.ai: Product Plan
 
-*Draft, 2026-10-01. Revised after two adversarial reviews ([round 1](adversarial-review.md): P-01–P-10; [round 2](adversarial-review-round-2.md): P2-01–P2-09; [round 3](adversarial-review-round-3.md): P3-01–P3-09; referenced inline). Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md).*
+*Draft, 2026-10-01. Revised after two adversarial reviews ([round 1](adversarial-review.md): P-01–P-10; [round 2](adversarial-review-round-2.md): P2-01–P2-09; [round 3](adversarial-review-round-3.md): P3-01–P3-09; [round 4](adversarial-review-round-4.md): P4-01–P4-07; referenced inline). Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md).*
 
 ## 1. Mission and principles
 
@@ -181,7 +181,8 @@ Plugin skills are invoked as `/jrdev:<skill>`.
 | `/jrdev:workflow <none\|debug\|map\|test>` | Sets the workflow | User only |
 | `/jrdev:learn on\|off` | Turns profile features on or off | User only |
 | `/jrdev:off` | Turns everything off for this session, with an explicit notice | User only |
-| `/jrdev:stuck` | Escalates help; the last step grants a one-call exception (5.4) | User only |
+| `/jrdev:task start <name>` / `/jrdev:task done` | Opens or closes the task that help stages and exceptions are bound to (5.4) | User only |
+| `/jrdev:stuck` | Escalates help within the active task; the last step grants a one-call exception (5.4) | User only |
 | `/jrdev:status [--context]` | Shows the three settings, enforced vs. advisory rules, pending items, and with `--context` the exact text injected into the session | User or model |
 | `/jrdev:feedback` | Opens the feedback form | User or model |
 
@@ -261,7 +262,18 @@ In each case a second session stays active, its policy and pending records are u
 - **Every escalation step is logged as coached practice** (5.5).
 - **Help stage is recorded by hooks, not by the model (P3-02):**
   - The session state holds `help_stage` ∈ {0 none, 1 hint, 2 pseudocode, 3 partial snippet, 4 worked solution}.
-  - It advances **one step per user-typed `/jrdev:stuck`**, through the `UserPromptExpansion` channel, and resets when the task changes.
+  - It advances **one step per user-typed `/jrdev:stuck`**, through the `UserPromptExpansion` channel.
+  - **Task-scoped (P4-03):**
+    - **Explicit task boundaries:** help stages and stuck exceptions are keyed by a `task_id`, created with a user-typed `/jrdev:task start <short name>` and closed with `/jrdev:task done`. Starting a new task closes the previous one.
+    - **No active task:** `/jrdev:stuck` asks the learner to name the task first.
+    - **Stage-4 authorization is single-use.** It covers the **next response only**, within that task. Any further worked solution needs another `/jrdev:stuck`.
+    - **Stages 1–3** persist until the task closes.
+    - **Model task-change detection is advisory only.** The coach is instructed to ask "is this the same task?" when a request looks different, but only the user-typed command changes `task_id`.
+    - **Resume and compaction:** the active `task_id` and stage live in hook-managed state, and `SessionStart` re-injects them after resume or compaction.
+    - **Acceptance cases:**
+      - reach stage 4 on task A, then ask about task B in the same file, and again in another file; B starts at stage 0
+      - resume preserves the binding
+      - compaction preserves the binding
   - Each stage's allowance is written in the coach instructions and used as the review oracle (8.2).
 
 #### Learning (`learning:on`; Phase 1 minimal, Phase 2 full)
@@ -283,8 +295,19 @@ In each case a second session stays active, its policy and pending records are u
 - **Who places breakpoints:** the learner if `edit:type`, otherwise the agent.
 - **Enforcement:** the optional git pre-commit hook blocks commits that contain markers. The `Stop` hook gives one reminder.
 - **Pre-commit details (P3-05):**
-  - **Marker format:** `<comment syntax> jrdev-bp:<id>`, with per-language comment syntax. The `<id>` is registered in session state when the breakpoint is placed.
-  - **What it scans:** **staged content** only (added lines in `git diff --cached --diff-filter=ACMR -z`), never the working tree. It **blocks** on a registered `jrdev-bp:<id>` and only **warns** on unregistered marker text, such as docs or test fixtures that mention the marker.
+  - **Scope (P4-05):** the hook blocks **every active jrdev breakpoint in the files the commit touches**, not just newly added ones. Files the commit doesn't touch are out of scope, as declared.
+  - **What counts as an active breakpoint** is decided from staged content alone, without local registration:
+    - a line with a recognized breakpoint statement (`breakpoint()`, `pdb.set_trace()`, `debugger;`, `binding.irb`, `runtime.Breakpoint()`, …) **and** a `jrdev-bp:<id>` tag on the same line
+    - marker text without a breakpoint statement (docs, test fixtures) **warns** only
+  - **Optional `--strict` setting:** also blocks breakpoint statements that carry no jrdev tag.
+  - **What it scans:** the **full staged blobs** (`git show :<path>`) of every path in `git diff --cached --name-only -z -M --diff-filter=ACMR`, including pure renames. Never the working tree.
+    - **Verified locally:** a pure `git mv` produces zero added diff lines while the staged blob still contains the marker. That's why blobs are scanned, not diffs.
+  - **Acceptance cases:**
+    - a pure rename
+    - an unchanged marker inside a modified file
+    - a fresh clone with no session history
+    - deleted local registration
+    - a docs example
   - **Installation never overwrites existing hooks:**
     - It detects `core.hooksPath`, the `pre-commit` framework, husky and lefthook, and provides a config snippet for the one in use.
     - With a plain `.git/hooks/pre-commit` already present, it chains into it only with consent, after backing it up.
@@ -329,15 +352,53 @@ Their acceptance checks also carry over:
 
 **Phase 1: assessments run outside the AI session**, so the tutor can't leak hints and no model grades the work:
 1. **Start:** `jrdev assess start <topic>` in a plain terminal.
-   - Picks a task from a vetted bank that this learner **hasn't been exposed to before**, according to a per-learner exposure log.
+   - The **assessment service** picks a task from a vetted bank that this learner **hasn't been exposed to before**, according to an exposure ledger (see below).
    - Creates a scratch directory **outside** any repo, records the start time and the allowed resources (e.g. official docs only), and prints the task.
    - **Hidden tests and reference answers aren't on the learner's machine.**
 2. **Work:** the learner solves it without an AI assistant.
    - **Self-reported condition:** a submit-time checkbox "I used no AI or other help". **Ticking "I used help" makes the attempt coached.**
-   - **Tool check:** if a jrdev-hooked Claude Code session records any tool use inside the scratch directory during the window, the attempt is automatically flagged as coached.
+   - **Tool check (product use only, not in studies):** if a jrdev-hooked Claude Code session records tool use inside the scratch directory during the window, the attempt gets a **validity flag**. The **score itself is kept**, and the flag is a separate field.
 3. **Submit:** `jrdev assess submit` packages the submission and runs the public tests.
 4. **Score:** a human scorer applies the rubric and the hidden tests, **blind** to the learner's identity and to whether they're in a study arm.
-5. **Finalize:** the scorer marks the attempt finalized. Only then does an "assessed transfer" record exist.
+5. **Finalize:** the scorer marks the attempt finalized through the assessment service. Only then does an "assessed transfer" record exist.
+
+**Submission identity and finalization authority (P4-02):**
+- **One-time upload token:**
+  - Each attempt has an `attempt_id` and a `submission_revision`.
+  - The service issues a **one-time upload token** bound to `(attempt_id, revision)`. It's **not** a reusable pre-signed URL.
+- **Write-once storage:**
+  - The service computes the **SHA-256 of the received archive** and stores it **content-addressed in write-once storage** (object lock / no overwrite).
+  - Re-uploading the same digest is a no-op.
+  - A **different** digest after acceptance is rejected, unless a scorer reopens the attempt. That creates revision n+1 and is logged.
+- **The grading record binds:**
+  - the submission digest and storage version
+  - task and rubric versions
+  - the grader image digest
+  - the hidden-test version
+  - the result
+- **Grading:**
+  - Runs are idempotent per (digest, grader image, test version).
+  - A database constraint allows **one finalization per revision**, so repeated callbacks can't produce conflicting results.
+- **Signed results:**
+  - Only an authenticated scorer can finalize.
+  - The service **signs** the finalized result, and the local client shows an achievement as *verified* only after checking that signature.
+  - Locally edited or unsigned records are displayed as **unverified**.
+- **Blinding:** scorers see pseudonymous attempt IDs. The identity mapping is stored separately, with restricted access.
+- **Acceptance cases:**
+  - reusing an upload token
+  - changing files after submission
+  - a double upload
+  - importing a fabricated "finalized" record
+  - duplicate grading callbacks
+
+  None may silently change certified evidence, and every achievement resolves to the exact graded bytes.
+
+**Exposure ledger (P4-07):**
+- **Where the record lives:** the **authoritative exposure record is server-side** (the service serves the tasks), keyed by pseudonymous learner ID.
+- **Local backup and restore don't touch it:** the local cache `~/.jrdev/exposure.log` is append-only, and `jrdev restore` and migration snapshots **never rewrite it**.
+- **Missing history means "unknown":** if exposure history is unavailable (offline, deleted, or a new device without login), the attempt's freshness is marked **unknown**. Such attempts can't count as protocol-controlled transfer evidence.
+- **Retention and deletion:** the ledger follows the assessment data's retention. If a learner deletes their data, their ledger goes too. If they rejoin, prior exposure is **unknown** rather than assumed absent. This is disclosed.
+- **Practice on repeated tasks** is allowed, and is labelled "previously exposed".
 
 **Interruption and abandonment:**
 - An attempt stays `in progress` for up to 24 hours, then becomes `abandoned`, which is never counted.
@@ -357,7 +418,7 @@ Their acceptance checks also carry over:
   - Hidden tests are mounted read-only for the run. **Reference solutions are never mounted.**
   - The learner receives only pass/fail counts and the names of public tests. Full output stays with the scorer and is reviewed before anything is shared.
   - Any task whose hidden tests could have leaked through returned output is marked **exposed** and retired from fresh-task selection.
-- **Transfer:** `jrdev assess submit` uploads the archive over HTTPS to a private bucket, using a pre-signed URL. The bucket is listed in the data-flow inventory (6.3).
+- **Transfer:** `jrdev assess submit` uploads the archive over HTTPS with a one-time token to write-once storage (see above). The storage is listed in the data-flow inventory (6.3).
 - **SHA pinning of the plugin says nothing about participant code.** This boundary is what protects the scorer.
 - **Acceptance fixtures**, which must pass before the pilot:
   - external network access
@@ -393,7 +454,14 @@ Their acceptance checks also carry over:
 
 ### 5.6 Data compatibility across versions (P3-01)
 **Control state vs. learner records:**
-- **Control state** (session, config, exceptions) uses an **additive-only** format. New fields are optional, and readers ignore unknown fields. A newer file therefore never makes an older version deny work.
+- **Control state** (session, config, exceptions) carries a `policy_version` and a list of `required_capabilities` (P4-04). Fields are split into two groups:
+  - **Informational** (in an `info` block): safe for older readers to ignore.
+  - **Policy-affecting:** each one is tied to a named capability.
+- **An older engine meeting an unknown required capability doesn't silently apply its older, more permissive rule.** It applies a **safe degraded policy**: edits in the affected scope are treated as `type`, and an explicit notice says an update is needed for full policy support.
+  - **Recovery** (`/jrdev:type off`, `jrdev off`, kill switch) keeps working regardless of capability.
+- **`/jrdev:status` shows** the engine version, its capabilities, and the policy version in effect. Concurrent versions report their own effective policy.
+- **We don't claim every future policy is backward-compatible.**
+- **Acceptance:** an old reader meeting a synthetic new restrictive field applies the degraded policy and reports it. Purely informational fields stay harmless.
 - **Learner records** (profile, logs, assessments, review history) have explicit schema versions.
 
 **Compatibility rules:**
@@ -440,13 +508,37 @@ plugins/jrdev/
 | Location | Contents | Shareable? |
 |---|---|---|
 | `~/.jrdev/global/` | Topic identifiers from a **controlled vocabulary** (e.g. `react-hooks`, `sql-joins`), self-rated levels, review queue (topic IDs), assessment summaries with a **fixed schema** (5.5: `skill_id`, task and rubric versions, category, scorer, date, score band, evidence ref) | No |
-| `~/.jrdev/projects/<repo-hash>/` | Session state, logs, debug notes, maps, exceptions, project-scoped goals and free-text mission | No |
+| `~/.jrdev/projects/<project-id>/` | Session state, logs, debug notes, maps, exceptions, project-scoped goals and free-text mission | No |
 | `~/.jrdev/assessments/` | Assessment attempts and the exposure log | No (scores are exported to a mentor only on explicit request) |
 | `<repo>/.jrdev/config.json` | **Team defaults only**: default policy, allowlists, workflow settings. No learner data | Yes, may be committed intentionally |
 
 - Before writing anything inside the repo (only `config.json`, and only on explicit request), jrdev checks the file's tracking and ignore status and tells the user. **It never untracks files automatically.**
 - **If a repo already contains tracked `.jrdev/` logs** from older versions or manual copies, jrdev warns and explains the options (move them out, `git rm --cached`). The user decides.
 - This avoids depending on `.gitignore` consent: routine `git add .` can't stage private records, because none are in the worktree.
+
+**Project identity (P4-06):**
+- **Git projects:**
+  - `project-id` is a random UUID stored in the repository's **common git dir** (`$(git rev-parse --git-common-dir)/jrdev-id`). That location is untracked and never committed.
+  - **Symlink aliases:** the path is resolved with realpath first, so aliases map to the same ID.
+  - **Linked worktrees** share the common dir, so they're **one project**. That's declared.
+  - **Separate clones** get different UUIDs, so they're **separate projects**. That's declared.
+  - **A checkout replaced at the same path** has a new `.git`, so it gets a new ID. Old records show up as orphans in `jrdev projects` for the user to delete or relink.
+- **Non-git directories:**
+  - A mapping in `~/.jrdev/paths.json`, keyed by realpath.
+  - This is weaker (a moved directory gets a new ID), and that's declared.
+- **Monorepos:** one repository is one project. Sub-project scoping is a later option.
+- **Multi-root sessions:**
+  - jrdev injects private context **only for the session's starting project**.
+  - `DirectoryAdded` runs **after** a directory is added and can't prevent it. jrdev then **doesn't inject** the added project's private context and recommends a fresh session for that project.
+- **What we promise:** jrdev controls what **it stores and injects**. It can't remove information already present in a conversation. Changing directories doesn't "un-disclose" context.
+- **Acceptance cases:**
+  - symlink aliases
+  - two clones
+  - linked worktrees
+  - a replaced checkout
+  - `/add-dir` of another repo mid-session
+
+  Each follows its declared identity and injection rule.
 
 ### 6.2 What reaches the AI provider
 - **Injected at session start:** `learning:on` topic identifiers, due-review topic IDs, and the current mode rules. **Nothing else by default.**
@@ -462,8 +554,10 @@ plugins/jrdev/
 | Global free-text goal (opt-in only) | `~/.jrdev/global/` | **Yes, in every project** (warned) | None | Until reset | No |
 | Project goals, logs, debug notes, maps | `~/.jrdev/projects/<hash>/` | Only within that project's sessions, when used | None | Until `jrdev reset --project` | No |
 | Assessment attempts | `~/.jrdev/assessments/` | **No** in Phase 1; Phase 3+ only to the forked scorer if the learner opts in | Human scorer (blind) and a mentor via explicit export | 24 months, or until the learner deletes them | No |
-| Submitted assessment archives | Uploaded to a private grading bucket; executed only in the grading sandbox (5.5) | No | Human scorer | 24 months, deleted with the attempt | No |
+| Submitted assessment archives | Write-once, content-addressed storage via a one-time token; executed only in the grading sandbox (5.5) | No | Human scorer | 24 months, deleted with the attempt | No |
 | Feedback consent records and deletion receipts | jrdev DB | No | jrdev team | As long as the item exists | No |
+| Assessment exposure ledger | Assessment service (authoritative); local append-only cache | No | jrdev team (pseudonymous) | Same as assessment data; deleted with it (prior exposure then becomes "unknown") | No |
+| Pseudonym ↔ identity mapping | Separate restricted store | No | Study coordinator only | Study duration plus 12 months | No |
 | Feedback form | jrdev DB | Only if the submitter allows LLM processing | jrdev team | 24 months | Only as team-written paraphrased themes, or quotes with explicit consent |
 | Survey and interviews | jrdev DB / notes | Same opt-in rule | jrdev team | 24 months | Aggregates only |
 | Telemetry (opt-in, Phase 2+) | jrdev analytics | No | jrdev team | 12 months | Aggregates only |
@@ -598,6 +692,14 @@ jrdev/
   - **Tasks:** fresh, comparable assessment tasks scored with a rubric, by **blinded assessors** where practical.
   - **Follow-up:** 2 weeks after the intervention.
   - **Primary outcome:** rubric score on fresh **assessed-transfer** tasks (5.5) 2 weeks after the intervention, scored by a team member who isn't involved in delivering the intervention and is blind to arm.
+  - **Assessment protocol is identical in both arms (P4-01):**
+    - Study assessments happen in a **hosted assessment workspace**: a browser-based editor and terminal with **no AI extensions** and network access limited to an allowlist of official docs.
+    - It's provisioned the same way for both arms and is **separate from the jrdev plugin**, so the comparator gets no tutoring or extra monitoring from it.
+    - The plugin's tool-check flag is **not used** in the study.
+  - **Scores and validity flags are kept separately:**
+    - **Primary analysis:** intention-to-treat on the **scores of all attempts**, whatever their flags.
+    - **Validity flags** (self-reported help, workspace anomalies such as a disconnected session) are recorded identically in both arms by an **arm-blind analyst** and used only in prespecified **sensitivity analyses**.
+    - **Missing attempts** are handled by the missing-outcome rules below. They're never excluded based on arm-specific signals.
   - **Sample size:** set from the Phase 1 variance and a **precision target** (e.g. the confidence-interval width for the mean difference), or a power calculation if a meaningful effect size can be justified. If the required sample doesn't fit the capacity budget, the study is reduced to a pilot and labelled as such.
   - **Analysis:** intention-to-treat. **Everyone randomized** is accounted for.
     - **Missing delayed outcomes:** handled by multiple imputation under a stated assumption, with **sensitivity checks** (complete-case, plus best- and worst-case bounds).
