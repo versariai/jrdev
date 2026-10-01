@@ -1,6 +1,6 @@
 # Agent Skills With Possible Value for Junior Developers
 
-*Compiled 2026-10-01 and revised the same day after two adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md)). Companion to [ai-for-junior-devs.md](ai-for-junior-devs.md).*
+*Compiled 2026-10-01 and revised the same day after three adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md), [round 3](adversarial-review-round-3.md)). Companion to [ai-for-junior-devs.md](ai-for-junior-devs.md).*
 
 "Skills" here means **agent skills**: `SKILL.md` folders and plugins for Claude Code, plus similar mechanisms in Copilot, Codex and other tools.
 
@@ -41,7 +41,7 @@ These come from wider pedagogy and engineering practice. A **Socratic tutor that
 | Proposed support | What the skill is designed to do | Candidate skills |
 |---|---|---|
 | Socratic tutoring (agent asks, holds back answers, escalates gradually) | Keep the learner doing the reasoning, with a way out when stuck | mentoring-juniors, socratic-skills `guide-me`, socrates-skill |
-| Retrieval practice / spaced repetition | Quiz on concepts over time | agent-tutor-skill, `quiz-me` |
+| Retrieval practice / spaced repetition | Quiz on concepts over time | agent-tutor-skill (heuristic scheduling; see below), `quiz-me` |
 | Design interview before coding | Agent interviews the human about the plan | grill-me, grill-with-docs, superpowers `brainstorming` |
 | Structured debugging | Hypothesis-driven debugging loop | diagnosing-bugs, superpowers `systematic-debugging` |
 | Test-first workflow | Red-green-refactor | tdd, superpowers `test-driven-development` |
@@ -57,7 +57,10 @@ These come from wider pedagogy and engineering practice. A **Socratic tutor that
 - **What it does:**
   - **Learning:** at decision points the agent leaves a `TODO(human)` for you to write 5–10 lines of design or business logic, and adds "Insights" about trade-offs.
   - **Explanatory:** adds 2–3 short insights about implementation choices and codebase patterns.
-- **How it works:** an output style is instructions added to the agent's system prompt. The plugin versions inject the same instructions through a **SessionStart hook**. Either way it is **advisory**: the agent is asked to behave this way, not forced to.
+- **How it works:** these are two separate mechanisms with **similar, not identical** instructions. Both are **advisory**: the agent is asked to behave this way, not forced to.
+  - **Built-in output style:** configured in Claude Code itself. Per current docs, the built-in Learning style has its own contribution-and-resume behavior.
+  - **Plugin:** a **SessionStart hook** that adds context at session start. The [pinned hook script](https://github.com/anthropics/claude-plugins-official/blob/ab024cdcfa7ca80be204acd4907656ba5a968589/plugins/learning-output-style/hooks-handlers/session-start.sh) says it combines an earlier, unshipped Learning style with Explanatory-style "Insights".
+  - **Choose one.** There's no evidence that running both adds learning value.
 - **Where to get it:** set an output style in Claude Code (`/config → Output style` as of 2026-10; check the [output styles docs](https://docs.anthropic.com/en/docs/claude-code/output-styles)). Or use the plugins: [learning-output-style](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/learning-output-style) and [explanatory-output-style](https://github.com/anthropics/claude-code/tree/main/plugins/explanatory-output-style).
 - **Verification:** descriptions are from Anthropic's repos and docs. A public post by an Anthropic employee recommends it for staying hands-on ([X post](https://x.com/lydiahallie/status/2056420694087594283)). That post was not independently authenticated.
 
@@ -72,16 +75,17 @@ These come from wider pedagogy and engineering practice. A **Socratic tutor that
 - **`guide-me`** walks you through implementing a spec with hints instead of copy-paste code.
 - **How it works:** prompt instructions. Advisory.
 - **Use with care:** one useful check among several. **Don't use it as the only merge gate**, and don't run it on every commit by default. An AI quiz can share the code's blind spots.
-- **Install:** the README shows `npx skills add rodbv/socratic-skills/skills/quiz-me`. Not tested here.
+- **Install:** the README (at `dda051c`) shows `npx skills add rodbv/socratic-skills/skills/quiz-me`. That confirms where the command comes from, not that installing works.
 
 ### [`Bhala-Srinivash/agent-tutor-skill`](https://github.com/Bhala-Srinivash/agent-tutor-skill) (about 10★, MIT)
-- **What it does:** a teaching loop with FSRS spaced repetition, quizzes and per-concept mastery tracking stored in `~/.learn/`.
+- **What it does:** a teaching loop with quizzes, review scheduling and per-concept mastery tracking stored in `~/.learn/`.
+- **Scheduling is FSRS-*inspired*, not FSRS.** Its [`references/fsrs.md`](https://github.com/Bhala-Srinivash/agent-tutor-skill/blob/e273585b542d1d77b72c87eaa605d384ea4479f1/references/fsrs.md) tells the agent to use a retrievability formula plus approximate, rating-based "practical growth multipliers" with a difficulty adjustment. The [published FSRS algorithm](https://github.com/open-spaced-repetition/awesome-fsrs/wiki/The-Algorithm) uses parameterized state-update formulas; sharing the terms *difficulty* and *stability* doesn't reproduce it. The calculation is carried out by the agent following prompt instructions, not by verified code. Its "mastered" label is triggered when estimated stability reaches 90 days. Treat it as scheduling metadata, not proof of durable understanding.
 - **How it works:** prompt instructions plus files written to your home directory. Review what it writes before installing.
-- **Note:** spaced repetition and retrieval practice are well supported in learning research in general. This particular implementation has not been evaluated.
+- **Note:** spaced repetition and retrieval practice are well supported in learning research in general. This review found no evaluation of this particular implementation. Keep independent practice checks.
 
 ### `teach` from [`mattpocock/skills`](https://github.com/mattpocock/skills) (about 739K installs)
 - **What it does:** "teach new skills/concepts using the directory as a workspace" (from the README).
-- The same repo lists **`scaffold-exercises`** (about 402K installs) under Learning. Its behavior was **not verified**.
+- The same repo lists **`scaffold-exercises`** (about 402K installs) under Learning. Its [SKILL.md](https://github.com/mattpocock/skills/blob/d81f3a183412e71a5b1e84ca21bc1a35eea03a60/skills/misc/scaffold-exercises/SKILL.md) (static read) is an **exercise-authoring workflow** for a particular course environment. It creates section and exercise folders with `problem/`, `solution/` and `explainer/` readmes, requires `pnpm ai-hero-cli internal lint` to pass, and then makes a git commit. It's a tool for *course authors*, not an adaptive tutor for learners.
 
 ### Other Socratic skills (small; not verified beyond their READMEs)
 - [`bevibing/socrates-skill`](https://github.com/bevibing/socrates-skill)
@@ -127,7 +131,12 @@ These come from wider pedagogy and engineering practice. A **Socratic tutor that
 
 **These tools reduce risk; they don't guarantee safety.** Scanners and checklists have blind spots, and security-sensitive changes still need competent human review.
 
-- **`git-guardrails-claude-code`** (mattpocock, about 418K installs) is described as blocking dangerous git operations. **Whether it uses a hook (enforced) or prompt instructions (advisory) was not verified.** Check its source before relying on it, and keep your platform's own permission settings as the real safety boundary.
+- **`git-guardrails-claude-code`** (mattpocock, about 418K installs). **Mechanism (static read):** the [SKILL.md](https://github.com/mattpocock/skills/blob/d81f3a183412e71a5b1e84ca21bc1a35eea03a60/skills/misc/git-guardrails-claude-code/SKILL.md) instructs the agent to install a **`PreToolUse` hook matching the `Bash` tool**. The hook runs a [bundled script](https://github.com/mattpocock/skills/blob/d81f3a183412e71a5b1e84ca21bc1a35eea03a60/skills/misc/git-guardrails-claude-code/scripts/block-dangerous-git.sh) that exits with code 2 to block matching commands. Once set up, it is **enforced for that path**, not just advisory.
+  - **Coverage is limited.** The script checks the command text against a fixed list of regular expressions: `git push`, `git reset --hard`, `git clean -f(d)`, `git branch -D`, `git checkout .`, `git restore .`, `push --force` and `reset --hard`. That is not a parser or full git access control.
+  - **Forms the list doesn't match:** `git -C repo push` doesn't contain the string `git push`. Git aliases, scripts that call git indirectly, and tools other than `Bash` aren't covered either.
+  - **Depends on `jq`.** If `jq` is missing or extraction fails, the script doesn't explicitly fail closed. It reaches `exit 0`, which allows the command.
+  - These limits come from reading the code, not from live bypass tests.
+  - **Treat it as a seatbelt against common mistakes, not a security boundary.** Keep platform permissions and branch protection on the remote as the real controls.
 - **[`trailofbits/skills`](https://github.com/trailofbits/skills)** (about 7.3K★) includes:
   - `insecure-defaults` (fail-open configs)
   - `sharp-edges` (risky APIs and footguns)
@@ -230,9 +239,9 @@ Begin with **one tutoring workflow and one independent check**. Add more only if
 
 ## Remaining verification gaps
 
-- No skill was installed or run. Behavior, enforcement mechanisms (especially `git-guardrails-claude-code`), install commands and compatibility across Claude Code, Copilot and Codex were not tested.
-- Repository revisions were not recorded. Descriptions may change.
-- The behavior of `scaffold-exercises` and the source of the X post were not verified.
+- No skill was installed or run. Runtime behavior, install commands and compatibility across Claude Code, Copilot and Codex were not tested. The `git-guardrails-claude-code`, `scaffold-exercises`, `agent-tutor-skill` and Learning plugin descriptions are based on **static reads** of the pinned revisions below.
+- Revisions statically read (from review round 3; not installed): `mattpocock/skills@d81f3a1`, `Bhala-Srinivash/agent-tutor-skill@e273585`, `anthropics/claude-plugins-official@ab024cd`, `rodbv/socratic-skills@dda051c`. Other skills' descriptions come from their current READMEs and may change.
+- The X post was not authenticated.
 - This review's non-systematic search found no learning-outcome evaluations for the specific skills listed. A systematic search (defined terms, databases and inclusion criteria) could find some.
 
 ---
