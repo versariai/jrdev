@@ -1,51 +1,55 @@
 # Good Practices for Using AI as a Junior Developer
 
-*Compiled 2026-10-01 and revised the same day after an [adversarial review](adversarial-review.md). It draws on the 5 links you supplied plus about 15 more sources: trials, surveys, observational and labor data, vendor reports and practitioner writing.*
+*Compiled 2026-10-01 and revised the same day after two adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md)). It draws on the 5 links you supplied plus about 20 more sources: trials, surveys, observational and labor data, vendor reports and practitioner writing.*
 
-**How to read this report.** Each claim is tagged with the kind of evidence behind it:
+**How to read this report.** Inline tags describe **study design** only:
 
-| Tag | Meaning |
+| Design tag | Meaning |
 |---|---|
-| **[RCT]** | Randomized experiment. Can support causal claims, but only for the population, task and time horizon studied. |
+| **[RCT]** | Randomized experiment. Supports causal claims about the *randomized* factor, for the population, task and time horizon studied. |
+| **[RCT, post hoc]** | Observational analysis *inside* an RCT: subgroups the participants fell into, not ones they were randomized into. Shows associations only. |
+| **[Controlled]** | Controlled comparison that isn't a full RCT, e.g. a small within-subject study. |
 | **[Obs]** | Observational or correlational data. Shows associations, not causes. |
 | **[Survey]** | Self-reported data. |
-| **[Vendor]** | Analysis by a company with a commercial interest in the topic. |
 | **[Opinion]** | Practitioner advice. Plausible, but not tested. |
-| **[Extrapolation]** | Evidence from a different domain applied to coding by this report. |
+| **[Extrapolation]** | Evidence from another domain (e.g. essays, math, physics) applied to coding by this report. |
 
-The practices in sections 3 to 6 are **proposed habits** built on that evidence. They are not validated interventions.
+Who produced each study (e.g. a vendor with a commercial interest) and how far this report verified it are listed separately, in the evidence table's **Provenance / verification** column. The practices in sections 3 to 6 are **proposed habits** built on that evidence. They are not validated interventions.
 
 ---
 
 ## TL;DR
 
 1. **AI access lowered immediate comprehension in one learning experiment.** In Anthropic's randomized study (52 mostly junior Python devs learning an unfamiliar library), the AI group averaged **50% vs. 67%** on a quiz taken right after the task, with no significant time saving. [RCT] Long-term effects were not measured.
-2. **How people used AI was *associated* with different scores.** Participants who asked conceptual questions or asked for explanations scored higher on average than those who delegated. Those groups were small and self-selected, so this suggests habits to try. It does not prove a recipe. [RCT, exploratory subgroup]
-3. **Debugging showed the largest gap** in that study. Practising independent debugging is a reasonable priority. [RCT]
-4. **Use more than one check of your own understanding.** Explaining the code is one. Predicting behavior, finding a bug that was planted on purpose, and later solving a related task without help are better. [Opinion]
-5. **The entry-level market has tightened.** Employment of US software developers aged 22–25 fell nearly 20% from late 2022 to mid-2025 (payroll data). [Obs] That doesn't show which individual habits protect a career.
-6. **Daily AI use was *associated* with faster onboarding.** In six enterprises, daily users reached their 10th PR in 49 days vs. 91 for non-users. [Obs, Vendor] Expert-curated AI code tours beat AI-only tours on comprehension (83% vs. 57%) in one industry study. [Controlled study] See the [Onboarding mode playbook](#onboarding-mode-playbook).
+2. **How people used AI was *associated* with different scores.** Participants who asked conceptual questions or asked for explanations scored higher on average than those who delegated. Those groups were small and self-selected, so this suggests habits to try. It does not prove a recipe. [RCT, post hoc]
+3. **Tool design can change learning outcomes (outside coding).** In a high-school math field experiment, students with unrestricted GPT-4 access did *worse* later without it (17% lower grades). A tutor version with learning safeguards largely avoided that drop. [RCT, Extrapolation] A purpose-built AI physics tutor beat an active-learning class. [RCT, Extrapolation] Neither study tested coding agents or the skills in the companion report.
+4. **Debugging showed the largest gap** in the Anthropic study. Practising independent debugging is a reasonable priority. [RCT]
+5. **Use several complementary checks of your understanding:** explaining the code, predicting behavior, finding a bug planted on purpose, and later solving a related task without help. They measure different things; none is a complete test. [Opinion]
+6. **The entry-level market has tightened.** Employment of US software developers aged 22–25 fell nearly 20% from late 2022 to September 2025 (payroll data). [Obs] That doesn't show which individual habits protect a career.
+7. **Daily AI use was *associated* with faster onboarding.** In six enterprises, daily users reached their 10th PR in 49 days vs. 91 for non-users. [Obs] In a 5-learner industry study, expert-prepared AI-assisted code tours with podcasts scored 83% vs. 57% for learner-generated AI-only tours on a quiz. Experts rated the learners' explanations much closer (79% vs. 77%). [Controlled] See the [Onboarding mode playbook](#onboarding-mode-playbook).
 
 ---
 
 ## 1. What the evidence says
 
-| Finding | Type | Source | Scope and limits | Reasonable takeaway |
+| Finding | Design | Population · outcome · time horizon | Provenance / verification | Reasonable takeaway |
 |---|---|---|---|---|
-| AI group scored **50% vs. 67%** on an immediate quiz. The time difference (about 2 min) was **not significant**. Largest gap on **debugging** questions. | RCT | [Anthropic](https://www.anthropic.com/research/AI-assistance-coding-skills) | n=52, mostly junior, Python users new to the Trio library; short task; quiz right afterward. Lasting skill effects were **not** measured. | In this kind of learning task, AI access can reduce immediate understanding without saving much time. |
-| Delegation-style use averaged **<40%**. Conceptual-inquiry and code-plus-explanation use averaged **≥65%**. | RCT (exploratory subgroups) | same | Usage patterns were **not randomized**. Groups had n=2–7. Prior ability or motivation could explain both behavior and score. Anthropic says this analysis does not establish causality. | Habits worth trying, not a proven recipe. |
-| Experienced devs had **19% longer completion times** with AI, while *believing* they were about 20% faster. | RCT | [METR paper (2025)](https://metr.org/Early_2025_AI_Experienced_OS_Devs_Study-paper.pdf) | 16 experienced devs on their own large OSS repos, with early-2025 tools. METR's [Feb 2026 update](https://metr.org/blog/2026-02-24-uplift-update/) says later tools likely speed devs up more, but its follow-up estimates are unreliable because of selection effects. | Perceived speedups can differ greatly from measured ones. Measure, don't assume. |
-| Copilot access was associated with **+26% completed tasks**, with larger gains for less experienced devs. | Field RCTs | [Cui et al. (SSRN)](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4945566) | Measures output, not learning. Exact figure taken from secondary summaries; SSRN blocked direct access. | AI can raise juniors' output. Whether skill grows with it is a separate question. |
-| Higher confidence in AI was **associated** with less *self-reported* critical thinking. Higher self-confidence was associated with more. | Survey | [Microsoft Research + CMU, CHI 2025](https://www.microsoft.com/en-us/research/publication/the-impact-of-generative-ai-on-critical-thinking-self-reported-reductions-in-cognitive-effort-and-confidence-effects-from-a-survey-of-knowledge-workers/) | n=319 knowledge workers (not only developers). Self-report. Does not show AI *causes* reasoning to decline. | Watch for over-trust. |
-| Participants who wrote **unaided first, then with an LLM** showed better recall and broader brain activity than those who switched the other way. | Experiment (EEG) | [Kosmyna et al., "Your Brain on ChatGPT" (arXiv)](https://arxiv.org/abs/2506.08872) | **Essay writing, not coding.** 54 participants in sessions 1–3, only **18** in the switched session 4. Brain connectivity is not a measure of engineering skill. | Applying this to coding is **[Extrapolation]**. "Attempt first" is still a reasonable habit to try. |
-| **45%** of AI-generated samples failed security tests. XSS defenses failed in **86%** of relevant samples. | Vendor | [Veracode 2025](https://www.veracode.com/blog/genai-code-security-report/) | Vendor's own test set of about 80 tasks across 100+ models. These are not population-wide failure rates. | Security-sensitive AI code needs competent review. |
-| **66%** report AI solutions that are "almost right, but not quite". **45%** report that debugging AI code takes more time. About **33%** trust AI accuracy (3.1% highly + 29.6% somewhat), about **46%** distrust it. | Survey | [Stack Overflow 2025](https://survey.stackoverflow.co/2025/ai) | Reported frustration and trust, not measured time lost. | Expect near-misses and verify against primary sources. |
-| Copy-pasted and duplicated lines **overtook "moved" (refactored) lines** in 2024. Code revised within 2 weeks rose from 3.1% to 5.7%. | Obs, Vendor | [GitClear 2025](https://www.gitclear.com/ai_assistant_code_quality_2025_research) | Repo-wide trends over the period when AI was adopted. Does not show AI caused them for comparable work. "Moved lines" is only a proxy for refactoring. | Refactoring on purpose is sound advice regardless of the cause. |
-| AI adoption is **associated** with higher throughput and also with more delivery instability. | Survey/Obs | [DORA 2025](https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report) | Relationships across organizations, not controlled effects. | Team practices matter as much as the tool. |
-| Employment of devs aged 22–25 is down **nearly 20%** from its late-2022 peak to July 2025. Older age groups are flat. | Obs | [Stanford "Canaries in the Coal Mine" (Nov 2025)](https://digitaleconomy.stanford.edu/app/uploads/2025/11/CanariesintheCoalMine_Nov25.pdf) | US payroll data. Age is a rough proxy for "junior". This is separate from the paper's broader adjusted figure for AI-exposed jobs. | The entry-level market is tighter. This says nothing about which individual habits help. |
-| Entry-level SWE postings reportedly down **28%** since 2022. Describes a "vibe coding" paradox. | Paper | [Adam, SSRN 6409098](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6409098) | **Provisional.** Seen only through a search-engine abstract snippet; SSRN blocked direct access. Methods not reviewed. | Treat as unverified. |
+| AI group scored **50% vs. 67%** on a quiz. The time difference (about 2 min) was **not significant**. Largest gap on **debugging** questions. | RCT (AI access randomized) | 52 mostly junior Python users new to the Trio library · comprehension quiz · **immediately after** a short task | [Anthropic](https://www.anthropic.com/research/AI-assistance-coding-skills) (AI vendor). Publisher summary read. | In this kind of learning task, AI access can reduce immediate understanding without saving much time. Lasting effects unknown. |
+| Delegation-style use averaged **<40%**. Conceptual inquiry and code + explanation averaged **≥65%**. | **RCT, post hoc** (usage patterns *not* randomized) | Same; subgroups of n=2–7 | Same. Anthropic says this analysis does not establish causality. | Habits worth trying, not a proven recipe. |
+| Unrestricted GPT-4 raised grades during practice (+48%), but students did **17% worse** once access was removed. A tutor with learning safeguards gave larger practice gains (+127%) and **largely mitigated** the later harm. | RCT (field) | Nearly 1,000 high-school math students · practice performance, then **unaided** exam | [Bastani et al., PNAS 2025](https://doi.org/10.1073/pnas.2422633122) ([abstract](https://pubmed.ncbi.nlm.nih.gov/40560616/)). Academic. Abstract read. | **[Extrapolation]** Tool design matters, and so does measuring *later unaided* performance. |
+| Students learned significantly more in less time with a custom AI tutor than in an active-learning class. | RCT | College physics students · learning gains and engagement | [Kestin et al., Sci Rep 2025](https://pubmed.ncbi.nlm.nih.gov/40537565/). Academic. Abstract read. | **[Extrapolation]** A well-designed AI tutor *can* support learning. This is not evidence about coding agents or any skill package. |
+| Experienced devs had **19% longer completion times** with AI, while *believing* they were about 20% faster. | RCT | 16 experienced devs on their own large OSS repos · task time · early-2025 tools | [METR paper](https://metr.org/Early_2025_AI_Experienced_OS_Devs_Study-paper.pdf) (nonprofit). The [Feb 2026 update](https://metr.org/blog/2026-02-24-uplift-update/) says later tools likely speed devs up more, but its estimates are unreliable because of selection effects. | Perceived speedups can differ greatly from measured ones. |
+| Copilot **usage** raised completed tasks by **26.08% (SE 10.3%)** for adopters. Less experienced devs adopted more and gained more. | Field RCTs, IV analysis | 4,867 devs at Microsoft, Accenture and an anonymous company · weekly completed tasks (output) · 2–8 months | [Cui, Demirer et al. (author-hosted)](https://www.mertdemirer.com/Papers/Demirer_AI_productivity.pdf) · [SSRN](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4945566). Co-authors include Microsoft researchers. Paper read. | The estimate is the effect of *using* the tool for those who adopted it, not of merely offering access. It measures output, not learning. |
+| Higher confidence in AI was **associated** with less *self-reported* critical thinking. Higher self-confidence was associated with more. | Survey | 319 knowledge workers (not only developers) · self-report | [Microsoft Research + CMU, CHI 2025](https://www.microsoft.com/en-us/research/publication/the-impact-of-generative-ai-on-critical-thinking-self-reported-reductions-in-cognitive-effort-and-confidence-effects-from-a-survey-of-knowledge-workers/). Summary read. | Watch for over-trust. |
+| Participants who wrote **unaided first, then with an LLM** showed better recall and broader brain activity than those who switched the other way. | Experiment (EEG) | **Essay writing.** 54 participants in sessions 1–3, **18** in the switched session 4 · EEG and recall | [Kosmyna et al. (arXiv)](https://arxiv.org/abs/2506.08872). Preprint. Abstract read. | **[Extrapolation]** "Attempt first" is a reasonable habit to try, not proven for coding. The math-tutor study above suggests well-designed *assistance* can also work. |
+| **45%** of AI-generated samples failed security tests. XSS defenses failed in **86%** of relevant samples. | Benchmark | About 80 tasks across 100+ models · security test pass/fail | [Veracode 2025](https://www.veracode.com/blog/genai-code-security-report/) (security vendor). Summary read. | Security-sensitive AI code needs competent review. These are not population-wide failure rates. |
+| **66%** report AI solutions that are "almost right, but not quite". **45%** report that debugging AI code takes more time. About **33%** trust AI accuracy (3.1% highly + 29.6% somewhat), about **46%** distrust it. | Survey | About 49K developers · self-report | [Stack Overflow 2025](https://survey.stackoverflow.co/2025/ai). Original survey read. | Expect near-misses. These figures are reported frustration, not measured time lost. |
+| Copy-pasted and duplicated lines **overtook "moved" lines** in 2024. Code revised within 2 weeks rose from 3.1% to 5.7%. | Obs | 211M changed lines, 2020–2024 · proxy metrics | [GitClear 2025](https://www.gitclear.com/ai_assistant_code_quality_2025_research) (dev-analytics vendor). Summary read. | Refactoring on purpose is sound advice regardless of the cause. The data doesn't show AI caused the trend. |
+| AI adoption is **associated** with higher throughput and with more delivery instability. | Survey/Obs | Organizations worldwide | [DORA 2025](https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report) (Google). Summary read. | Team practices matter as much as the tool. |
+| Employment of devs aged 22–25 is down **nearly 20%** from its late-2022 peak to **September 2025**. Older age groups are flat or growing. | Obs | US payroll records (ADP) · employment counts | [Stanford "Canaries in the Coal Mine" (Nov 2025)](https://digitaleconomy.stanford.edu/app/uploads/2025/11/CanariesintheCoalMine_Nov25.pdf). Academic. Paper text checked. | The entry-level market is tighter. Says nothing about which individual habits help. |
+| Entry-level SWE postings are down **28%** since 2022, according to the author. | Paper (methods not reviewed) | n/a | [Adam, SSRN 6409098](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6409098). Title, author and the claim appear in the indexed abstract. The analysis itself is **not verified**. | Treat as the author's claim, not as established. |
 
-**Studies of positive learning outcomes are under-represented here.** This report found more evidence about dependence than about well-designed AI tutoring. That gap reflects where the search went, not proof that AI can't support learning.
+**Note on selection.** Most sources here study either dependence or productivity. The two education trials above are the main evidence about well-designed AI *tutoring*, and both come from outside software engineering. A systematic search might change the balance.
 
 ---
 
@@ -79,7 +83,7 @@ It helps to know which mode you're in before you open the AI.
 | Ready to move on when | You can use the concept on a related problem without help | You can sketch the architecture, trace a request and ship small PRs with light review | n/a |
 
 ### B. Interaction patterns *associated* with better immediate understanding
-These come from exploratory subgroups of the Anthropic study (n=2–7 per group; not randomized). Treat them as **habits to try**, not proven techniques.
+**[RCT, post hoc]** These come from a post hoc analysis of the Anthropic study: participants fell into these patterns themselves (n=2–7 per group). Treat them as **habits to try**, not proven techniques. Note that the actor here is the *human*. In "conceptual inquiry", the learner asks the questions and writes the code. That is not the same as a tutor that questions the learner, although both aim to keep the learner engaged.
 
 | Pattern | Group size | Average quiz score |
 |---|---|---|
@@ -91,7 +95,7 @@ These come from exploratory subgroups of the Anthropic study (n=2–7 per group;
 | ➖ **Iterative AI debugging:** pastes errors back in a loop without forming a hypothesis | n=4 | <40% average |
 
 ### C. Habits worth trying
-1. **Attempt first, when it's practical.** A short sketch or hypothesis before prompting. **[Opinion; Extrapolation from MIT]** If you're blocked on setup, tooling or an urgent incident, ask right away.
+1. **Attempt first, when it's practical.** A short sketch or hypothesis before prompting. **[Opinion; Extrapolation from MIT]** This is not always the better order. In the math study, a tutor *designed with learning safeguards* helped during practice without the later drop. What seems to matter is that the assistance keeps you doing the thinking, not that you always go first. If you're blocked on setup, tooling or an urgent incident, ask right away.
 2. **Get help when progress stops.** daily.dev suggests 20–30 minutes of solo debugging first. Treat that as an example, not a rule. A good signal to ask is that you've stopped making progress. When you ask, bring a hypothesis: *"I think X because Y. What am I missing?"* **[Opinion]**
 3. **Read the diff, every line,** and make sure you could debug it if it broke. **[Opinion]**
 4. **Ground tests in the requirement, not the implementation.** Write acceptance criteria *before* or *apart from* the AI's code. If the same AI writes the code and the tests, they can share one mistake. **[Opinion]**
@@ -103,7 +107,12 @@ These come from exploratory subgroups of the Anthropic study (n=2–7 per group;
 10. **Keep a decision log** of what AI suggested, what you rejected and why. **[Opinion]**
 11. **Keep talking to humans.** Don't let the privacy of AI turn you into a "silent silo". ([notthecode](https://notthecode.com/silent-silo-mentoring-junior-developers-ai/)) **[Opinion]**
 12. **Start with a small toolset.** One main tool and one way to check your understanding, rather than many. **[Opinion]**
-13. **Measure, don't guess.** METR found a large gap between perceived and measured speed. Time some tasks with and without AI. **[RCT, narrow population]**
+13. **Measure, don't guess, and measure fairly.** METR found a large gap between perceived and measured speed. **[RCT, narrow population]** For a personal comparison:
+    - Don't repeat the same task, because the second run benefits from the first.
+    - Use *comparable* tasks, alternate which ones get AI, and note difficulty and how familiar you already were.
+    - Count end-to-end effort: prompting, verifying, review comments received, rework and later fixes, not just typing time.
+    - Track *aided delivery*, *immediate understanding* and *later unaided performance* separately.
+    - Treat a handful of tasks as a personal observation, not a result.
 
 ### D. Skills to invest in
 Debugging and reading code; code review; fundamentals (memory, databases, networks, concurrency); system design; written and spoken communication. **[Opinion, broad agreement across practitioner sources]**
@@ -120,14 +129,18 @@ Debugging and reading code; code review; fundamentals (memory, databases, networ
 Onboarding has some of the more specific evidence in this report. It is also where a new hire is most tempted to ask AI instead of colleagues.
 
 ### Evidence
-- **[Obs, Vendor] Daily AI use was associated with a shorter time to 10th PR.** Across six enterprises: 49 days for daily users vs. 91 for non-users. ([DX](https://getdx.com/blog/ai-cuts-developer-onboarding-time-in-half/))
+- **[Obs] Daily AI use was associated with a shorter time to 10th PR.** Across six enterprises: 49 days for daily users vs. 91 for non-users. ([DX](https://getdx.com/blog/ai-cuts-developer-onboarding-time-in-half/); DX sells developer-productivity analytics.)
   - Observational, with no published sample sizes.
   - Other factors could explain it: prior experience, task assignment, PR size, review culture, and AI enthusiasts possibly being faster learners anyway.
   - New hires are not all juniors.
   - Reaching a 10th PR shows *delivery*, not *understanding of the system*.
-- **[Controlled study] Expert curation matters.** In LACY, at Beko on a 30K+ line legacy finance system, learners using **expert-guided code tours scored 83% vs. 57% with AI-only tours**. ([LACY, FSE 2026](https://arxiv.org/abs/2603.25391)) This is one study in one setting, but it supports having a maintainer check AI-generated onboarding material before newcomers rely on it.
-- **[Docs] Anthropic's guidance** suggests asking Claude Code "the questions you'd ask a senior engineer" when you join a new codebase. ([Claude Code best practices](https://code.claude.com/docs/en/best-practices))
-- **[Paper]** LLMs may help reduce information overload in onboarding docs. ([ASE 2024](https://dl.acm.org/doi/abs/10.1145/3691620.3695286))
+- **[Controlled] Expert involvement may help; small study.** LACY was run at Beko on a 30K+ line legacy finance system. **Five learners** (average 4.6 years of programming experience) each used two kinds of tour:
+  - expert-prepared, AI-assisted code tours **with podcasts**: 83% on a 10-question quiz, about 25 minutes
+  - tours they generated themselves with AI and no expert input: 57%, about 35 minutes
+
+  Order and features were counterbalanced, and there was no traditional-documentation baseline. Expert ratings of learners' explanations were much closer (79% vs. 76.8%). The two conditions differ in several ways (expert input, structure, podcasts), so this **doesn't isolate** the effect of an expert reviewing a generated guide. It is *consistent with* expert-guided onboarding being valuable. ([LACY methods and results](https://arxiv.org/html/2603.25391v1))
+- **[Opinion; vendor documentation] Anthropic's guidance** suggests asking Claude Code "the questions you'd ask a senior engineer" when you join a new codebase. ([Claude Code best practices](https://code.claude.com/docs/en/best-practices))
+- **[Research paper; design not reviewed here]** LLMs may help reduce information overload in onboarding docs. ([ASE 2024](https://dl.acm.org/doi/abs/10.1145/3691620.3695286))
 - **[Opinion] The risk:** knowledge about *why* things are the way they are gets passed on in conversation, and AI can't see most of it. Practitioner writing warns that AI can quietly replace those conversations. ([notthecode](https://notthecode.com/silent-silo-mentoring-junior-developers-ai/))
 
 ### For the new hire: an example 4-week arc (adapt to your team)
@@ -161,7 +174,7 @@ Onboarding has some of the more specific evidence in this report. It is also whe
 ### For the team
 - **Keep a short, maintained `CLAUDE.md` / `AGENTS.md`** with build and test commands, non-default conventions and gotchas. It helps both new humans and agents. **[Opinion; Anthropic docs]**
 - **Keep ADRs and a glossary** so the reasons behind decisions are written down.
-- **Have a maintainer review any AI-generated onboarding guide or code tour** before newcomers rely on it. **[Supported by LACY]**
+- **Have a maintainer review AI-generated onboarding guides or code tours** before newcomers rely on them, as far as time allows. **[Opinion; consistent with LACY]** How much it helps and what it costs will vary by team.
 - **Provide a curated starter set:** example PRs, one reference implementation per pattern, and good first issues.
 - **Pair AI exploration with a human buddy** who reviews the newcomer's architecture sketch and log.
 - **Measure onboarding broadly.** Time-to-10th-PR can be one *team-level* signal, alongside understanding, task difficulty, rework, review burden and independent troubleshooting. **Don't use PR counts as individual performance targets.**
@@ -197,8 +210,8 @@ Onboarding has some of the more specific evidence in this report. It is also whe
 ## 5. Counterpoints and nuance
 
 - **"This isn't new."** Experienced devs made similar complaints about copy-pasting from Stack Overflow. A difference some note: LLM output is tailored to your code, so it can need less engagement than adapting a snippet. **[Opinion]**
-- **The evidence is small and narrow.** Anthropic: n=52, with pattern subgroups of 2–7. METR: 16 devs, early-2025 tools, since updated. MIT: essays, n=18 for the switched session. Several sources are surveys, vendor reports or observational. **They answer different questions** and don't all point the same way. Copilot field experiments show output *gains*, for example.
-- **Short-term vs. long-term.** A learner might understand less right away but put the saved effort into extra practice and end up ahead. Or they might build dependence. **No study here followed learners long enough to tell which.**
+- **The evidence is small and narrow.** Anthropic: n=52, with pattern subgroups of 2–7. METR: 16 devs, early-2025 tools, since updated. MIT: essays, n=18 for the switched session. Several sources are surveys, vendor reports or observational. **They answer different questions** and don't all point the same way. Copilot field experiments show output *gains*, for example. Education trials in math and physics show that *well-designed* AI tutors can support learning.
+- **Short-term vs. long-term.** A learner might understand less right away but put the saved effort into extra practice and end up ahead. Or they might build dependence. **No coding study here followed learners long enough to tell which.** The math study, which tested students again after AI access ended, is the closest. It found harm from unrestricted access and largely none with a safeguarded tutor.
 - **Reuse.** Not everyone agrees with "do it all by hand". The common ground is that reuse is fine and blind reuse is not.
 
 ---
@@ -234,7 +247,9 @@ Onboarding has some of the more specific evidence in this report. It is also whe
 **Research and data**
 - [Anthropic: How AI assistance impacts the formation of coding skills](https://www.anthropic.com/research/AI-assistance-coding-skills)
 - [METR: Early-2025 AI and experienced OSS developer productivity (paper)](https://metr.org/Early_2025_AI_Experienced_OS_Devs_Study-paper.pdf) · [Feb 2026 update](https://metr.org/blog/2026-02-24-uplift-update/)
-- [Cui et al.: Effects of Generative AI on High-Skilled Work (SSRN)](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4945566)
+- [Cui, Demirer, Jaffe, Musolff, Peng, Salz: The Effects of Generative AI on High-Skilled Work (author-hosted PDF)](https://www.mertdemirer.com/Papers/Demirer_AI_productivity.pdf) · [SSRN](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4945566)
+- [Bastani et al.: Generative AI without guardrails can harm learning (PNAS 2025)](https://doi.org/10.1073/pnas.2422633122)
+- [Kestin et al.: AI tutoring outperforms in-class active learning (Sci Rep 2025)](https://pubmed.ncbi.nlm.nih.gov/40537565/)
 - [Microsoft Research / CMU: GenAI and critical thinking (CHI 2025)](https://www.microsoft.com/en-us/research/publication/the-impact-of-generative-ai-on-critical-thinking-self-reported-reductions-in-cognitive-effort-and-confidence-effects-from-a-survey-of-knowledge-workers/)
 - [Kosmyna et al.: Your Brain on ChatGPT (arXiv)](https://arxiv.org/abs/2506.08872)
 - [Veracode 2025 GenAI Code Security Report](https://www.veracode.com/blog/genai-code-security-report/)
@@ -243,7 +258,7 @@ Onboarding has some of the more specific evidence in this report. It is also whe
 - [DORA 2025](https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report)
 - [Stanford Digital Economy Lab: Canaries in the Coal Mine (Nov 2025)](https://digitaleconomy.stanford.edu/app/uploads/2025/11/CanariesintheCoalMine_Nov25.pdf)
 - [DX: AI cuts onboarding time in half](https://getdx.com/blog/ai-cuts-developer-onboarding-time-in-half/)
-- [LACY: Simulating Expert Mentoring for Software Onboarding with Code Tours (FSE 2026)](https://arxiv.org/abs/2603.25391)
+- [LACY: Simulating Expert Mentoring for Software Onboarding with Code Tours (FSE 2026)](https://arxiv.org/html/2603.25391v1)
 - [Towards Leveraging LLMs for Reducing Open Source Onboarding Information Overload (ASE 2024)](https://dl.acm.org/doi/abs/10.1145/3691620.3695286)
 
 **Practitioner writing and docs**
@@ -252,4 +267,6 @@ Onboarding has some of the more specific evidence in this report. It is also whe
 - [Harvard Gazette: Taming the Duck (CS50 AI tutor)](https://news.harvard.edu/gazette/story/2026/09/taming-the-duck-for-starters/)
 - [Claude Code output styles](https://docs.anthropic.com/en/docs/claude-code/output-styles) · [Claude Code best practices](https://code.claude.com/docs/en/best-practices)
 
-**Removed after the review:** the "evaluators rank catching AI mistakes highest (66% vs 28%)" statistic and the "38% say AI reduced mentoring" statistic, because neither could be traced to a primary source. Also removed: the "easy to replace" claim and the "onboarding benefit is largest" claim.
+**Corrected after review round 2:** the Stanford endpoint is now September 2025. LACY now includes its 5-learner sample and the differences between its conditions. The Copilot estimate is now cited from the paper as the effect of usage for adopters, with its SE. Two non-coding tutoring RCTs were added. Evidence tags now describe design only.
+
+**Removed after review round 1:** the "evaluators rank catching AI mistakes highest (66% vs 28%)" statistic and the "38% say AI reduced mentoring" statistic, because neither could be traced to a primary source. Also removed: the "easy to replace" claim and the "onboarding benefit is largest" claim.

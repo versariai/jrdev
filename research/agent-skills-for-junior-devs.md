@@ -1,40 +1,51 @@
 # Agent Skills With Possible Value for Junior Developers
 
-*Compiled 2026-10-01 and revised the same day after an [adversarial review](adversarial-review.md). Companion to [ai-for-junior-devs.md](ai-for-junior-devs.md).*
+*Compiled 2026-10-01 and revised the same day after two adversarial reviews ([round 1](adversarial-review.md), [round 2](adversarial-review-round-2.md)). Companion to [ai-for-junior-devs.md](ai-for-junior-devs.md).*
 
 "Skills" here means **agent skills**: `SKILL.md` folders and plugins for Claude Code, plus similar mechanisms in Copilot, Codex and other tools.
 
 **What this report can and can't tell you**
 - **Descriptions come from each project's README or SKILL.md** as published on the date above. **No skill was installed, run or security-audited** for this report.
-- **No skill here has published evidence that it improves junior developers' learning or independent performance.** Labels like "intended learning support" describe what a skill is *designed* to do. They are hypotheses, not proven effects.
+- **This review did not find published learning-outcome evaluations of these specific packages.** The search was not systematic: web searches, the skills.sh registry and the projects' READMEs, up to 2026-10-01. Some of the *methods* these skills use (e.g. retrieval practice, spaced repetition, tutors with learning safeguards) have research support in other settings. That is evidence for the method, not for a particular SKILL.md. Labels like "intended learning support" describe design intent.
 - **Popularity numbers are snapshots.** Install counts come from [skills.sh](https://www.skills.sh/) and stars from GitHub, both on 2026-10-01. Installs are not unique users, active use or a measure of quality. Stars and installs are different units, so don't compare them directly.
-- **Instructions are not enforcement.** Most skills are *instructions* the agent may or may not follow. Only hooks, platform permissions and sandboxes actually enforce anything. See [section 8](#8-installing-and-running-skills-safely).
+- **Instructions are not enforcement.** Most skills are *instructions* the agent may or may not follow. A hook running automatically does not make it a policy either. Only some hook events can block an action (e.g. `PreToolUse`), and only when configured to. Platform permissions and OS-level sandboxing are the main enforced boundaries. See [section 8](#8-installing-and-running-skills-safely).
 
 ---
 
 ## TL;DR
 
-- **Several skills are *designed* to keep the human thinking.** They include Socratic mentors, "grill me" design interviews, quizzes on your own diffs, and Anthropic's Learning output style. None has been evaluated for learning outcomes.
+- **Several skills are *designed* to keep the human thinking.** They include Socratic mentors, "grill me" design interviews, quizzes on your own diffs, and Anthropic's Learning output style. This review found no learning-outcome evaluations of these packages.
 - **The registry's most-installed skills are mostly delivery and productivity skills.** Matt Pocock's [`mattpocock/skills`](https://github.com/mattpocock/skills) is a notable exception: process skills like `grill-me` (about 1.3M installs), `tdd` (about 1M), `teach` (about 739K) and `diagnosing-bugs` (about 696K) rank highly.
 - **A reasonable first experiment:** Anthropic's **Learning output style**, where the agent leaves 5â€“10 lines of design or business logic for you to write. Of the tools here, it's the closest to the interaction patterns *associated* with better immediate quiz scores in the [Anthropic study](https://www.anthropic.com/research/AI-assistance-coding-skills). Those patterns were exploratory and not randomized.
 - **Start small:** one tutoring workflow plus one check of understanding that doesn't depend on the AI, rather than a large kit.
-- **Supply-chain risk is real.** Snyk scanned all of **ClawHub** plus a top-100 skills.sh baseline (3,984 skills, Feb 2026). It found **13.4%** with critical-level security findings and **76 confirmed malicious payloads**. Read third-party skills before installing them and run them with minimal permissions. ([Snyk ToxicSkills](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/))
+- **Supply-chain risk is real.** Snyk's ToxicSkills study (corpus of 3,984 skills, Feb 2026, reported mainly as **ClawHub**; see section 8) found **13.4%** with critical-severity findings and **76 manually confirmed malicious payloads**. Its curated top-100 skills.sh baseline had no critical findings. Read third-party skills before installing them and run them with minimal permissions. ([Snyk ToxicSkills](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/))
 
 ---
 
-## Design hypothesis: matching skills to interaction patterns
+## Design hypothesis: how skills relate to the research
 
-The [first report](ai-for-junior-devs.md#b-interaction-patterns-associated-with-better-immediate-understanding) lists interaction patterns *associated* with higher or lower immediate quiz scores in one small study. The table below matches skills to those patterns **by design intent**. That a skill follows a pattern does not show that the pattern, or the skill, causes learning.
+This mapping is **this report's hypothesis**. Nothing here shows that a skill reproduces a pattern, or that the pattern causes learning.
 
-| Pattern (associated, not proven) | What the skill is designed to do | Candidate skills |
+### A. Patterns observed in the Anthropic coding study (the *human* is the actor)
+In the [study](ai-for-junior-devs.md#b-interaction-patterns-associated-with-better-immediate-understanding) these were behaviors participants **chose themselves**. They were associated with higher immediate quiz scores in a post hoc analysis.
+
+| Observed human behavior | Tool support that leaves the human in charge | Notes |
 |---|---|---|
-| Conceptual inquiry / think first | Ask the human questions and hold back answers | mentoring-juniors, socratic-skills `guide-me`, socrates-skill |
-| Code + explanation | Explain the reasoning next to changes | explanatory-output-style, Learning output style |
-| Generate, then comprehend | Ask questions about code the human just wrote or accepted | socratic-skills `quiz-me`, agent-tutor-skill |
-| Plan before prompting | Interview the human about the design | grill-me, grill-with-docs, superpowers `brainstorming` |
-| Debug with a hypothesis | Follow a structured debugging loop | diagnosing-bugs, superpowers `systematic-debugging` |
-| Tests and verification | Red-green-refactor workflow | tdd, superpowers `test-driven-development` |
-| Security care | Flag insecure defaults and footguns | trailofbits `insecure-defaults`, `sharp-edges` |
+| **Conceptual inquiry:** *the learner* asks conceptual questions and writes the code themselves | Any assistant used in a "questions only, no code" way; Learning output style (the human writes the key lines) | No special skill is needed. It's a usage habit. |
+| **Code + explanation:** *the learner* asks for code together with its reasoning | Explanatory / Learning output styles | The agent adds explanations by default. Whether the learner engages with them isn't guaranteed. |
+| **Generate, then comprehend:** *the learner* asks follow-up questions about generated code | Any assistant; `quiz-me` can prompt the follow-up step | `quiz-me` *reverses* the actor: the agent asks. That is related, but it's not what the study observed. |
+
+### B. Additional proposed supports (not among the patterns the study observed)
+These come from wider pedagogy and engineering practice. A **Socratic tutor that questions the learner** is a *related* design idea, supported in other domains by the safeguarded-tutor results in math and physics ([see report 1](ai-for-junior-devs.md#1-what-the-evidence-says)). It is not a direct implementation of "conceptual inquiry".
+
+| Proposed support | What the skill is designed to do | Candidate skills |
+|---|---|---|
+| Socratic tutoring (agent asks, holds back answers, escalates gradually) | Keep the learner doing the reasoning, with a way out when stuck | mentoring-juniors, socratic-skills `guide-me`, socrates-skill |
+| Retrieval practice / spaced repetition | Quiz on concepts over time | agent-tutor-skill, `quiz-me` |
+| Design interview before coding | Agent interviews the human about the plan | grill-me, grill-with-docs, superpowers `brainstorming` |
+| Structured debugging | Hypothesis-driven debugging loop | diagnosing-bugs, superpowers `systematic-debugging` |
+| Test-first workflow | Red-green-refactor | tdd, superpowers `test-driven-development` |
+| Security checks | Flag insecure defaults and footguns | trailofbits `insecure-defaults`, `sharp-edges` |
 
 **Known failure mode:** an AI-written quiz, explanation or test can repeat the same mistake as the AI-written code. Check against something independent: the original requirement, the docs, a human reviewer, or the code's actual behavior.
 
@@ -131,14 +142,14 @@ The [first report](ai-for-junior-devs.md#b-interaction-patterns-associated-with-
 
 See the [Onboarding mode playbook](ai-for-junior-devs.md#onboarding-mode-playbook).
 
-**Key evidence:** in the [LACY study](https://arxiv.org/abs/2603.25391), learners using **expert-guided** code tours scored **83% vs. 57%** with **AI-only** tours. This was one industry study on a legacy finance system. **Have a maintainer review any AI-generated onboarding material before newcomers rely on it.**
+**Related evidence (small study):** in [LACY](https://arxiv.org/html/2603.25391v1), five learners on a legacy finance system scored 83% vs. 57% on a quiz using expert-prepared, AI-assisted tours with podcasts vs. AI-only tours they generated themselves. Expert ratings of their explanations were closer (79% vs. 77%). The conditions differ in several ways, so this is *consistent with* the value of expert-guided onboarding but doesn't isolate expert review. Having a maintainer review AI-generated onboarding material is a sensible practice where time allows.
 
 | Tool | Type | Use in onboarding | Notes |
 |---|---|---|---|
 | **Plan mode** | Claude Code built-in | Exploration without code edits | Blocks *edits*. If you also allow commands, scripts and tests can still have side effects, so run them in a disposable environment. |
 | **`/init`** | Claude Code built-in | Generates a starter CLAUDE.md | Compare it with your notes and with a teammate's understanding. |
 | **Subagents** | Claude Code built-in | Broad investigations | Keeps your main session focused. |
-| **`codebase-onboarding`** skills | Community ([affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code/blob/main/skills/codebase-onboarding/SKILL.md), [borghei/Claude-Skills](https://github.com/borghei/Claude-Skills/blob/main/engineering/codebase-onboarding/SKILL.md)) | Architecture overview, file map, setup steps | **AI-only output.** Per LACY, have an expert review it. |
+| **`codebase-onboarding`** skills | Community ([affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code/blob/main/skills/codebase-onboarding/SKILL.md), [borghei/Claude-Skills](https://github.com/borghei/Claude-Skills/blob/main/engineering/codebase-onboarding/SKILL.md)) | Architecture overview, file map, setup steps | **AI-only output.** Have a maintainer review it where practical. |
 | **`grill-with-docs`** | mattpocock/skills | Builds a glossary and ADRs | Have a maintainer check the domain definitions. |
 | **Explanatory output style** | Anthropic official | Explains codebase patterns during first changes | Explanations can be wrong. Verify them in the code. |
 | **`quiz-me`** | rodbv/socratic-skills | Checks your understanding | One check among several. Not a gate on its own. |
@@ -168,7 +179,7 @@ Star counts for small tutoring repos (for example, socratic-skills at about 17â˜
 
 ## 7. Example starter setups (adapt; start small)
 
-Begin with **one tutoring workflow and one independent check**. Add more only if a gap shows up. A large kit of tools is a learning burden in itself.
+Begin with **one tutoring workflow and one independent check**. Add more only if a gap shows up. A large kit of tools is a learning burden in itself. To judge whether a setup helps, track *aided delivery*, *immediate understanding* and *later unaided performance* separately, on comparable tasks rather than repeats of the same one. See habit 13 in [report 1](ai-for-junior-devs.md#c-habits-worth-trying). A few tasks give you a personal observation, not proof.
 
 **Learning mode** (new library or concept)
 - *Minimal:* Learning output style, plus solving a related task without AI a few days later
@@ -189,12 +200,13 @@ Begin with **one tutoring workflow and one independent check**. Add more only if
 ## 8. Installing and running skills safely
 
 **What Snyk ToxicSkills found** ([Snyk](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/)):
-- **Sample:** 3,984 skills, scanned 2026-02-05. That was all of **ClawHub** plus a top-100 **skills.sh** baseline.
-- **Findings:**
-  - 36.8% had at least one security finding.
-  - 13.4% had critical-level findings: malware distribution, prompt injection or exposed secrets.
-  - **76 payloads were confirmed malicious** after manual review.
-- **Findings are not the same as confirmed attacks.** Most findings were vulnerabilities or risky patterns, not deliberate malware.
+- **Sample:** Snyk describes the 3,984-skill corpus (scanned 2026-02-05) both as "from ClawHub and skills.sh" and as "3,984 skills from ClawHub". Its per-policy table reports **ClawHub (all)** separately from a curated **top-100 skills.sh** baseline. Read the percentages below as describing that corpus, which is overwhelmingly ClawHub. They don't describe skills.sh in general.
+- **Scanner findings (automated):**
+  - 36.8% (1,467) had a finding of any severity.
+  - 13.4% (534) had a **critical** finding. Snyk's critical categories are **prompt injection, malicious code and suspicious downloads**. Secret detection and credential handling are rated **high**, not critical.
+  - In the skills.sh top-100 baseline, the critical detectors flagged 0%.
+- **Confirmed malicious (manual review):** **76 payloads**, aimed at credential theft, backdoors and data exfiltration.
+- **Scanner findings are not the same as confirmed attacks.** Most were vulnerabilities or risky patterns, not deliberate malware.
 
 **How a skill or plugin can act on your machine:**
 
@@ -202,9 +214,10 @@ Begin with **one tutoring workflow and one independent check**. Add more only if
 |---|---|---|
 | SKILL.md instructions | No. Advisory text for the agent. | Prompt injection: instructions can tell the agent to do harmful things with *your* permissions. |
 | Bundled scripts | They run when the agent calls them. | Arbitrary code execution. |
-| Hooks | Yes. They run automatically on events. | Run on every session or event without asking. |
+| Hooks | **Depends on the event, configuration and response.** Hooks *run* automatically. In Claude Code, `PreToolUse` can deny a tool call (exit code 2 or a `deny` decision). `SessionStart` cannot block anything; its output only adds context, which is advisory. See the [hooks reference](https://code.claude.com/docs/en/hooks). | Arbitrary code runs on every matching event. A hook that injects instructions is no stronger than any other instruction. |
 | MCP servers or remote fetches | Depends. | Data exfiltration; behavior can change after you install. |
-| Platform permissions or sandbox | **Yes. This is your real boundary.** | Only as strong as how you configure it. |
+| Platform permissions | Yes, for the tool calls they govern. | Only as strong as how you configure them. |
+| OS-level sandbox | Yes, for the processes it covers. | **Check which execution paths it covers** (agent shell commands, hooks, MCP servers, scripts). Don't assume they all share the same restrictions. |
 
 **Practices:**
 - **Read everything a skill contains** before installing: SKILL.md, scripts, hooks and remote URLs. Reading reduces risk but **doesn't guarantee** safety against obfuscated or future changes.
@@ -220,7 +233,7 @@ Begin with **one tutoring workflow and one independent check**. Add more only if
 - No skill was installed or run. Behavior, enforcement mechanisms (especially `git-guardrails-claude-code`), install commands and compatibility across Claude Code, Copilot and Codex were not tested.
 - Repository revisions were not recorded. Descriptions may change.
 - The behavior of `scaffold-exercises` and the source of the X post were not verified.
-- No learning-outcome evaluations were found for any skill listed.
+- This review's non-systematic search found no learning-outcome evaluations for the specific skills listed. A systematic search (defined terms, databases and inclusion criteria) could find some.
 
 ---
 
