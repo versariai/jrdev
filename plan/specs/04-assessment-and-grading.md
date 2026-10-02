@@ -1,6 +1,6 @@
 # Evidence, assessment and grading
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.5. Review findings addressed here: P-02, P2-02, P3-04, P3-09, P4-02, P4-07, P5-04, P5-05, P5-06, P6-01, P6-06, P7-01, P7-02, P7-03, P7-04. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.5. Review findings addressed here: P-02, P2-02, P3-04, P3-09, P4-02, P4-07, P5-04, P5-05, P5-06, P6-01, P6-06, P7-01, P7-02, P7-03, P7-04, P9-02, P9-03. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates:** the grading sandbox fixtures must pass before any pilot submission is executed, on **both** routes. The Phase 1 manual route must pass its trace test before the pilot opens. The narrow-claims and eligibility rules gate Phase 2 progress features.
 
@@ -51,7 +51,7 @@
      - **Changed re-upload after acceptance:** rejected, unless the coordinator **and** the scorer jointly **reopen** the attempt. They log the reason, and a new revision is created. The earlier revision and its score are kept.
      - **Appeals and rescoring:** these add a new score row linked to the same revision, with the rubric version and grader image. **The original score is never overwritten.**
      - **Canonical result:** the latest score of the latest accepted revision. Every earlier row stays in the custody log.
-     - **Feasibility counting:** each **attempt ID counts once**, however many revisions or rescorings it has.
+     - **Attempt-level counts:** each **attempt ID counts once** in *operational* counts, however many revisions or rescorings it has. **The pilot gate doesn't use attempt counts.** It uses a **learner-level** measure defined in the [pilot decision table](07-evaluation-and-studies.md#studies-p-07) (P9-02).
      - **Acceptance:** an identical retry, a changed second upload, an interrupted transfer and an appeal. Each ends with one canonical result per attempt, earlier provenance retained, and a single feasibility count.
 6. **Scoring:**
    - The scorer runs the hidden tests in the **same grading sandbox** (see [Grading environment](#grading-environment-both-routes-p3-09)) and applies the rubric, blind to identity.
@@ -60,16 +60,26 @@
 7. **What the learner sees:** the coordinator returns pass/fail counts and the rubric band. The result shows in the learner's progress view as "Pilot assessment (manually scored)", with **no "verified" badge**.
 
 **Deletion:**
-- **Who deletes what:** on request, the coordinator removes the learner's archives from the drop folder and the grading host, their rows in the exposure sheet and custody log, and the mapping entry.
+- **Ordered procedure for deletion or planning-consent withdrawal (P9-03).** The coordinator and the research owner follow the same steps:
+  1. **Resolve first:** the coordinator looks up **all** of the learner's attempt IDs and planning IDs in the mapping **before anything is deleted**.
+  2. **Planning data:** the research owner deletes those planning rows and any exports containing them, and marks affected unpublished derived inputs **invalid**. For a withdrawal of the planning scope only, this step is the whole procedure. The learner's assessment data otherwise stays.
+  3. **Assessment data** (full deletion requests only): the coordinator removes archives from the drop folder and grading host, plus the learner's rows in the exposure sheet and custody log.
+  4. **Mapping last:** the coordinator deletes the mapping entry **last**, so no derived row is left unlocatable.
 - **Backups:** retention for the drive and host backups is documented (target: 30 days).
 - **What happens to exposure:** deleted exposure becomes "unknown" if the learner rejoins.
 
 **What a manual result can and can't support:**
 - **Can support:** pilot feasibility measures (assessments taken, completion) and the scorer's qualitative notes.
 - **Can also support exploratory planning data (P7-04),** but only with that consent scope. This is the input for the [Phase 3 sample-size procedure](07-evaluation-and-studies.md#studies-p-07):
-  - **What's recorded:** numeric rubric points (per criterion and total, 0–100), keyed by attempt ID, task version and rubric version, with the attempt's assistance observations.
+  - **What's recorded:** numeric rubric points (per criterion and total, 0–100), task version and rubric version, with the attempt's assistance observations.
+  - **Keyed by a planning ID:** rows use a random **planning ID**, not the attempt ID or pseudonym. Only the coordinator's identity store maps planning IDs to attempt IDs. The sheet is therefore **pseudonymized, not anonymous**, and it stays deletable.
   - **Consent:** a separate scope, "use my pilot scores, de-identified, for study planning".
+  - **Owner:** the **research owner** owns the analysis sheet. The coordinator owns the consent register and the mapping.
+  - **Export:** rows are copied from the custody log **only** for attempts whose learner holds the planning scope **at export time**, checked against the consent register.
+  - **Consent is re-checked at every planning run:** before computing anything, each run drops rows whose planning scope is no longer active.
   - **Permitted use:** estimating score spread for Phase 3 sizing only. Never product evidence, never published per person. Retained for pilot duration plus 12 months.
+  - **Withdrawal and deletion (P9-03):** see the ordered procedure below. **Derived inputs** (e.g. a computed SD) that used withdrawn rows are marked **invalid** and recomputed at the next run.
+  - **The only irreversible aggregate** is the planning figure **once frozen in the Phase 3 preregistration**. It can't be recomputed after that. The consent text says so, and rows withdrawn afterwards are still deleted.
 - **Can't support:**
   - it never becomes "assessed transfer" evidence
   - it raises no demonstrated level
@@ -79,6 +89,7 @@
 - **Copies:** every identity-bearing copy has a named owner and retention rule. These are the mapping, the drop-folder upload, the coordinator's messages and the grading-host files.
 - **Mismatches:** a hash mismatch stops the attempt.
 - **Blinding:** the scorer never sees identity.
+- **Planning copy (P9-03):** the trace test also exports the synthetic score to the analysis sheet with planning consent. It then withdraws the planning scope (once **before** export and once **after**) and runs a deletion. Withdrawn and deleted rows stop contributing to planning runs, affected derived inputs are invalidated, a consenting control row stays usable, and the mapping is deleted last.
 
 ## Result fields and eligibility (P6-06)
 Every scored attempt, on either route, stores the score plus these fields. **Observations are append-only**; eligibility is **derived** from them and recomputed whenever a new observation arrives (P7-03):

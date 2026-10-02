@@ -1,6 +1,6 @@
 # Website, newsletter and feedback
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 3. Review findings addressed here: P-03, P3-06, P3-07, P6-03, P8-01. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 3. Review findings addressed here: P-03, P3-06, P3-07, P6-03, P8-01, P9-01. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates (P6-03):** each collection channel must pass its consent and deletion acceptance **before its first real participant or subscriber**. That **includes Phase 0 discovery**. Team-generated fixtures can be used while a channel is unfinished. See [Per-channel readiness](#per-channel-readiness-p6-03).
 
@@ -75,9 +75,23 @@ collect → tag → cluster themes → prioritize (frequency × severity × feas
   - Deletions and consent changes are also written to a small, **append-only instruction ledger**, kept in a **separate store**, separately backed up, from the main database.
   - **Entry fields:** item ID or deletion-receipt hash, action, consent scope and revision, and timestamp.
   - **No feedback content** is ever stored in it.
+- **Write protocol: the ledger is authoritative and written first (P9-01):**
+  1. **Each request gets an ID:** a deletion or consent change gets an `op_id` (UUID) and a per-item revision number.
+  2. **The ledger commit comes first:**
+     - **Entries are committed durably** to the ledger store, a transaction committed with replication or `fsync`, **before** the user sees success.
+     - **On failure, nothing is acknowledged:** if the ledger write fails, the request returns an error and the user retries.
+  3. **The database copy is applied after:**
+     - The instruction is then applied to the primary database **idempotently**.
+     - The database records each applied `op_id`, so a retry with the same `op_id` is a no-op.
+  4. **Consent checks read the ledger:** processing and publication jobs read the **latest ledger revision** for the item at run time, and the database copy is only a cache. **An unapplied withdrawal in the ledger still blocks the job.**
+- **Checking the ledger is complete:**
+  - Entries carry a gapless sequence number and a **hash chain**, so each entry includes the previous entry's hash.
+  - **The current head (sequence and hash) is mirrored** to two independent places: the primary database's "last applied" marker, and a small append-only ops log in a third location.
+  - **On restore,** the ledger is accepted as complete only if it has **no sequence gaps**, its chain verifies, and its head is **at or beyond every mirrored head**. Otherwise it's treated as incomplete, and processing stays blocked.
+  - **Ledger storage:** durable, replicated storage with point-in-time recovery. A restored ledger goes through the same completeness check.
 - **Restore runbook:** after any database restore, run these steps in order:
   1. **Quarantine:** pause all processing workers, publication jobs and theme recounts.
-  2. **Replay the ledger:** apply every deletion and the **latest** consent revision per item recorded after the backup's timestamp.
+  2. **Verify, then replay:** confirm the ledger is complete (above), then apply every deletion and the **latest** consent revision per item recorded after the backup's timestamp, idempotently by `op_id`.
   3. **Resume** only once replay completes and is logged.
 - **If the ledger is unavailable or incomplete,** external processing and publication stay **blocked** until consent is re-established. Old consent in a restored snapshot is never treated as fresh authorization.
 - **Ledger retention:** entries are kept until the oldest backup that could still contain the item has expired, plus 30 days. They're then pruned, so the remedy doesn't become a permanent record. Access is limited to the ops owner.
@@ -86,6 +100,10 @@ collect → tag → cluster themes → prioritize (frequency × severity × feas
   - Back up three synthetic items, delete one, withdraw LLM and publication consent from another, then restore the old snapshot.
   - The deleted item stays absent from records, counts and jobs. The withdrawn item never reaches a processor or publication step. The third resumes normally.
   - Simulate a lost ledger: processing stays blocked.
+  - **Crash injection (P9-01):** interrupt before and after the ledger commit, and before the success response. Retry the same withdrawal or deletion, then restore an earlier database.
+    - Every **acknowledged** instruction stays effective.
+    - Retries are idempotent.
+    - A truncated ledger (head behind a mirrored head) blocks processing.
 
 **Counting and triage (P3-07):**
 - **The themes board reports three separate numbers per theme:**

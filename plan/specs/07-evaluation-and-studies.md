@@ -1,6 +1,6 @@
 # Evaluation, behavior review and studies
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 8. Review findings addressed here: P-06, P-07, P2-09, P3-02, P3-08, P4-01, P6-01, P6-05, P7-04, P8-02. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 8. Review findings addressed here: P-06, P-07, P2-09, P3-02, P3-08, P4-01, P6-01, P6-05, P7-04, P8-02, P9-02. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates:** the behavior-review oracle must pass before Phase 1 pilot data is collected. The Phase 1 decision rules are frozen before recruitment. The configuration protocol gates the efficacy study.
 
@@ -32,8 +32,13 @@
 | Support burden | **All** staff time per learner per week, including chat, calls and async replies, logged in a shared sheet | Median ≤ 30 min | 31–60 min | > 60 min |
 | Friction | Learners who turn `type` off for the rest of the pilot within week 1 | ≤ 25% | 26–50% | > 50% |
 | Answer leakage | Behavior review ([evaluation & studies: behavior-review oracle](#behavior-review-oracle-p3-02)) on team transcripts plus learner reports. **Serious** = content above the **effective allowance** (recorded `help_stage` plus grant validity for that turn, as in the oracle). Inappropriate refusals and misleading hints are tracked as separate incident classes | 0 serious incidents outstanding (each serious incident needs a fix plus a passing regression check before proceeding) | Any serious incident fixed and re-tested | Repeated serious incidents not fixable by prompt or policy changes |
-| Initial delayed assessment | **Pilot-scored** assessments taken on the [manual route](04-assessment-and-grading.md#phase-1-manual-route-p6-01) (not scores; feasibility only) | ≥ 50% of completers | 25–49% | < 25% |
+| Initial delayed assessment | **Learner-level (P9-02):** *distinct completers with a qualifying assessment ÷ all completers*. A **qualifying assessment** is the learner's **first assigned delayed assessment** on the [manual route](04-assessment-and-grading.md#phase-1-manual-route-p6-01), started **7–14 days after their last pilot week** and **pilot-scored**. Extra attempts, revisions and appeals never add to the numerator. Non-completers are excluded from both numerator and denominator. An attempt that ends in `infra_error` and isn't successfully re-scored within the window doesn't qualify, and it's reported in a separate infrastructure tally. Attempt counts are reported separately as an operational measure | ≥ 50% of completers | 25–49% | < 25% |
 
+  - **Zero completers:** the initial-delayed-assessment row is **not evaluable**, and the Completion row's Stop applies.
+  - **Worked check before freezing the protocol:**
+    - 6 completers, of whom one has 3 scored attempts and the others none → **1/6** (Stop), not 3/6.
+    - 6 completers, of whom 3 each have one qualifying attempt → **3/6** (Proceed).
+    - Duplicate revisions, appeals, attempts outside the window and non-completer submissions don't change either result.
   - **Overall decision:** *Stop* on any Stop cell; *Revise* on any Revise cell; *Proceed* only if all cells are Proceed. These thresholds are starting proposals and get **frozen** in the protocol before recruitment.
 - **Phase 3, efficacy study (only if Phase 1 passes its gate):**
   - **Parallel allocation:** individuals randomized within one recruitment source, so cohorts aren't confounded by source.
