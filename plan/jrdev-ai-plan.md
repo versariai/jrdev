@@ -1,6 +1,6 @@
 # jrdev.ai: Product Plan (overview)
 
-*Draft, 2026-10-01. This is the **overview**. Detailed designs live in [`specs/`](specs/), one file per area. Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md). The plan went through thirteen adversarial review rounds. Round 12 closed the core design with no findings; round 13 reviewed the material added afterwards (team, early signals, candidates, interview guide, C6 experiment), and its findings are addressed. See [Review history](#review-history).*
+*Draft, 2026-10-01. This is the **overview**. Detailed designs live in [`specs/`](specs/), one file per area. Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md). The plan went through fourteen adversarial review rounds. Round 12 closed the core design with no findings; rounds 13 and 14 reviewed the material added afterwards (team, early signals, candidates, interview guide, C6 experiment), and their findings are addressed. See [Review history](#review-history).*
 
 ## 1. Mission and principles
 
@@ -217,6 +217,7 @@ Recruiting your company's juniors is the easiest route, but the employer relatio
 | 11 | P11-01 | [adversarial-review-round-11.md](adversarial-review-round-11.md) |
 | 12 | None; closes the design-review cycle. Further evidence comes from the Phase 0 prototype | [adversarial-review-round-12.md](adversarial-review-round-12.md) |
 | 13 | P13-01 to P13-08 (material added after round 12) | [adversarial-review-round-13.md](adversarial-review-round-13.md) |
+| 14 | P14-01 to P14-04 | [adversarial-review-round-14.md](adversarial-review-round-14.md) |
 
 Each spec's header lists the findings it addresses, and the finding IDs appear in the relevant headings.
 

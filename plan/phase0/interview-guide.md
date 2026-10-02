@@ -15,7 +15,14 @@
 ## Before the first interview (gate)
 
 Interviews are a data-collection channel, so the [per-channel readiness checks](../specs/01-website-and-feedback.md#per-channel-readiness-p6-03) must pass first. Also check:
-- [ ] **Consent form** with separate scopes: (a) use for product research, (b) anonymized paraphrases in internal docs, (c) verbatim quotes (optional), (d) audio recording (optional).
+- [ ] **Consent form** with separate scopes (P14-04):
+  - (a) use for product research (required to take part)
+  - (b) anonymized paraphrases in internal docs (required)
+  - (c) paraphrases of what you said in the **public** plan on GitHub (optional; declining doesn't affect participation)
+  - (d) verbatim quotes, public only together with (c) (optional)
+  - (e) audio recording (optional)
+
+  The form also states that **aggregate counts** (e.g. "6 of 10 juniors described this") are published in the public plan for everyone interviewed, without any individual detail.
 - [ ] **Storage:** notes and any recordings live in **one private location** owned by Ivan, outside the repo. The retention and deletion steps are written down and tested with a fake participant.
 - [ ] **Transcription:** if a transcription service is used, it's disclosed in the consent form along with its retention. Otherwise, notes only.
 - [ ] **[Employer-pilot safeguards](../jrdev-ai-plan.md#employer-pilot-safeguards) apply to company juniors:**
@@ -27,7 +34,7 @@ Interviews are a data-collection channel, so the [per-channel readiness checks](
 ## Participants and format
 
 - **Who:** **10 juniors** (0–2 years of experience, backend, at the company; external juniors are fine if the company pool is small) and **5 mentors** (people who review juniors' code).
-- **Format:** 30–40 minutes, remote, one interviewer. Recording only with consent (scope d).
+- **Format:** 30–40 minutes, remote, one interviewer. Recording only with consent (scope e).
 - **Company code:** ask participants **not** to share company code on screen. Describe tasks in general terms.
 
 ## Interview principles
@@ -74,13 +81,13 @@ Interviews are a data-collection channel, so the [per-channel readiness checks](
 One note per interview, in the private store. **Never** in the repo.
 
 ```
-Code: J07 · Date · Role/experience · Stack · AI tools · Consent scopes: a b c d
+Code: J07 · Date · Role/experience · Stack · AI tools · Consent scopes: a b c d e
 Spontaneous top 3 (section 3, before any theme was named): 1 … 2 … 3 …
 Walkthrough (paraphrased): …
 Specific instances by theme: T1 … T2 … T3 … (one line each, mark "instance" or "opinion"; add the stated cost and "matters: yes/no")
 Concept reactions: Typing … C2 … C6 … C1 … (helps when / hurts when / would turn off?)
 Name reaction: …
-Quotes (only with scope c): …
+Quotes (only with scope d): …
 ```
 
 ## Codebook
@@ -126,13 +133,20 @@ Quotes (only with scope c): …
   - **Concepts not presented (C3, C4, C5) are unevaluated.** Report how many juniors described their target problem, but treat reactions as unknown, never as zero objections.
   - Mentor input can raise or lower a candidate's priority, but can't make one eligible on its own.
 - **Name:** if **≥ 3** of the 15 participants find "jrdev" patronizing or off-putting, shortlist alternatives before buying the domain.
-- **Output:** a paraphrased synthesis (theme counts at both evidence levels, spontaneous top difficulties, concept reactions) goes into the plan's early-signals section, replacing the n = 2 signal. No raw notes go into the repo.
+- **Output (P14-04):** two versions, both checked against **current** consent at the time of writing, so a withdrawal before synthesis changes them:
+  - **Internal synthesis** (private store): paraphrases from everyone with scope (b).
+  - **Public synthesis,** in the plan's early-signals section, replacing the n = 2 signal:
+    - **aggregate counts** for everyone interviewed: theme counts at both evidence levels, gate shares, concept reaction tallies
+    - **paraphrased themes or reactions** only from participants with scope (c), and only after the identifiability check: no distinctive workplace incident, team or project detail
+    - **quotes** only with scopes (c) and (d)
+  - No raw notes go into the repo.
+- **Dry run for consent:** with synthetic notes where some participants have only scopes (a) and (b), the public synthesis contains their counts and nothing derived from their individual accounts.
 
 ---
 
 ## Appendix: Roteiro em português
 
-**Abertura:** "Obrigado por participar. É voluntário, você pode parar a qualquer momento, e nada disso é usado em avaliação de desempenho, e seu gestor não fica sabendo quem participou. Posso tomar notas? Posso gravar o áudio (opcional)?"
+**Abertura:** "Obrigado por participar. É voluntário, você pode parar a qualquer momento, e nada disso é usado em avaliação de desempenho, e seu gestor não fica sabendo quem participou. Posso tomar notas? Os números agregados (por exemplo, '6 de 10 juniores') vão para o plano público no GitHub, sem nada individual. Posso usar paráfrases do que você disser no plano público (opcional)? Posso citar suas palavras (opcional)? Posso gravar o áudio (opcional)?"
 
 **Contexto**
 - Qual seu papel e há quanto tempo você desenvolve?

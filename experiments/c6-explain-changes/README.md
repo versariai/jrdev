@@ -10,7 +10,7 @@
 
 | File | What it does |
 |---|---|
-| [`skills/jrdev-explain-changes/SKILL.md`](skills/jrdev-explain-changes/SKILL.md) | A `/jrdev-explain-changes` skill: a plain-language summary of committed, uncommitted and untracked changes, with decisions, trade-offs, what to review, and an optional learning question |
+| [`skills/jrdev-explain-changes/SKILL.md`](skills/jrdev-explain-changes/SKILL.md) | A `/jrdev-explain-changes` skill: a plain-language summary of committed, staged, unstaged and untracked changes, with decisions, trade-offs, what to review, and an optional learning question |
 | [`CLAUDE-snippet.md`](CLAUDE-snippet.md) | A short, marked CLAUDE.md section asking Claude to note non-obvious decisions as it works, and to summarize before suggesting a commit or PR |
 
 You can use either part on its own. Trying both is the most informative.
@@ -32,10 +32,11 @@ Calling this experiment informal doesn't make it exempt: it's a real collection 
 ## What reaches the AI provider
 
 The skill is read-only on disk, but **every diff and file it reads is sent to your AI provider** as part of the conversation. To limit that:
-- it lists paths before reading, and never reads `.env`-style files, keys or paths that look like credentials (see the skill's step 2)
-- it doesn't read untracked files automatically, and it asks first on very large or sensitive changes
+- it first lists only file names and change statistics, and never reads `.env`-style files, keys or paths that look like credentials (see the skill's step 2)
+- on very large changes, or configuration files that might hold credentials, it asks which parts to cover **before reading any content**, and leaves out what you decline
+- it doesn't read untracked files automatically
 
-**Limits:** path filtering isn't secret redaction. A credential inside an ordinary source file would still be read. Use the skill only where your company's AI policy allows it.
+**Limits:** these are instructions Claude follows, not a guaranteed technical boundary. Path filtering isn't secret redaction: a credential inside an ordinary source file would still be read. Use the skill only where your company's AI policy allows it.
 
 ## Install (about 2 minutes)
 
@@ -82,7 +83,7 @@ Read both files before installing. They're short, and they contain no scripts.
 - **Against a specific base:** `/jrdev-explain-changes origin/develop`.
 - **To check your own understanding:** `/jrdev-explain-changes --learn`. It ends with one question for you to answer.
 
-It runs only `git log`, `git diff`, `git rev-parse` and `git ls-files`, and reads files. Claude Code may ask permission for those git commands, depending on your settings.
+It runs only `git log`, `git diff`, `git status`, `git rev-parse` and `git ls-files`, and reads files. Staged and unstaged changes are reported separately, so you can see exactly what the next commit would include. Claude Code may ask permission for those git commands, depending on your settings.
 
 ## Duration and feedback
 

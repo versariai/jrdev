@@ -1,6 +1,6 @@
 # Plugin commands, state and edit policy
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.1–5.3, 5.6, 5.7 and part of 5.4. Review findings addressed here: P-04, P-05, P-10, P2-01, P2-03, P2-04, P3-01, P4-04, P5-02, P6-04, P13-06, P13-08. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.1–5.3, 5.6, 5.7 and part of 5.4. Review findings addressed here: P-04, P-05, P-10, P2-01, P2-03, P2-04, P3-01, P4-04, P5-02, P6-04, P13-06, P13-08, P14-03. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates:** the Phase 0 prototype must pass the acceptance cases for the three settings, the command channel and the recovery paths. Data-compatibility tests gate the first public **update**.
 
@@ -193,7 +193,7 @@ In every case, records are preserved, recovery works, and evidence categories ar
 | `PostModelSwitch` | — | Log model changes for configuration records | spec 07 | 1 (logging), 3 (study) |
 | `DirectoryAdded` | — | Record the added root; **don't** inject its private context; recommend a fresh session | spec 05 | 1 |
 | `UserPromptSubmit` (candidate C1) | — | Count failure reports with no hypothesis per task; add a loop-nudge context | spec 03 | candidate |
-| `PreToolUse` (candidate C2) | `Edit\|Write\|Bash` | Check-in denial after N tool calls with no learner message | spec 03 | candidate |
+| `PreToolUse` (candidate C2) | `Edit\|Write\|MultiEdit\|NotebookEdit\|Bash` | Check-in denial after N tool calls with no learner message (row 4a of the edit table; its own step in the Bash order) | spec 03 | candidate |
 
 ## Hook performance budget
 Signal (n = 1): learners can be **resource-constrained** (16 GB of RAM limiting parallel work). jrdev must not add noticeable load.
