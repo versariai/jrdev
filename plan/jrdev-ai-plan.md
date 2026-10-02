@@ -34,7 +34,7 @@ jrdev plugin for AI coding tools (Claude Code first)
 ├── Learner profile (stored locally; minimal context injection)
 └── Skill packs: starter · onboarding · debugging · testing · mentor
 
-Public GitHub repo (github.com/<org>/jrdev)
+Public GitHub repo (github.com/versariai/jrdev, MIT)
 ├── Plugin + packs source, installable as a SHA-pinned plugin marketplace
 ├── Research reports + evidence ledger
 ├── Issues / Discussions: a second, public feedback channel
@@ -103,8 +103,8 @@ Each gate must pass before the milestone it guards. Details and acceptance cases
 
 | Phase | Scope | Exit gate (proceed / revise / stop) |
 |---|---|---|
-| **0. Discovery + prototype** (~3–4 weeks) | Domain and trademark check. Public repo skeleton. Landing page + newsletter + feedback + privacy page. **Recruitment plan:** channels (bootcamps, Discord/Slack communities, university clubs, partner companies), incentives, consent forms. 10 junior and 5 mentor interviews. **Prototype:** command router, session state and the edit decision table, tested from a clean install, with interaction tests covering the command channel, the three settings, recovery and exception consumption together. Draft the behavior-review checklist and freeze the Phase 1 pilot protocol and decision rules | **Proceed** if interviews confirm the "AI does it for me" difficulty as a top problem for the target audience *and* the prototype passes its acceptance cases. **Revise** if the friction concept is rejected in interviews. **Stop or pivot** if neither holds |
-| **1. Narrow MVP + formative pilot** (~6–8 weeks) | **Claude Code only, one stack** (Python *or* JS). Edit policy `type`, `/jrdev:stuck` with one-call exceptions, a minimal Learning profile, `jrdev assess` on the **[manual route](specs/04-assessment-and-grading.md#phase-1-manual-route-p6-01)** (outside the AI session; a small vetted task bank; a coordinator plus a separate blind scorer; results are pilot-scored and unsigned), data-flow disclosure. Behavior-review regression **from the first release**. Formative pilot with 8–12 learners. Site: guides, catalog, install & verify. Newsletter every 2 weeks | Apply the [frozen decision table](specs/07-evaluation-and-studies.md#studies-p-07), plus the gates in section 4. No new modes until the gate says Proceed |
+| **0. Discovery + prototype** (~3–4 weeks) | Domain and trademark check. Public repo skeleton. Landing page + newsletter + feedback + privacy page. **Recruitment plan:** internal recruitment of company juniors under the employer-pilot safeguards (written no-performance-use agreement, coordinator outside reporting lines), plus consent forms. 10 junior and 5 mentor interviews. **Prototype:** command router, session state and the edit decision table, tested from a clean install, with interaction tests covering the command channel, the three settings, recovery and exception consumption together. Draft the behavior-review checklist and freeze the Phase 1 pilot protocol and decision rules | **Proceed** if interviews confirm the "AI does it for me" difficulty as a top problem for the target audience *and* the prototype passes its acceptance cases. **Revise** if the friction concept is rejected in interviews. **Stop or pivot** if neither holds |
+| **1. Narrow MVP + formative pilot** (~6–8 weeks) | **Claude Code only, Python.** Recruited from your company's juniors under the [employer-pilot safeguards](#employer-pilot-safeguards). Edit policy `type`, `/jrdev:stuck` with one-call exceptions, a minimal Learning profile, `jrdev assess` on the **[manual route](specs/04-assessment-and-grading.md#phase-1-manual-route-p6-01)** (outside the AI session; a small vetted task bank; a coordinator plus a separate blind scorer; results are pilot-scored and unsigned), data-flow disclosure. Behavior-review regression **from the first release**. Formative pilot with 8–12 learners. Site: guides, catalog, install & verify. Newsletter every 2 weeks | Apply the [frozen decision table](specs/07-evaluation-and-studies.md#studies-p-07), plus the gates in section 4. No new modes until the gate says Proceed |
 | **2. Debug + full Learning** (~6–8 weeks) | Debug mode v1, FSRS reviews, progress report, a second stack, opt-in telemetry, research into the DAP option | Debug flow works end to end in two stacks. A second pilot round still passes the Phase 1 gates |
 | **3. Map + Test + efficacy study** (~8–10 weeks) | Map mode (static, labelled edges), Test mode (disposable fixtures, warnings, executed-lines view, optional tracing). Mentor/Team pack. Preregistered efficacy study | Study run and published as preregistered |
 | **4. Expand** | Other tools (with honest per-tool enforcement labels), a sandboxed test execution boundary, Debug v2, community packs | Each addition ships with its own acceptance checks |
@@ -127,18 +127,37 @@ Each gate must pass before the milestone it guards. Details and acceptance cases
 
 ---
 
-## 7. Open decisions (need your input)
-1. **Tool order:** Claude Code only for Phases 1–2 (proposed).
-2. **First stack:** Python or JavaScript for Phase 1?
-3. **Business model:** free/OSS, freemium (team features), or sponsorship?
-4. **Licence:** MIT or Apache-2.0.
-5. **Implementation language** for hooks and libs: TypeScript or Python.
-6. **Pilot source:** bootcamp, your company's juniors, or an open call. This affects consent and recruitment.
-7. **Brand:** test "jrdev" with the target audience, since it could feel patronizing.
-8. **GitHub org and repo name**, and whether the site code is public.
-9. **Research history:** publish all review rounds as they are, or an evidence ledger plus a link to the history.
-10. **Capacity budget:** fill in the table in [Roadmap](#5-roadmap).
-11. ~~**Phase 1 assessment scope**~~ **Resolved 2026-10-01: manual route** for Phase 1. The assessment service is built before the Phase 3 efficacy study. See [specs/04](specs/04-assessment-and-grading.md#phase-1-manual-route-p6-01).
+## 7. Decisions
+
+**Resolved 2026-10-01:**
+
+| # | Decision | Choice | Consequences in the plan |
+|---|---|---|---|
+| 1 | Tools for Phases 1–2 | **Claude Code only** | Other tools wait for Phase 4, each with honest per-tool enforcement labels |
+| 2 | First stack | **Python** | Phase 1 tasks, Typing coaching, `breakpoint()`/`pdb` debugging, `coverage.py`, and Python grading images |
+| 3 | Business model | **Freemium**: individual learners free, team and mentor features paid later | The plugin and packs stay MIT and free. Paid features are later, **hosted** team capabilities (rollout, behavior-review tooling, consent-based progress exports). They never include manager surveillance, and they never weaken the learner-data rules in [specs/05](specs/05-data-flows-and-privacy.md). Accounts and billing aren't before Phase 3 |
+| 4 | Licence | **MIT** | Plugin, packs and docs. Reused third-party ideas are attributed |
+| 5 | Hook and library language | **TypeScript** (Node), with the recovery CLI in POSIX `sh` | Use `ts-fsrs` for reviews. The Node runtime is checked at `SessionStart`; if it's missing, edits fall through as documented in [specs/02](specs/02-commands-and-policy.md#state-layers-and-the-edit-decision-table-p-05) |
+| 6 | Pilot source | **Juniors at your company** | Requires the [employer-pilot safeguards](#employer-pilot-safeguards) below |
+| 7 | GitHub org | **`versariai`**, repo `versariai/jrdev` | Marketplace: `/plugin marketplace add versariai/jrdev` |
+| 8 | Research history | **Evidence ledger plus linked history** | Publish a concise evidence ledger and the current specs. All review rounds stay in the repo, linked from the ledger |
+| 9 | Phase 1 assessment scope | **Manual route** | The assessment service is built before the Phase 3 efficacy study ([specs/04](specs/04-assessment-and-grading.md#phase-1-manual-route-p6-01)) |
+
+**Still open:**
+- **Capacity budget:** owners, hours per week and recurring costs in the [Roadmap](#5-roadmap) table. This is needed before Phase 0 ends.
+- **Brand:** test the name "jrdev" in the Phase 0 interviews, since some may find it patronizing. Keep the domain and org name flexible until then.
+- **Website code:** public or private (the content is public either way).
+
+### Employer pilot safeguards
+Recruiting your company's juniors is the easiest route, but the employer relationship can undermine consent and honest feedback. Before recruitment:
+- **Voluntary participation:** declining or withdrawing has no consequences, and **managers aren't told who participates**.
+- **No use in performance management:** pilot data, scores, transcripts and feedback are **never** used in performance reviews, promotion or staffing decisions. This is written into the consent form and confirmed by HR or management in writing.
+- **Coordinator independence:** the coordinator who holds the identity mapping and the scorer are **outside the participants' reporting lines**.
+- **What managers see:** only cohort-level aggregates, and only after the pilot, with no individual results.
+- **Work time:** participation time is agreed with managers up front as a cohort allowance, without naming individuals where possible.
+- **Company code:** pilot tasks use the **assessment task bank**, not company code. Typing-mode use on company repos is optional and governed by the company's AI and data policy.
+- **Feedback channel:** an anonymous feedback channel that doesn't go through the participant's manager.
+- **External validity:** results from one company's juniors may not generalize. The pilot report says so, and the Phase 3 efficacy study recruits more broadly.
 
 ---
 

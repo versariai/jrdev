@@ -17,7 +17,8 @@
 
 ## Studies (P-07)
 - **Phase 1, formative pilot (feasibility only):**
-  - 8–12 learners from the target audience, 3–4 weeks.
+  - 8–12 learners, **juniors at your company**, under the [employer-pilot safeguards](../jrdev-ai-plan.md#employer-pilot-safeguards), for 3–4 weeks. The Python task bank is used.
+  - The efficacy study (Phase 3) recruits **more broadly** than one employer.
   - Outcomes: completion, frustration, escape-hatch use, support burden, and an **initial** delayed assessment.
   - **No efficacy claims.**
   - **Decision rules, fixed in the protocol before recruitment (P2-09):**
