@@ -154,6 +154,11 @@ collect → tag → cluster themes → prioritize (frequency × severity × feas
     - The expired item's ID, scopes and flags are no longer retrievable, apart from backups still inside their disclosed 30-day bound.
     - The active item's consent is intact.
     - The header chain still verifies, and restores still apply current instructions.
+  - **Concurrent writes during maintenance (suggested in round 12):**
+    - Issue consent withdrawals and deletions **while** a checkpoint is being written and mirrors are updated, including the state where only one mirror is updated.
+    - Sequence and revision numbers stay serialized.
+    - Readers only ever use a **fully published** checkpoint.
+    - No write is lost between the snapshot and the new head.
   - **Crash injection (P9-01):** interrupt before and after the ledger commit, and before the success response. Retry the same withdrawal or deletion, then restore an earlier database.
     - Every **acknowledged** instruction stays effective.
     - Retries are idempotent.

@@ -1,6 +1,6 @@
 # jrdev.ai: Product Plan (overview)
 
-*Draft, 2026-10-01. This is the **overview**. Detailed designs live in [`specs/`](specs/), one file per area. Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md). The plan went through eleven adversarial review rounds; see [Review history](#review-history).*
+*Draft, 2026-10-01. This is the **overview**. Detailed designs live in [`specs/`](specs/), one file per area. Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md). The plan went through twelve adversarial review rounds, the last with no findings; see [Review history](#review-history).*
 
 ## 1. Mission and principles
 
@@ -157,6 +157,7 @@ Each gate must pass before the milestone it guards. Details and acceptance cases
 | 9 | P9-01 to P9-03 | [adversarial-review-round-9.md](adversarial-review-round-9.md) |
 | 10 | P10-01, P10-02 | [adversarial-review-round-10.md](adversarial-review-round-10.md) |
 | 11 | P11-01 | [adversarial-review-round-11.md](adversarial-review-round-11.md) |
+| 12 | None; closes the design-review cycle. Further evidence comes from the Phase 0 prototype | [adversarial-review-round-12.md](adversarial-review-round-12.md) |
 
 Each spec's header lists the findings it addresses, and the finding IDs appear in the relevant headings.
 
