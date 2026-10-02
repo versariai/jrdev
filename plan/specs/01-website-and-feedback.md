@@ -1,6 +1,6 @@
 # Website, newsletter and feedback
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 3. Review findings addressed here: P-03, P3-06, P3-07, P6-03. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 3. Review findings addressed here: P-03, P3-06, P3-07, P6-03, P8-01. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates (P6-03):** each collection channel must pass its consent and deletion acceptance **before its first real participant or subscriber**. That **includes Phase 0 discovery**. Team-generated fixtures can be used while a channel is unfinished. See [Per-channel readiness](#per-channel-readiness-p6-03).
 
@@ -70,6 +70,23 @@ collect → tag → cluster themes → prioritize (frequency × severity × feas
   - **Distinctive incidents** (identifiable workplace, person or event) are **never published, even paraphrased**, without `quote_publication` consent.
   - Generic themes may be paraphrased after a reviewer checks them against an identifiability checklist.
 
+**Restoring from backup can't undo deletions or withdrawals (P8-01):**
+- **Instruction ledger:**
+  - Deletions and consent changes are also written to a small, **append-only instruction ledger**, kept in a **separate store**, separately backed up, from the main database.
+  - **Entry fields:** item ID or deletion-receipt hash, action, consent scope and revision, and timestamp.
+  - **No feedback content** is ever stored in it.
+- **Restore runbook:** after any database restore, run these steps in order:
+  1. **Quarantine:** pause all processing workers, publication jobs and theme recounts.
+  2. **Replay the ledger:** apply every deletion and the **latest** consent revision per item recorded after the backup's timestamp.
+  3. **Resume** only once replay completes and is logged.
+- **If the ledger is unavailable or incomplete,** external processing and publication stay **blocked** until consent is re-established. Old consent in a restored snapshot is never treated as fresh authorization.
+- **Ledger retention:** entries are kept until the oldest backup that could still contain the item has expired, plus 30 days. They're then pruned, so the remedy doesn't become a permanent record. Access is limited to the ops owner.
+- **Provider-held data** (newsletter provider, transcription service) follows each provider's documented backup and restore behavior. It's listed per channel, and no guarantee is claimed beyond what the provider documents.
+- **Acceptance, before the affected channel opens:**
+  - Back up three synthetic items, delete one, withdraw LLM and publication consent from another, then restore the old snapshot.
+  - The deleted item stays absent from records, counts and jobs. The withdrawn item never reaches a processor or publication step. The third resumes normally.
+  - Simulate a lost ledger: processing stays blocked.
+
 **Counting and triage (P3-07):**
 - **The themes board reports three separate numbers per theme:**
   - submissions
@@ -89,7 +106,7 @@ A channel opens to real people only after its checks pass on **team-generated fi
 | Channel | Opens in | Consent and deletion checks before opening |
 |---|---|---|
 | Newsletter (chosen provider) | Phase 0 | Double opt-in works. Unsubscribe and **subscriber deletion** in the provider actually remove the record; the provider's backup retention is documented. Pulse-survey answers can be deleted |
-| Website feedback form | Phase 0 | Consent record per scope. **Withdrawal between queueing and job execution** skips the job. A deletion receipt removes the primary row, queued jobs, cluster memberships and derived summaries |
+| Website feedback form | Phase 0 | Consent record per scope. **Restore reconciliation test** passes (P8-01). **Withdrawal between queueing and job execution** skips the job. A deletion receipt removes the primary row, queued jobs, cluster memberships and derived summaries |
 | Onboarding survey | Phase 0 | The same consent and deletion checks as the feedback form |
 | Interviews (recordings and notes) | Phase 0 | Consent form with scopes. Defined storage for recordings and notes, and who holds them. Deletion removes the recording, notes, derived theme summaries that cite the participant, and the scheduling record. Transcription services are disclosed, along with their retention |
 | GitHub issues and Discussions | Phase 0–1 | Templates warn against pasting proprietary code. The triage process never copies private feedback into public threads |

@@ -1,6 +1,6 @@
 # jrdev.ai: Product Plan (overview)
 
-*Draft, 2026-10-01. This is the **overview**. Detailed designs live in [`specs/`](specs/), one file per area. Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md). The plan went through six adversarial review rounds; see [Review history](#review-history).*
+*Draft, 2026-10-01. This is the **overview**. Detailed designs live in [`specs/`](specs/), one file per area. Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md). The plan went through eight adversarial review rounds; see [Review history](#review-history).*
 
 ## 1. Mission and principles
 
@@ -85,7 +85,7 @@ Each gate must pass before the milestone it guards. Details and acceptance cases
 | **First public update** | [Data-compatibility tests](specs/02-commands-and-policy.md#data-compatibility-across-versions-p3-01) |
 | **Phase 2 progress features** | [Review-item contract](specs/03-modes-and-workflows.md#learning-learningon-phase-1-minimal-phase-2-full); [narrow claims rules](specs/04-assessment-and-grading.md) |
 | **Distributing the pre-commit hook** | [Pre-commit acceptance cases](specs/03-modes-and-workflows.md#debug-workflow-phase-2) |
-| **Efficacy study** | Phase 1 gate says Proceed; the assessment **service route** is built and passes its acceptance cases; [configuration protocol](specs/07-evaluation-and-studies.md#configuration-and-change-protocol-p3-08); preregistration |
+| **Efficacy study** | Phase 1 gate says Proceed; the assessment **service route** is built and passes its acceptance cases; the Phase 3 planning input is sufficient or a fallback is documented; the [arm-neutral metadata collector](specs/07-evaluation-and-studies.md#configuration-and-change-protocol-p3-08) passes its acceptance cases; [configuration protocol](specs/07-evaluation-and-studies.md#configuration-and-change-protocol-p3-08); preregistration |
 
 **Survey responses are tracked but aren't a gate.** Demand is judged from interviews and pilot retention.
 
@@ -152,6 +152,8 @@ Each gate must pass before the milestone it guards. Details and acceptance cases
 | 4 | P4-01 to P4-07 | [adversarial-review-round-4.md](adversarial-review-round-4.md) |
 | 5 | P5-01 to P5-06 | [adversarial-review-round-5.md](adversarial-review-round-5.md) |
 | 6 | P6-01 to P6-06 (first review of the split plan) | [adversarial-review-round-6.md](adversarial-review-round-6.md) |
+| 7 | P7-01 to P7-04 | [adversarial-review-round-7.md](adversarial-review-round-7.md) |
+| 8 | P8-01, P8-02 (and P7 carried forward) | [adversarial-review-round-8.md](adversarial-review-round-8.md) |
 
 Each spec's header lists the findings it addresses, and the finding IDs appear in the relevant headings.
 

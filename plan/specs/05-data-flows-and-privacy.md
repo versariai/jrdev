@@ -1,6 +1,6 @@
 # Data flows and privacy
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 6. Review findings addressed here: P-03, P2-06, P2-07, P4-06, P6-01. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 6. Review findings addressed here: P-03, P2-06, P2-07, P4-06, P6-01, P7-04, P8-01, P8-02. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates:** data-flow and privacy acceptance must pass before the Phase 1 pilot build is distributed.
 
@@ -60,6 +60,9 @@
 | Assessment attempts | `~/.jrdev/assessments/` | **No** in Phase 1; Phase 3+ only to the forked scorer if the learner opts in | Human scorer (blind) and a mentor via explicit export | 24 months, or until the learner deletes them | No |
 | Submitted assessment archives | Write-once (application-level), per-attempt keys, via a one-time token; executed only in the grading sandbox ([assessment & grading spec](04-assessment-and-grading.md)) | No | Human scorer | 24 months. **Deletion** goes through an authorized path that removes **all object versions** and checks at the storage-version level. Backups expire within 30 days (disclosed). The learner can keep the signed result **without** the archive, and it's then labelled "source deleted; graded bytes no longer retrievable" | No |
 | Feedback consent records and deletion receipts | jrdev DB | No | jrdev team | As long as the item exists | No |
+| Feedback instruction ledger (deletion markers, consent revisions; no content) | Separate store from the main DB | No | Ops owner | Until the oldest backup that could contain the item has expired, plus 30 days | No |
+| Phase 1 planning scores (numeric rubric points, de-identified) | Private analysis sheet | No | Research owner | Pilot duration plus 12 months; only with the planning consent scope | No |
+| Study metadata collector logs (client version, model setting, timestamps; both study arms) | Study data store | No | Research owner (pseudonymous) | Study duration plus 12 months | Aggregates only |
 | Assessment exposure ledger | Assessment service (authoritative); local append-only cache | No | jrdev team (pseudonymous) | Same as assessment data; deleted with it (prior exposure then becomes "unknown") | No |
 | Pseudonym ↔ identity mapping | Separate restricted store | No | Study coordinator only | Study duration plus 12 months | No |
 | **Phase 1 manual route:** exposure sheet | Private spreadsheet (coordinator) | No | Coordinator | Pilot duration plus 6 months; deleted on request (exposure then becomes "unknown") | No |

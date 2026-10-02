@@ -1,6 +1,6 @@
 # Evidence, assessment and grading
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.5. Review findings addressed here: P-02, P2-02, P3-04, P3-09, P4-02, P4-07, P5-04, P5-05, P5-06, P6-01, P6-06. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.5. Review findings addressed here: P-02, P2-02, P3-04, P3-09, P4-02, P4-07, P5-04, P5-05, P5-06, P6-01, P6-06, P7-01, P7-02, P7-03, P7-04. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates:** the grading sandbox fixtures must pass before any pilot submission is executed, on **both** routes. The Phase 1 manual route must pass its trace test before the pilot opens. The narrow-claims and eligibility rules gate Phase 2 progress features.
 
@@ -43,9 +43,20 @@
    - The coordinator moves each archive from the drop folder to the grading host and records it in a **custody log**: pseudonym, task code, SHA-256 on receipt, SHA-256 on the grading host, and timestamps.
    - **A hash mismatch stops the attempt.**
    - **Nothing is downloaded to personal machines.** The drop folder is emptied once transfer is confirmed.
+   - **Attempts and revisions (P7-01):**
+     - **Attempt ID:** each assignment gets `M-<pseudonym>-<task-code>-<n>`. Each accepted submission is a **revision**, starting at 1.
+     - **Accepted:** the first **complete** upload whose hash matches the hash the learner reported becomes the accepted submission for that revision.
+     - **Interrupted or mismatched transfer:** not accepted. The learner re-uploads under the same revision.
+     - **Identical re-upload** (same hash): logged as a duplicate and otherwise ignored.
+     - **Changed re-upload after acceptance:** rejected, unless the coordinator **and** the scorer jointly **reopen** the attempt. They log the reason, and a new revision is created. The earlier revision and its score are kept.
+     - **Appeals and rescoring:** these add a new score row linked to the same revision, with the rubric version and grader image. **The original score is never overwritten.**
+     - **Canonical result:** the latest score of the latest accepted revision. Every earlier row stays in the custody log.
+     - **Feasibility counting:** each **attempt ID counts once**, however many revisions or rescorings it has.
+     - **Acceptance:** an identical retry, a changed second upload, an interrupted transfer and an appeal. Each ends with one canonical result per attempt, earlier provenance retained, and a single feasibility count.
 6. **Scoring:**
    - The scorer runs the hidden tests in the **same grading sandbox** (see [Grading environment](#grading-environment-both-routes-p3-09)) and applies the rubric, blind to identity.
-   - The result goes into the custody log as `pilot-scored`, together with the rubric version and grader image.
+   - The result goes into the custody log as `pilot-scored`, together with the rubric version and grader image. It also records **numeric rubric points** (see planning data below).
+   - **Grading environment:** the [task environment contract](#task-environment-contract-both-routes-p5-06-p7-02) applies, including `infra_error` (P7-02).
 7. **What the learner sees:** the coordinator returns pass/fail counts and the rubric band. The result shows in the learner's progress view as "Pilot assessment (manually scored)", with **no "verified" badge**.
 
 **Deletion:**
@@ -55,6 +66,10 @@
 
 **What a manual result can and can't support:**
 - **Can support:** pilot feasibility measures (assessments taken, completion) and the scorer's qualitative notes.
+- **Can also support exploratory planning data (P7-04),** but only with that consent scope. This is the input for the [Phase 3 sample-size procedure](07-evaluation-and-studies.md#studies-p-07):
+  - **What's recorded:** numeric rubric points (per criterion and total, 0–100), keyed by attempt ID, task version and rubric version, with the attempt's assistance observations.
+  - **Consent:** a separate scope, "use my pilot scores, de-identified, for study planning".
+  - **Permitted use:** estimating score spread for Phase 3 sizing only. Never product evidence, never published per person. Retained for pilot duration plus 12 months.
 - **Can't support:**
   - it never becomes "assessed transfer" evidence
   - it raises no demonstrated level
@@ -66,30 +81,38 @@
 - **Blinding:** the scorer never sees identity.
 
 ## Result fields and eligibility (P6-06)
-Every scored attempt, on either route, stores **three separate properties**:
+Every scored attempt, on either route, stores the score plus these fields. **Observations are append-only**; eligibility is **derived** from them and recomputed whenever a new observation arrives (P7-03):
 
 | Field | Values | Meaning |
 |---|---|---|
 | `finalization` | `pilot-scored` · `finalized-signed` | How authoritative the score is (route-dependent) |
-| `assistance_status` | `none-reported` · `self-reported-help` · `tool-flag` · `monitoring-unavailable` | What we know about help during the attempt |
-| `eligible_independent` | `true` / `false`, with a reason | Whether it can count as independent evidence |
+| `self_report` | `no-help` · `help` · `missing` | The learner's answer at submission |
+| `tool_events` | List of detected events (possibly empty) | Hook-observed tool calls touching the attempt (definition below) |
+| `monitoring_coverage` | `full` · `partial` · `unavailable` | Whether jrdev hooks were running for the whole attempt window |
+| `eligible_independent` | `true` / `false`, with reasons | **Derived**, never written directly |
 
 **What counts as a tool flag:** a jrdev hook recorded a tool call whose `cwd` or target path was **inside the attempt's scratch directory** during the attempt window. That says AI tooling touched the attempt; it **doesn't prove** the help was material.
 
 **Eligibility rule:**
 - **Eligible:** `eligible_independent = true` only if **all** of these hold:
   - `finalization = finalized-signed`
-  - `assistance_status` is `none-reported` or `monitoring-unavailable`
+  - `self_report = no-help`
+  - `tool_events` is empty
   - freshness is **known**
-- **Precludes eligibility:** `self-reported-help` and `tool-flag`. The score and provenance are kept and shown.
-- **Discloses uncertainty only:** `monitoring-unavailable` (jrdev not installed, or hooks not running). The claim shows a "help monitoring unavailable" note.
+- **Disqualifiers are sticky:** `self_report = help`, a missing self-report, or **any** tool event makes the attempt ineligible. This holds **regardless of the order observations arrive in**. A later loss of monitoring can't remove an earlier tool event or turn a reported "help" into "no help".
+- **Disclosed only:** `monitoring_coverage` of `partial` or `unavailable` (jrdev not installed, or hooks not running for part of the window). The claim shows a "help monitoring incomplete" note.
+- **Scores are kept** for every attempt, with all observations and provenance.
 - **Not eligible yet:** manual-route results (`pilot-scored`).
 
 **Study results:**
 - Study analysis follows its own protocol ([evaluation & studies](07-evaluation-and-studies.md)): **all** attempted scores are used, whatever these fields say.
 - Study results are **not** automatically imported as product achievements. Importing one requires the learner's consent, and the attempt must pass this eligibility rule.
 
-**Acceptance:** assisted, tool-flagged, clean and monitoring-unavailable attempts all keep their scores and provenance. Only eligible ones raise independent evidence. The study's all-attempt analysis is unaffected.
+**Acceptance:**
+- assisted, tool-flagged, clean and monitoring-unavailable attempts all keep their scores and provenance
+- only eligible attempts raise independent evidence
+- the study's all-attempt analysis is unaffected
+- order cases (P7-03): reported help plus unavailable monitoring; a tool event followed by a hook failure; no-help plus partial monitoring. Each yields the same eligibility whatever the processing order
 
 ## Service route (built before the Phase 3 efficacy study)
 
@@ -133,11 +156,7 @@ Every scored attempt, on either route, stores **three separate properties**:
   - the result
 - **Grading:**
   - Runs are idempotent per (digest, grader image, test version).
-  - **Task environment contract (P5-06):**
-    - Each task version pins **one environment image**: the runtime and dependency versions, preinstalled resources, the test command, resource limits, and seeded or deterministic inputs.
-    - **One image everywhere:** the same image is used for local public tests (`jrdev assess start` pulls it), the hosted study workspace and the hidden-test grader. Intentional differences are listed in the task text.
-    - **Infrastructure failures are separate from learner failures.** An image mismatch, a missing dependency, a provisioning error or a grader crash gets the status `infra_error`. It's **never finalized as a learning result**. Retries re-run the **same submission revision**, so no new task exposure is needed.
-    - **Acceptance:** a fixture exercising each declared feature and dependency passes in all three environments. A deliberately mismatched image produces `infra_error`, not a low score.
+  - The [task environment contract](#task-environment-contract-both-routes-p5-06-p7-02) applies.
   - A database constraint allows **one finalization per revision**, so repeated callbacks can't produce conflicting results.
 - **Signed results:**
   - Only an authenticated scorer can finalize.
@@ -190,6 +209,19 @@ Every scored attempt, on either route, stores **three separate properties**:
   - memory exhaustion
 
   Each must be contained or terminated, leave the next run clean, and leak no reference answer through logs or diagnostics.
+
+## Task environment contract, both routes (P5-06, P7-02)
+- **Pinned before assignment:** each task version pins **one environment image** before the task is assigned, on **either** route. The image covers the runtime and dependency versions, preinstalled resources, the test command, resource limits, and seeded or deterministic inputs.
+- **One image everywhere:**
+  - The same image is used for local public tests (`jrdev assess start` pulls it), the hosted study workspace (Phase 3) and the hidden-test grader.
+  - The task package states the **supported public-test conditions**: run the public tests in the provided image. Results from a learner's own runtime are informational only.
+  - Intentional differences are listed in the task text.
+- **Infrastructure failures are separate from learner failures:**
+  - An image mismatch, a missing dependency, a provisioning error or a grader crash gets the status `infra_error`. A **valid but incorrect** solution is scored normally.
+  - `infra_error` is **never** recorded as a learning result.
+  - Retries re-run the **same accepted submission bytes**, so no new task exposure is needed.
+  - On the manual route, an `infra_error` attempt counts **once** in feasibility numbers, under its own "infrastructure failure" tally, never as a scored or failed assessment.
+- **Acceptance:** a fixture exercising each declared feature and dependency passes in the public-test and hidden-test environments (and in the hosted workspace, in Phase 3). A deliberately missing dependency or wrong image produces `infra_error`, not a low score, and the retry gets no duplicate feasibility credit.
 
 ## What a passed assessment claims (P3-04)
 - **Narrow skill IDs:**

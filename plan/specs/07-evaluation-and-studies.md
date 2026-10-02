@@ -1,6 +1,6 @@
 # Evaluation, behavior review and studies
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 8. Review findings addressed here: P-06, P-07, P2-09, P3-02, P3-08, P4-01, P6-01, P6-05. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 8. Review findings addressed here: P-06, P-07, P2-09, P3-02, P3-08, P4-01, P6-01, P6-05, P7-04, P8-02. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates:** the behavior-review oracle must pass before Phase 1 pilot data is collected. The Phase 1 decision rules are frozen before recruitment. The configuration protocol gates the efficacy study.
 
@@ -49,7 +49,15 @@
     - **Primary analysis:** intention-to-treat on the **scores of all attempts**, whatever their flags.
     - **Validity flags** (self-reported help, workspace anomalies such as a disconnected session) are recorded identically in both arms by an **arm-blind analyst** and used only in prespecified **sensitivity analyses**.
     - **Missing attempts** are handled by the missing-outcome rules below. They're never excluded based on arm-specific signals.
-  - **Sample size:** set from the Phase 1 variance and a **precision target** (e.g. the confidence-interval width for the mean difference), or a power calculation if a meaningful effect size can be justified. If the required sample doesn't fit the capacity budget, the study is reduced to a pilot and labelled as such.
+  - **Sample size:** set from a **precision target** (e.g. the confidence-interval width for the mean difference), or a power calculation if a meaningful effect size can be justified. If the required sample doesn't fit the capacity budget, the study is reduced to a pilot and labelled as such.
+    - **Planning input (P7-04):** the SD of total rubric points from Phase 1 [planning data](04-assessment-and-grading.md#phase-1-manual-route-p6-01), **prespecified before the pilot opens**:
+      - **Which attempts:** only consented, scored attempts, excluding `infra_error`.
+      - **How tasks are combined:** scores are **centered per task version** (each task's mean subtracted), and the pooled within-task SD is used, so differences in task difficulty don't inflate the spread.
+      - **Sufficiency rule:** at least **2 task versions** with **≥ 6 scored attempts each**.
+    - **If that's not met, the input is declared insufficient.** The fallback basis must be documented **before** preregistration:
+      - a conservative assumed SD (e.g. 25 points on the 0–100 scale)
+      - or a small dedicated calibration run
+    - **Band-only or rubric-incompatible scores** don't count toward the input.
   - **Analysis:** intention-to-treat. **Everyone randomized** is accounted for.
     - **Missing delayed outcomes:** handled by multiple imputation under a stated assumption, with **sensitivity checks** (complete-case, plus best- and worst-case bounds).
     - **Reporting:** dropouts are reported by arm, with reasons.
@@ -87,6 +95,14 @@
 ## Configuration and change protocol (P3-08)
 - **What a behavior review declares:** the configurations it covers (Claude Code version, model ID, plugin SHA, output style).
 - **Per-session log:** jrdev records the plugin SHA, settings and, where hook inputs expose them, the Claude Code version and model.
+- **Collected the same way in both arms (P8-02):**
+  - Common configuration fields are collected in **both** arms by a separate, consented **study metadata collector**. It's a minimal plugin with only `SessionStart` and `PostModelSwitch` hooks, and it logs Claude Code version, model setting and timestamps.
+  - It has **no** tutoring, edit-policy or prompt behavior, and it never collects conversation content.
+  - The treatment arm runs the same collector, so the **common fields come from the same source** in both arms. jrdev's own log adds treatment-only fields (`/jrdev:stuck` use, settings, plugin SHA).
+  - In the comparison arm, plugin identity is recorded as **not applicable**.
+  - **Each field is labelled** *observed* (collector), *configured* (the frozen settings file distributed to both arms) or *self-reported* (weekly check-in).
+  - **If the collector is missing or fails,** the record says **unknown**. Fidelity claims are narrowed to what was actually observed in both arms, and the limitation is reported.
+  - **Acceptance before the efficacy study:** simulate an initial session, a model-setting change, a client update and missing metadata **separately in both arms**. Each yields the common record or an explicit unknown. The comparison arm gets no jrdev behavior through the collector. The collector has its own data-inventory entry and consent.
 - **Model changes:** `PostModelSwitch` events are logged. **A one-turn fallback model doesn't fire `PostModelSwitch`, so it can't be observed by jrdev**, and that limit is disclosed in study reports.
 - **During the efficacy study:**
   - The plugin SHA and the model setting are **frozen for both arms** for the study window. Product iteration continues on a separate track.
