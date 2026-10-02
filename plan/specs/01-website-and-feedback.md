@@ -1,6 +1,6 @@
 # Website, newsletter and feedback
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 3. Review findings addressed here: P-03, P3-06, P3-07, P6-03, P8-01, P9-01, P10-01. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 3. Review findings addressed here: P-03, P3-06, P3-07, P6-03, P8-01, P9-01, P10-01, P11-01. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates (P6-03):** each collection channel must pass its consent and deletion acceptance **before its first real participant or subscriber**. That **includes Phase 0 discovery**. Team-generated fixtures can be used while a channel is unfinished. See [Per-channel readiness](#per-channel-readiness-p6-03).
 
@@ -88,16 +88,23 @@ collect → tag → cluster themes → prioritize (frequency × severity × feas
   - **Sealed segments:**
     - The ledger is a series of **sealed segments**, for example one per month.
     - Within the open segment, entries carry a gapless sequence number and a **hash chain**: each entry includes the previous entry's hash.
-  - **Checkpoints:** sealing a segment writes an **authenticated checkpoint**, signed with the ops key. It records:
-    - the segment's sequence range and last hash
-    - the previous checkpoint's hash, so **checkpoints form their own chain**, which is never pruned and stays tiny
-    - a **state snapshot**: for every item still inside its retention, its **latest consent revision** and **deletion status**. Only IDs, scopes, revisions and flags are stored, never content.
-  - **The authoritative current state** is the latest checkpoint's snapshot **plus** the entries after it. Jobs read consent from that state, so **pruning old entries never loses an item's current consent**: it's carried forward in every checkpoint.
+  - **Checkpoints:** sealing a segment writes a checkpoint made of **two separate parts** (P11-01):
+    - **Header** (permanent, with **no per-item data**), signed with the ops key. It holds:
+      - the checkpoint ID
+      - the segment's sequence range and last entry hash
+      - the previous **header's** hash, so the **header chain** is never pruned and stays tiny
+      - a **payload commitment**: a SHA-256 of the payload, which includes a random 256-bit salt stored only inside the payload. Once the payload is deleted, the commitment can't be used to test guesses of item IDs.
+    - **Payload** (an **expiring** state snapshot): for every item still inside its retention, its **latest consent revision** and **deletion status**. Only IDs, scopes, revisions and flags are stored, never content.
+  - **Only the latest payload is kept.** Restores apply *current* state, so older payloads aren't needed. Once a new checkpoint is written, verified and referenced by both mirrored heads, the **previous payload is deleted**. Its header stays.
+  - **The authoritative current state** is the latest checkpoint's payload **plus** the entries after it. Jobs read consent from that state, so **pruning old entries never loses an item's current consent**: it's carried forward in every new payload.
   - **Mirrored heads:** the mirrored head records `(checkpoint ID, sequence, hash)` in the two independent places (the primary database's "last applied" marker, and the append-only ops log in a third location).
   - **What a verifier expects:**
-    1. The checkpoint chain verifies from genesis.
-    2. Entries after the latest checkpoint are gapless and chain from that checkpoint's last hash.
-    3. The head is at or beyond every mirrored head.
+    1. The **header chain** verifies from genesis (signatures and previous-header hashes).
+    2. The **latest payload** matches the latest header's commitment.
+    3. Entries after the latest checkpoint are gapless and chain from that checkpoint's last hash.
+    4. The head is at or beyond every mirrored head.
+
+    **Older payloads are expected to be absent.** Their headers alone keep the chain verifiable.
 
     **A sequence range covered by a valid checkpoint is legitimately absent. Any gap not covered by a checkpoint is corruption** and blocks processing.
   - **Ledger storage:** durable, replicated storage with point-in-time recovery. A restored ledger goes through the same verification.
@@ -113,13 +120,23 @@ collect → tag → cluster themes → prioritize (frequency × severity × feas
     - **(b)** no restorable backup newer than that point still references it.
 
     Until then, a deletion stays effective for every restorable backup.
+  - **Historical copies (P11-01):**
+    - Once an item is omitted from the newest payload, the **previous payload** that still listed it is deleted at the next maintenance step.
+    - Permanent headers contain only salted commitments, never item data.
+    - **Ledger-store backups** may still hold an older payload for up to their own retention (target **30 days**). So an expired item's marker is fully unrecoverable **at most 30 days after** it leaves the current payload. This bound is disclosed in the inventory.
   - **Content** is never in the ledger, so pruning only shortens the window in which minimal markers exist. Access is limited to the ops owner.
 - **Maintenance is crash-safe.** Each step is idempotent and runs in this order:
-  1. Write the new checkpoint durably.
+  1. Write the new checkpoint (header and payload) durably.
   2. Update both mirrored heads to reference it.
   3. Prune the segments it covers.
+  4. Delete the **previous payload**, keeping its header.
 
-  **If interrupted:** before step 2, the previous checkpoint stays authoritative. Before or during step 3, extra covered segments simply remain, which the verifier accepts. **No step can leave an uncovered gap.**
+  **If interrupted:**
+  - before step 2, the previous checkpoint stays authoritative
+  - before or during step 3, extra covered segments simply remain, which the verifier accepts
+  - before step 4, the previous payload lingers until the next run, and its deletion is retried
+
+  **No step can leave an uncovered gap or a header without its matching latest payload.**
 - **Provider-held data** (newsletter provider, transcription service) follows each provider's documented backup and restore behavior. It's listed per channel, and no guarantee is claimed beyond what the provider documents.
 - **Acceptance, before the affected channel opens:**
   - Back up three synthetic items, delete one, withdraw LLM and publication consent from another, then restore the old snapshot.
@@ -131,6 +148,12 @@ collect → tag → cluster themes → prioritize (frequency × severity × feas
     - Restore backups taken **before and after** the checkpoint.
     - Interrupt maintenance at each of its three steps.
     - Legitimate pruning passes verification, while removing an **uncovered, unexpired** entry fails it.
+  - **Payload expiry, before checkpoint pruning is enabled (P11-01):**
+    - Create C1 with two synthetic items, delete one, and advance past every retention and backup window. Create later checkpoints and run maintenance.
+    - Inspect **every** retained header, payload and ledger-store backup, not just the latest snapshot.
+    - The expired item's ID, scopes and flags are no longer retrievable, apart from backups still inside their disclosed 30-day bound.
+    - The active item's consent is intact.
+    - The header chain still verifies, and restores still apply current instructions.
   - **Crash injection (P9-01):** interrupt before and after the ledger commit, and before the success response. Retry the same withdrawal or deletion, then restore an earlier database.
     - Every **acknowledged** instruction stays effective.
     - Retries are idempotent.
