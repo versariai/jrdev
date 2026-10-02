@@ -75,6 +75,10 @@ Public GitHub repo (github.com/versariai/jrdev, MIT)
 
 The feature candidates are detailed in [specs/03](specs/03-modes-and-workflows.md#feature-candidates-from-early-signals).
 
+**Follow-ups (2026-10-02):**
+- **Interviews:** the [Phase 0 interview guide](phase0/interview-guide.md) tests these themes with 10 juniors and 5 mentors, using pre-set decision rules.
+- **C6 experiment:** the [change-summary experiment](../experiments/c6-explain-changes/README.md) lets the two early respondents try C6 for 1–2 weeks.
+
 ---
 
 ## 3. Specs
