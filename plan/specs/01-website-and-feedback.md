@@ -1,6 +1,6 @@
 # Website, newsletter and feedback
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 3. Review findings addressed here: P-03, P3-06, P3-07, P6-03, P8-01, P9-01. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 3. Review findings addressed here: P-03, P3-06, P3-07, P6-03, P8-01, P9-01, P10-01. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates (P6-03):** each collection channel must pass its consent and deletion acceptance **before its first real participant or subscriber**. That **includes Phase 0 discovery**. Team-generated fixtures can be used while a channel is unfinished. See [Per-channel readiness](#per-channel-readiness-p6-03).
 
@@ -84,22 +84,53 @@ collect → tag → cluster themes → prioritize (frequency × severity × feas
      - The instruction is then applied to the primary database **idempotently**.
      - The database records each applied `op_id`, so a retry with the same `op_id` is a no-op.
   4. **Consent checks read the ledger:** processing and publication jobs read the **latest ledger revision** for the item at run time, and the database copy is only a cache. **An unapplied withdrawal in the ledger still blocks the job.**
-- **Checking the ledger is complete:**
-  - Entries carry a gapless sequence number and a **hash chain**, so each entry includes the previous entry's hash.
-  - **The current head (sequence and hash) is mirrored** to two independent places: the primary database's "last applied" marker, and a small append-only ops log in a third location.
-  - **On restore,** the ledger is accepted as complete only if it has **no sequence gaps**, its chain verifies, and its head is **at or beyond every mirrored head**. Otherwise it's treated as incomplete, and processing stays blocked.
-  - **Ledger storage:** durable, replicated storage with point-in-time recovery. A restored ledger goes through the same completeness check.
+- **Segments, checkpoints and completeness (P9-01, P10-01):**
+  - **Sealed segments:**
+    - The ledger is a series of **sealed segments**, for example one per month.
+    - Within the open segment, entries carry a gapless sequence number and a **hash chain**: each entry includes the previous entry's hash.
+  - **Checkpoints:** sealing a segment writes an **authenticated checkpoint**, signed with the ops key. It records:
+    - the segment's sequence range and last hash
+    - the previous checkpoint's hash, so **checkpoints form their own chain**, which is never pruned and stays tiny
+    - a **state snapshot**: for every item still inside its retention, its **latest consent revision** and **deletion status**. Only IDs, scopes, revisions and flags are stored, never content.
+  - **The authoritative current state** is the latest checkpoint's snapshot **plus** the entries after it. Jobs read consent from that state, so **pruning old entries never loses an item's current consent**: it's carried forward in every checkpoint.
+  - **Mirrored heads:** the mirrored head records `(checkpoint ID, sequence, hash)` in the two independent places (the primary database's "last applied" marker, and the append-only ops log in a third location).
+  - **What a verifier expects:**
+    1. The checkpoint chain verifies from genesis.
+    2. Entries after the latest checkpoint are gapless and chain from that checkpoint's last hash.
+    3. The head is at or beyond every mirrored head.
+
+    **A sequence range covered by a valid checkpoint is legitimately absent. Any gap not covered by a checkpoint is corruption** and blocks processing.
+  - **Ledger storage:** durable, replicated storage with point-in-time recovery. A restored ledger goes through the same verification.
 - **Restore runbook:** after any database restore, run these steps in order:
   1. **Quarantine:** pause all processing workers, publication jobs and theme recounts.
-  2. **Verify, then replay:** confirm the ledger is complete (above), then apply every deletion and the **latest** consent revision per item recorded after the backup's timestamp, idempotently by `op_id`.
+  2. **Verify, then apply the current state:** verify the ledger (above), then apply the **authoritative current state** (latest checkpoint snapshot plus later entries) to the restored database, idempotently by `op_id`. This works for backups on **either side** of any checkpoint, because it applies the current state rather than replaying pruned history.
   3. **Resume** only once replay completes and is logged.
 - **If the ledger is unavailable or incomplete,** external processing and publication stay **blocked** until consent is re-established. Old consent in a restored snapshot is never treated as fresh authorization.
-- **Ledger retention:** entries are kept until the oldest backup that could still contain the item has expired, plus 30 days. They're then pruned, so the remedy doesn't become a permanent record. Access is limited to the ops owner.
+- **When an instruction can disappear (P10-01):**
+  - **Superseded entries:** an individual ledger entry disappears only when its **whole sealed segment** is pruned. A segment may be pruned only after a later checkpoint covers it, at which point every entry in it is captured in that checkpoint's snapshot or has expired.
+  - **An item's current state** (latest consent revision, deletion flag) leaves the checkpoint snapshot only at the **first checkpoint after** both of these hold:
+    - **(a)** for a **deleted** item: the oldest backup that could still contain the item has expired, plus 30 days. For an **active** item: its 24-month feedback retention has ended and the item itself has been deleted.
+    - **(b)** no restorable backup newer than that point still references it.
+
+    Until then, a deletion stays effective for every restorable backup.
+  - **Content** is never in the ledger, so pruning only shortens the window in which minimal markers exist. Access is limited to the ops owner.
+- **Maintenance is crash-safe.** Each step is idempotent and runs in this order:
+  1. Write the new checkpoint durably.
+  2. Update both mirrored heads to reference it.
+  3. Prune the segments it covers.
+
+  **If interrupted:** before step 2, the previous checkpoint stays authoritative. Before or during step 3, extra covered segments simply remain, which the verifier accepts. **No step can leave an uncovered gap.**
 - **Provider-held data** (newsletter provider, transcription service) follows each provider's documented backup and restore behavior. It's listed per channel, and no guarantee is claimed beyond what the provider documents.
 - **Acceptance, before the affected channel opens:**
   - Back up three synthetic items, delete one, withdraw LLM and publication consent from another, then restore the old snapshot.
   - The deleted item stays absent from records, counts and jobs. The withdrawn item never reaches a processor or publication step. The third resumes normally.
   - Simulate a lost ledger: processing stays blocked.
+  - **Pruning, before pruning is enabled (P10-01):**
+    - Interleave instructions for two synthetic items, expire only one item's retention, and checkpoint and prune.
+    - Verification still succeeds, the expired markers are gone, and the other item's current consent is unchanged.
+    - Restore backups taken **before and after** the checkpoint.
+    - Interrupt maintenance at each of its three steps.
+    - Legitimate pruning passes verification, while removing an **uncovered, unexpired** entry fails it.
   - **Crash injection (P9-01):** interrupt before and after the ledger commit, and before the success response. Retry the same withdrawal or deletion, then restore an earlier database.
     - Every **acknowledged** instruction stays effective.
     - Retries are idempotent.

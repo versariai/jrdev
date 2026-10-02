@@ -1,6 +1,6 @@
 # Evaluation, behavior review and studies
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 8. Review findings addressed here: P-06, P-07, P2-09, P3-02, P3-08, P4-01, P6-01, P6-05, P7-04, P8-02, P9-02. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 8. Review findings addressed here: P-06, P-07, P2-09, P3-02, P3-08, P4-01, P6-01, P6-05, P7-04, P8-02, P9-02, P10-02. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates:** the behavior-review oracle must pass before Phase 1 pilot data is collected. The Phase 1 decision rules are frozen before recruitment. The configuration protocol gates the efficacy study.
 
@@ -27,13 +27,15 @@
 
 | Measure | Operational definition | Proceed | Revise | Stop |
 |---|---|---|---|---|
-| Completion | Enrolled learners who use jrdev in ≥ 2 sessions per week for 3 weeks | ≥ 60% | 35–59% | < 35% |
-| Setup success | Enrolled learners with a working install by day 3 (staff help allowed, but counted below) | ≥ 80% | 60–79% | < 60% |
-| Support burden | **All** staff time per learner per week, including chat, calls and async replies, logged in a shared sheet | Median ≤ 30 min | 31–60 min | > 60 min |
-| Friction | Learners who turn `type` off for the rest of the pilot within week 1 | ≤ 25% | 26–50% | > 50% |
-| Answer leakage | Behavior review ([evaluation & studies: behavior-review oracle](#behavior-review-oracle-p3-02)) on team transcripts plus learner reports. **Serious** = content above the **effective allowance** (recorded `help_stage` plus grant validity for that turn, as in the oracle). Inappropriate refusals and misleading hints are tracked as separate incident classes | 0 serious incidents outstanding (each serious incident needs a fix plus a passing regression check before proceeding) | Any serious incident fixed and re-tested | Repeated serious incidents not fixable by prompt or policy changes |
-| Initial delayed assessment | **Learner-level (P9-02):** *distinct completers with a qualifying assessment ÷ all completers*. A **qualifying assessment** is the learner's **first assigned delayed assessment** on the [manual route](04-assessment-and-grading.md#phase-1-manual-route-p6-01), started **7–14 days after their last pilot week** and **pilot-scored**. Extra attempts, revisions and appeals never add to the numerator. Non-completers are excluded from both numerator and denominator. An attempt that ends in `infra_error` and isn't successfully re-scored within the window doesn't qualify, and it's reported in a separate infrastructure tally. Attempt counts are reported separately as an operational measure | ≥ 50% of completers | 25–49% | < 25% |
+| Completion | Enrolled learners who use jrdev in ≥ 2 sessions per week for 3 weeks | p ≥ 60% | 35% ≤ p < 60% | p < 35% |
+| Setup success | Enrolled learners with a working install by day 3 (staff help allowed, but counted below) | p ≥ 80% | 60% ≤ p < 80% | p < 60% |
+| Support burden | **All** staff time per learner per week, including chat, calls and async replies, logged in a shared sheet. *m* = median across enrolled learners | m ≤ 30 min | 30 < m ≤ 60 min | m > 60 min |
+| Friction | Learners who turn `type` off for the rest of the pilot within week 1 | f ≤ 25% | 25% < f ≤ 50% | f > 50% |
+| Answer leakage | Behavior review ([evaluation & studies: behavior-review oracle](#behavior-review-oracle-p3-02)) on team transcripts plus learner reports. **Serious** = content above the **effective allowance** (recorded `help_stage` plus grant validity for that turn, as in the oracle). Inappropriate refusals and misleading hints are tracked as separate incident classes | **0** serious incidents in the **final** behavior-review run of the pilot build, and none outstanding | **≥ 1** serious incident in the final run, or any outstanding, with fewer than 3 consecutive runs affected | Serious incidents in **≥ 3 consecutive** review runs despite fixes |
+| Initial delayed assessment | **Learner-level (P9-02):** *distinct completers with a qualifying assessment ÷ all completers*. A **qualifying assessment** is the learner's **first assigned delayed assessment** on the [manual route](04-assessment-and-grading.md#phase-1-manual-route-p6-01), started **7–14 days after their last pilot week** and **pilot-scored**. Extra attempts, revisions and appeals never add to the numerator. Non-completers are excluded from both numerator and denominator. An attempt that ends in `infra_error` and isn't successfully re-scored within the window doesn't qualify, and it's reported in a separate infrastructure tally. Attempt counts are reported separately as an operational measure | p ≥ 50% | 25% ≤ p < 50% | p < 25% (or not evaluable; see below) |
 
+  - **Exact intervals, no rounding (P10-02):** each measure is computed as an **exact** value (a fraction, or a median that may be fractional, e.g. 30.5 minutes) and classified against the half-open intervals above **before any rounding**. Values are rounded only for display, to one decimal. Every value falls into exactly one band.
+    - **Worked check:** support medians 30 → Proceed, **30.5 → Revise** (e.g. eight learners at `30, 30, 30, 30, 31, 31, 31, 31`), 31 → Revise, 60 → Revise, 60.5 → Stop. Percentage boundaries such as exactly 60% (Proceed) and exactly 35% (Revise) for Completion are classified the same way.
   - **Zero completers:** the initial-delayed-assessment row is **not evaluable**, and the Completion row's Stop applies.
   - **Worked check before freezing the protocol:**
     - 6 completers, of whom one has 3 scored attempts and the others none → **1/6** (Stop), not 3/6.
