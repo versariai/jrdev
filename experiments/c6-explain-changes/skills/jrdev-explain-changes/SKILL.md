@@ -20,6 +20,13 @@ Arguments: `$ARGUMENTS`
 
 Run these read-only git commands yourself. Stop and say so if this isn't a git repository.
 
+**No configured helpers (P15-01).** Some Git commands can run helper programs from the user's Git config, which would break "read-only". So:
+- run **every** git command in this skill as `git -c core.fsmonitor=false …`
+- add `--no-ext-diff --no-textconv` to **every** `git diff`, including `--stat` and `--name-status`
+- don't run `git status`; the layer lists in step 2 replace it
+
+The commands below are written short; apply both rules to each one.
+
 1. **Base.** Use the base ref from the arguments if one was given. Otherwise try `git rev-parse --abbrev-ref origin/HEAD`, and if that fails, the first of `origin/main`, `origin/master`, `main` or `master` that exists (`git rev-parse --verify --quiet <ref>`). If no base can be found, ask the user for one rather than guessing.
 2. **Is the current branch the base?** Compare `git rev-parse --abbrev-ref HEAD` with the base name, after stripping a leading `origin/` (so `main` and `origin/main` both count as the base when you're on `main`). Then pick **exactly one** case and use its `RANGE` everywhere below:
    - **On the base branch, with an upstream** (`git rev-parse --verify --quiet @{u}` succeeds): `RANGE=@{u}..HEAD`, the commits not yet pushed.
@@ -32,25 +39,32 @@ Run these read-only git commands yourself. Stop and say so if this isn't a git r
 
 1. **List paths and statistics only.** No content yet:
    - committed: `git log --oneline RANGE` and `git diff --stat RANGE`
-   - staged: `git diff --cached --stat`
-   - unstaged: `git diff --stat`
+   - staged: `git diff --cached --name-status` and `git diff --cached --stat`
+   - unstaged paths: `git diff-files --name-only`. This doesn't run filters, but it can list files whose timestamp changed with no real edit; their diff will simply be empty
    - untracked: `git ls-files --others --exclude-standard`
-   - per-file state: `git status --short` (the first column is the index, the second the working file)
-2. **Never read the content of these paths.** List them under "Not read" without printing anything from them:
+2. **Filtered files (e.g. Git LFS).** Comparing working files runs any **clean filter** configured for them, even for statistics. Check first:
+   - `git config --get-regexp '^filter\..*\.(clean|process)$'`. If this prints nothing, no filter is configured; skip to substep 3.
+   - Otherwise, run `git check-attr filter -- <unstaged paths>`. Every path with a filter value other than `unspecified` or `unset` is **not compared in the unstaged layer**. List it under "Not read: uses a configured filter (<name>)". Its staged and committed diffs are still fine, because those compare stored versions and don't run the filter.
+   - Then get unstaged statistics only for the remaining paths: `git diff --stat -- <unfiltered unstaged paths>`.
+   - If the user explicitly asks to include filtered files, run the normal command for them and say in "Scope covered" that their filter ran.
+3. **Never read the content of these paths.** List them under "Not read" without printing anything from them:
    - environment and secret files: `.env`, `.env.*`, `*.pem`, `*.key`, `*.p12`, `*.pfx`, `id_rsa*`, `id_ed25519*`, `.npmrc`, `.pypirc`, `.netrc`
    - any path containing `secret`, `credential`, `token` or `password` (case-insensitive)
    - binaries, lockfiles and generated files: list them and describe them from `--stat` only
-3. **Choose the scope before any content read.** Using only the lists and statistics from substep 1, ask the user which parts to cover, and **wait for the answer**, if either applies:
+4. **Choose the scope before any content read.** Using only the lists and statistics from substeps 1 and 2, ask the user which parts to cover, and **wait for the answer**, if either applies:
    - **large:** roughly 2,000 or more changed lines across all layers
    - **possibly sensitive:** configuration files that aren't excluded by name but may hold credentials, such as `settings.*`, `config.*`, `*.yaml`, `*.yml`, `*.toml`, `*.ini`, `*.conf`, `*.properties`, or anything under a `config/` directory
 
    Paths the user declines are added to the exclusions. Otherwise, continue with everything not excluded.
-4. **Read each layer separately,** with the same exclusions applied to all of them, e.g. `-- . ':(exclude).env*' ':(exclude)*.pem'` (add an exclude for each excluded or declined path):
+5. **Read each layer separately,** with the same exclusions applied to all of them, e.g. `-- . ':(exclude).env*' ':(exclude)*.pem'` (add an exclude for each excluded or declined path):
    - committed: `git diff RANGE -- <pathspec>`
    - staged: `git diff --cached -- <pathspec>`
-   - unstaged: `git diff -- <pathspec>`
-5. **Untracked files aren't read automatically.** Read one only if it's clearly source code or docs that belong to this change, and it's within the chosen scope. If in doubt, list it and ask.
-6. **Limits:** these rules are instructions you follow, not a technical privacy boundary. Path filtering isn't secret redaction: a secret in an ordinary source file will still be read. If you notice one, don't repeat it; tell the user to remove it.
+   - unstaged: `git diff -- <pathspec>`, also excluding the filtered paths from substep 2
+6. **Untracked files aren't read automatically.** Read one only if it's clearly source code or docs that belong to this change, and it's within the chosen scope. If in doubt, list it and ask.
+7. **Limits:** these rules are instructions you follow, not a technical privacy boundary.
+   - Path filtering isn't secret redaction: a secret in an ordinary source file will still be read. If you notice one, don't repeat it; tell the user to remove it.
+   - Disabling fsmonitor, external diff drivers, text conversion and clean filters covers the Git helpers known to run here. It doesn't sandbox Git.
+   - Without text conversion, some formats (e.g. documents or notebooks with a converter) show as raw or binary diffs. Describe those from statistics.
 
 ## 3. Find the reasons
 
@@ -86,7 +100,7 @@ Use this structure. Keep it under about 400 words unless the change is large. Av
 
 ### Scope covered
 - Base: <ref> · Range: <RANGE or "none (no upstream)"> · Commits: <n> · Staged files: <n> · Unstaged files: <n> · Untracked files: <n>
-- Not read: <excluded secret-like, binary, generated or lock files, and paths the user declined; paths only>
+- Not read: <excluded secret-like, binary, generated or lock files, paths the user declined, and filtered files in the unstaged layer; paths only>
 ```
 
 **Be honest about gaps:**

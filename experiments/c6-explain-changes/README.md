@@ -36,7 +36,7 @@ The skill is read-only on disk, but **every diff and file it reads is sent to yo
 - on very large changes, or configuration files that might hold credentials, it asks which parts to cover **before reading any content**, and leaves out what you decline
 - it doesn't read untracked files automatically
 
-**Limits:** these are instructions Claude follows, not a guaranteed technical boundary. Path filtering isn't secret redaction: a credential inside an ordinary source file would still be read. Use the skill only where your company's AI policy allows it.
+**Limits:** these are instructions Claude follows, not a guaranteed technical boundary. That includes switching off configured Git helpers (see "How to use it"). Path filtering isn't secret redaction: a credential inside an ordinary source file would still be read. Use the skill only where your company's AI policy allows it.
 
 ## Install (about 2 minutes)
 
@@ -83,7 +83,9 @@ Read both files before installing. They're short, and they contain no scripts.
 - **Against a specific base:** `/jrdev-explain-changes origin/develop`.
 - **To check your own understanding:** `/jrdev-explain-changes --learn`. It ends with one question for you to answer.
 
-It runs only `git log`, `git diff`, `git status`, `git rev-parse` and `git ls-files`, and reads files. Staged and unstaged changes are reported separately, so you can see exactly what the next commit would include. Claude Code may ask permission for those git commands, depending on your settings.
+It runs only `git log`, `git diff`, `git diff-files`, `git rev-parse`, `git merge-base`, `git ls-files`, `git config --get-regexp` and `git check-attr`, and reads files. Staged and unstaged changes are reported separately, so you can see exactly what the next commit would include.
+
+**Configured Git helpers are switched off (P15-01).** Ordinary `git diff` can run helper programs from your Git config: fsmonitor, external diff drivers, text-conversion filters, and clean filters such as Git LFS. The skill disables the first three on every command. It skips the unstaged comparison for files with a clean filter and lists them as not read, unless you ask to include them. This covers the helpers known to run during these commands; it doesn't sandbox Git. Without text conversion, some formats show as raw or binary diffs. Claude Code may ask permission for those git commands, depending on your settings.
 
 ## Duration and feedback
 
