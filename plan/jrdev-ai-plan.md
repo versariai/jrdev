@@ -93,13 +93,27 @@ Each gate must pass before the milestone it guards. Details and acceptance cases
 
 ## 5. Roadmap
 
-**Capacity assumption:** 1–2 people part-time. Fill in the budget table before Phase 0 ends:
+**Team (assigned 2026-10-01).** Ivan has **10 hours a week in total** across his three roles. Costs and the start date are still **TBD**:
 
 | Role | Owner | Hours/week | Recurring cost |
 |---|---|---|---|
-| Plugin & tests | ? | ? | — |
-| Site, newsletter, feedback | ? | ? | domain, hosting, email (~? /mo) |
-| Research, pilot & behavior review | ? | ? | participant incentives |
+| Plugin & tests | **Ivan** | ~6 (proposed split of 10) | — |
+| Site, newsletter, feedback | **Ivan** | ~2 | Domain, hosting, newsletter provider, feedback DB: TBD per month |
+| Research, pilot & behavior review | **Ivan** | ~2 (more during interviews and the pilot, taken from plugin time) | Pilot incentives: TBD (for an employer pilot, typically agreed work time) |
+| Coordinator (identity mapping, task assignment, custody) | **Assigned** (name kept in a private team note) | ~1–2 h/week during the pilot (estimate) | — |
+| Scorer (blind grading) | **Assigned** (name kept in a private team note) | ~20–30 min per assessment (estimate) | Grading host: TBD |
+| Safeguards sign-off (no performance use of pilot data) | TBD: someone in HR or management | One-off | — |
+
+**Capacity risk:** Ivan holds all three build roles with **10 hours a week**. The week estimates below assumed more capacity, so at this level **roughly double them**: Phase 0 is about 6–8 weeks, Phase 1 about 12–16 weeks. Re-baseline after the Phase 0 prototype. If capacity is tight, the order is:
+1. the prototype (specs 02 and 03)
+2. privacy checks per collection channel
+3. only then, the website beyond a landing page
+
+**Before the pilot opens, confirm:**
+- **The coordinator and the scorer** are outside the participating juniors' reporting lines.
+- **The coordinator never shares** the identity mapping with the scorer.
+
+Otherwise blinding isn't possible, and the pilot report has to say so.
 
 | Phase | Scope | Exit gate (proceed / revise / stop) |
 |---|---|---|
@@ -144,7 +158,7 @@ Each gate must pass before the milestone it guards. Details and acceptance cases
 | 9 | Phase 1 assessment scope | **Manual route** | The assessment service is built before the Phase 3 efficacy study ([specs/04](specs/04-assessment-and-grading.md#phase-1-manual-route-p6-01)) |
 
 **Still open:**
-- **Capacity budget:** owners, hours per week and recurring costs in the [Roadmap](#5-roadmap) table. This is needed before Phase 0 ends.
+- **Capacity budget:** owners are assigned (Ivan, plus a coordinator and a scorer named in a private team note), and Ivan has 10 h/week. Recurring costs, incentives, the HR/management sign-off person and the Phase 0 start date are still TBD in the [Roadmap](#5-roadmap) table.
 - **Brand:** test the name "jrdev" in the Phase 0 interviews, since some may find it patronizing. Keep the domain and org name flexible until then.
 - **Website code:** public or private (the content is public either way).
 
