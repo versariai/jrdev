@@ -43,12 +43,12 @@ Interviews are a data-collection channel, so the [per-channel readiness checks](
 
 | # | Section | Time | Questions and probes |
 |---|---|---|---|
-| 1 | Intro and consent | 3 min | Purpose, voluntary, no performance use, what we record. Confirm the consent scopes |
+| 1 | Intro and consent | 3 min | Purpose, voluntary, no performance use, what we record. Confirm the consent scopes. **Don't mention any theme or feature yet** |
 | 2 | Background | 3 min | Role, time as a developer, main stack, which AI tools, how often |
-| 3 | **Last task walkthrough** | 12 min | "Tell me about the last task you did with an AI tool, from start to finish." Probes:<br>• Who wrote the first version, you or the AI?<br>• **When something didn't work, what did you do next? And after that?** *(T1, autopilot loop)*<br>• **How did you decide whether to accept a change? What did you look at?** *(T2, approval)*<br>• Did you do anything else while the AI was working? *(T3, focus)*<br>• Could you explain what changed to a colleague right now? Which part would be hardest? *(T4, understanding)*<br>• How did you prepare the review or PR? *(T4, summary)* |
-| 4 | Learning and debugging | 8 min | • "Think of something you learned in the last month. How did you learn it?" *(T5)*<br>• "Tell me about the last bug you fixed. What did you do first?" *(T6)*<br>• "When you're stuck, who or what do you go to first? When did you last ask a person?" *(T7, silent silo)* |
-| 5 | **Difficulties, unprompted then ranked** | 3 min | "What's hardest for you about developing with AI?" (let them answer freely) → "Of those, which matters most?" |
-| 6 | Concept reactions | 5 min | Read 3–4 one-line, neutral descriptions (below). For each: "When would this help you? When would it get in the way? Would you turn it off?" |
+| 3 | **Spontaneous difficulties, ranked** | 4 min | **Before any theme is named:** "What's hardest for you about developing with AI?" (let them answer freely) → "Which three matter most to you, in order?" Write the list down as given; it's the only spontaneous ranking |
+| 4 | **Last task walkthrough** | 11 min | "Tell me about the last task you did with an AI tool, from start to finish." Probes:<br>• Who wrote the first version, you or the AI?<br>• **When something didn't work, what did you do next? And after that?** *(T1, autopilot loop)*<br>• **How did you decide whether to accept a change? What did you look at?** *(T2, approval)*<br>• Did you do anything else while the AI was working? *(T3, focus)*<br>• Could you explain what changed to a colleague right now? Which part would be hardest? *(T4, understanding)*<br>• How did you prepare the review or PR? *(T4, summary)*<br>• **For any instance above: "What did that cost you?"** (time, rework, a review comment, a bug later, not being able to explain it) **"How much does it matter to you?"** |
+| 5 | Learning and debugging | 8 min | • "Think of something you learned in the last month. How did you learn it?" *(T5)*<br>• "Tell me about the last bug you fixed. What did you do first?" *(T6)*<br>• "When you're stuck, who or what do you go to first? When did you last ask a person?" *(T7, silent silo)* |
+| 6 | Concept reactions | 4 min | Read the four one-line, neutral descriptions (below). For each: "When would this help you? When would it get in the way? Would you turn it off?" |
 | 7 | Name | 1 min | "What does the name 'jrdev' suggest to you?" |
 | 8 | Wrap-up | 1 min | "Anything we didn't ask that we should have?" "Who else should we talk to?" |
 
@@ -75,9 +75,9 @@ One note per interview, in the private store. **Never** in the repo.
 
 ```
 Code: J07 · Date · Role/experience · Stack · AI tools · Consent scopes: a b c d
+Spontaneous top 3 (section 3, before any theme was named): 1 … 2 … 3 …
 Walkthrough (paraphrased): …
-Specific instances by theme: T1 … T2 … T3 … (one line each, mark "instance" or "opinion")
-Unprompted difficulties, in their order: 1 … 2 … 3 …
+Specific instances by theme: T1 … T2 … T3 … (one line each, mark "instance" or "opinion"; add the stated cost and "matters: yes/no")
 Concept reactions: Typing … C2 … C6 … C1 … (helps when / hurts when / would turn off?)
 Name reaction: …
 Quotes (only with scope c): …
@@ -104,18 +104,29 @@ Quotes (only with scope c): …
 ## Synthesis and decision rules (set before the first interview)
 
 - **Count participants, not mentions.** A theme counts for a participant only if they described a **specific instance**.
-- **Phase 0 gate (juniors):** count the juniors who described a specific instance of **T1, T2 or T5**, *or* put one of them in their unprompted top 3:
+- **Two levels of evidence (P13-04):**
+  - **Pattern observed:** a specific instance of T1, T2 or T5.
+  - **Important problem:** T1, T2 or T5 appears in the participant's **spontaneous top 3** (section 3), *or* they described a specific instance with a **concrete cost** and said it matters to them.
 
-  | Juniors (out of 10) | Decision |
+  Patterns without importance are reported, but they don't count towards the gate.
+- **Phase 0 gate (juniors).** This is how the plan's "top problem" requirement is measured. Use shares of the juniors actually interviewed:
+
+  | Result | Decision |
   |---|---|
-  | ≥ 5 | **Proceed** |
-  | 3–4 | **Revise** (refocus the product on the themes that did recur) |
-  | ≤ 2 | **Stop or pivot** |
+  | **Important problem** for ≥ 50% of juniors, **and** T1/T2/T5 in the spontaneous top 3 for ≥ 30% | **Proceed** |
+  | Important problem for < 30% | **Stop or pivot** |
+  | Anything else | **Revise** (refocus the product on the themes that did recur) |
 
-  Scale proportionally if fewer than 10 are interviewed, and report the actual n.
-- **Candidate priority:** a candidate (C1–C6, Typing) moves into the Phase 1 scope if **≥ 3 juniors** describe the problem it targets **and** fewer than half say they'd turn it off. Mentor input can raise or lower a candidate's priority, but can't add one on its own.
+  **Minimum sample:** 6 juniors. Below that there's no gate decision: keep recruiting (external juniors are allowed). Report the actual n and both shares.
+- **Dry run before the first interview:** classify two synthetic sets with these rules.
+  - **Set A:** 5 of 10 juniors describe a prompted, low-cost instance, and none puts T1/T2/T5 in their top 3. It must **not** yield Proceed.
+  - **Set B:** 6 of 10 describe instances with concrete costs, and 4 rank one spontaneously. It must yield Proceed.
+- **Candidate eligibility (P13-05).** This is one input to the single [candidate promotion decision](../specs/03-modes-and-workflows.md#candidate-promotion-p13-05); it doesn't schedule anything by itself.
+  - A **presented** concept (Typing, C1, C2, C6) is eligible if **≥ 3 juniors** describe the problem it targets as a specific instance, **and** fewer than half of the juniors it was presented to say they'd turn it off.
+  - **Concepts not presented (C3, C4, C5) are unevaluated.** Report how many juniors described their target problem, but treat reactions as unknown, never as zero objections.
+  - Mentor input can raise or lower a candidate's priority, but can't make one eligible on its own.
 - **Name:** if **≥ 3** of the 15 participants find "jrdev" patronizing or off-putting, shortlist alternatives before buying the domain.
-- **Output:** a paraphrased synthesis (theme counts, unprompted top difficulties, concept reactions) goes into the plan's early-signals section, replacing the n = 2 signal. No raw notes go into the repo.
+- **Output:** a paraphrased synthesis (theme counts at both evidence levels, spontaneous top difficulties, concept reactions) goes into the plan's early-signals section, replacing the n = 2 signal. No raw notes go into the repo.
 
 ---
 
@@ -127,6 +138,10 @@ Quotes (only with scope c): …
 - Qual seu papel e há quanto tempo você desenvolve?
 - Qual sua stack principal? Quais ferramentas de IA você usa, e com que frequência?
 
+**Dificuldades** (antes de mencionar qualquer tema)
+- O que é mais difícil para você em desenvolver com IA? (deixar responder livremente)
+- Quais são as três mais importantes para você, em ordem?
+
 **Última tarefa com IA**
 - Me conta a última tarefa que você fez com uma ferramenta de IA, do começo ao fim.
 - Quem escreveu a primeira versão do código, você ou a IA?
@@ -135,15 +150,12 @@ Quotes (only with scope c): …
 - Você fez outra coisa enquanto a IA estava trabalhando?
 - Você conseguiria explicar agora para um colega o que mudou? Qual parte seria mais difícil?
 - Como você preparou a revisão ou o PR?
+- Para cada situação acima: o que isso te custou? (tempo, retrabalho, comentário na revisão, bug depois, não conseguir explicar) Quanto isso importa para você?
 
 **Aprendizado e debugging**
 - Pensa em algo que você aprendeu no último mês. Como você aprendeu?
 - Me conta o último bug que você corrigiu. O que você fez primeiro?
 - Quando você trava, a quem ou a quê você recorre primeiro? Quando foi a última vez que perguntou a uma pessoa?
-
-**Dificuldades**
-- O que é mais difícil para você em desenvolver com IA? (deixar responder livremente)
-- Dessas, qual é a mais importante?
 
 **Reações a conceitos** (ler exatamente assim, em ordem alternada)
 - *Digitação:* "Quando você está aprendendo algo, a IA explica e dá dicas, mas é você quem digita o código."

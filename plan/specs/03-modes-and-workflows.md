@@ -1,6 +1,6 @@
 # Modes and workflows: Typing, Learning, Debug, Map, Test
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.4. Review findings addressed here: P2-05, P3-02, P3-03, P3-05, P4-03, P4-05, P5-03, P6-05; Map/Test: P-01, P-08. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.4. Review findings addressed here: P2-05, P3-02, P3-03, P3-05, P4-03, P4-05, P5-03, P6-05, P13-05, P13-06; Map/Test: P-01, P-08. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates:** the help-stage and task acceptance cases are part of the Phase 0 prototype. The review-item contract gates Phase 2 progress features. The pre-commit integration gates its distribution.
 
@@ -118,9 +118,34 @@ These come from the [early signals](../jrdev-ai-plan.md#early-signals-2026-10-02
 | **C5** | **No parallel agents while learning** | Focus, and machine limits | With `learning:on`, the coach is told not to start background agents. Documented guidance discourages parallel runs for learners | Advisory | 1 |
 | **C6** | **Readable change summary**, `/jrdev:explain-changes` | Opaque decisions, hard pre-PR review, not understanding changes (**2 of 2**) | A plain-language summary of **uncommitted changes plus the branch's commits** (avoiding the committed-only gap from [skills report R5-01](../../research/agent-skills-for-junior-devs.md)). It covers what changed, the **decisions taken and alternatives rejected**, the trade-offs, and what a reviewer should check. In learning mode it ends with one "why" or "predict" question. Also shipped as a **CLAUDE.md snippet** in the Starter pack asking for a decision log and a pre-PR summary | Advisory (a user-invoked skill) | 1 |
 
-**Before any candidate is scheduled:**
-- **Evidence:** test it in the Phase 0 interviews.
-- **Registry:** add it to the [interface registry](02-commands-and-policy.md#interface-registry-p6-04) with its phase.
-- **Oracle:** for C1 and C3, extend the behavior-review oracle with compliance scenarios.
-- **Policy table:** for C2, specify how it composes with the edit decision table. The check-in denial applies **after** the kill switch, control-file protection and recovery rows, and **never** blocks the recovery commands.
+### Candidate promotion (P13-05)
+**One decision moves a candidate into a phase.** The interview eligibility rule, the C6 experiment and design reviews are **inputs** to it; none of them schedules a candidate on its own.
+
+| Step | Rule |
+|---|---|
+| 1. **Eligibility** | From the [interview rule](../phase0/interview-guide.md#synthesis-and-decision-rules-set-before-the-first-interview). Concepts that weren't presented (C3, C4, C5) stay **unevaluated** until they're tested, in later interviews or the pilot. The C6 experiment is **formative only**: it can shape C6's design, but it doesn't make C6 eligible |
+| 2. **Earliest phase** | A hard floor. An eligible candidate is never scheduled before its "Earliest phase" column (C3 not before Phase 2, C4 not before Phase 3) |
+| 3. **Design acceptance** | Before scheduling: add it to the [interface registry](02-commands-and-policy.md#interface-registry-p6-04) with its phase; add its rows to the [data-flow inventory](05-data-flows-and-privacy.md#data-flow-inventory); for C1 and C3, extend the behavior-review oracle with compliance scenarios; for C2, meet the [composition requirements](#c2-composition-requirements-p13-06) below. A plan review round checks it |
+| 4. **Capacity** | Phase 1 adds **at most two** candidates to its core scope (Typing, `/jrdev:stuck`, minimal Learning, manual assessments), given 10 hours a week. If more qualify, prefer the one with the most "important problem" juniors, then the lowest build cost |
+
+- **Decision owner:** Ivan, recorded in the plan's [decisions table](../jrdev-ai-plan.md#7-decisions) with the evidence for each step.
+- **Acceptance:** with a synthetic result where **every** candidate qualifies, the procedure still yields a documented selection of at most two that respects every earliest phase. Two favorable C6 experiment users alone produce no scheduling change.
+
+### C2 composition requirements (P13-06)
+C2 is the only candidate that **enforces** something, so before it's adopted:
+- **A fourth setting everywhere.** The [three settings](02-commands-and-policy.md#three-independent-settings-p2-01) contract becomes four:
+  - `/jrdev:off` also sets `checkin: off`
+  - `/jrdev:status` shows the effective check-in state and the current counter
+  - the Phase 0-style acceptance cases are repeated with four settings
+- **Configuration:** set only through the trusted `UserPromptExpansion` channel (`/jrdev:checkin off|N`). The default is `off`. It can be set per session, or as a user default; a project default can't force it on.
+- **Counter:** stored in hook-managed session state and updated under the same lock as exceptions. It resets on the next user prompt (`UserPromptSubmit` or `UserPromptExpansion`). Concurrent tool calls increment it atomically, so it's never double-counted.
+- **Where it sits in the edit decision table:** after rows 1–4 (kill switch, control files, recovery override, parse failure) and **before row 7**. **The full decision is computed before any exception is consumed**, so a check-in denial never spends a stuck exception.
+- **Recovery:** check-ins never block `/jrdev:off`, `/jrdev:type off`, `jrdev off` or the kill switch.
+- **No continuation loop:** repeated denials within one turn return the same message, and they don't trigger `Stop` reminders.
+- **Paths outside enforcement:** `Edit`, `Write`, `MultiEdit` and `Bash` are enforced. Other tools (reads, MCP tools, subagents) are a documented gap.
+- **Acceptance:**
+  - Reach the check-in threshold, run `/jrdev:off`, and a new burst of tool calls is unrestricted by C2.
+  - `/jrdev:status` matches the effective state.
+  - A check-in-denied edit leaves a valid stuck exception unspent.
+  - Parallel tool calls at the threshold produce exactly one transition to "denied", with no continuation loop.
 

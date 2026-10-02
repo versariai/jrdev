@@ -1,6 +1,6 @@
 # jrdev.ai: Product Plan (overview)
 
-*Draft, 2026-10-01. This is the **overview**. Detailed designs live in [`specs/`](specs/), one file per area. Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md). The plan went through twelve adversarial review rounds, the last with no findings; see [Review history](#review-history).*
+*Draft, 2026-10-01. This is the **overview**. Detailed designs live in [`specs/`](specs/), one file per area. Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md). The plan went through thirteen adversarial review rounds. Round 12 closed the core design with no findings; round 13 reviewed the material added afterwards (team, early signals, candidates, interview guide, C6 experiment), and its findings are addressed. See [Review history](#review-history).*
 
 ## 1. Mission and principles
 
@@ -60,7 +60,8 @@ Public GitHub repo (github.com/versariai/jrdev, MIT)
 
 ### Early signals (2026-10-02)
 **What this is:** informal written feedback from **two developers** at the company, both **backend**, who consented to its use. It was collected **before** Phase 0's channel checks. **Anecdotal: n = 2. Not pilot data.**
-- **Raw text:** kept outside this repo. Below are paraphrased themes only.
+- **Raw text:** kept outside this repo. Below are paraphrased themes only. No further processing or publication until both respondents confirm the paraphrased-publication scope (P13-01); the disposition is recorded privately.
+- **Who they are:** their experience level isn't recorded here, so they may not be juniors. The Phase 0 interviews target juniors specifically.
 - **Status:** these signals shape the Phase 0 interview guide, and they don't set priorities on their own.
 
 | Theme (paraphrased) | Who | Matches | Plan response |
@@ -77,7 +78,7 @@ The feature candidates are detailed in [specs/03](specs/03-modes-and-workflows.m
 
 **Follow-ups (2026-10-02):**
 - **Interviews:** the [Phase 0 interview guide](phase0/interview-guide.md) tests these themes with 10 juniors and 5 mentors, using pre-set decision rules.
-- **C6 experiment:** the [change-summary experiment](../experiments/c6-explain-changes/README.md) lets the two early respondents try C6 for 1–2 weeks.
+- **C6 experiment:** the [change-summary experiment](../experiments/c6-explain-changes/README.md) lets the two early respondents try C6 for 1–2 weeks. **Participant rollout is on hold** until its readiness checklist passes. Its results feed the single [candidate promotion decision](specs/03-modes-and-workflows.md#candidate-promotion-p13-05) and don't schedule C6 by themselves.
 
 ---
 
@@ -101,8 +102,8 @@ Each gate must pass before the milestone it guards. Details and acceptance cases
 
 | Milestone | Must pass first |
 |---|---|
-| **Opening any data collection** (newsletter, feedback form, survey, interviews, from Phase 0) | That channel's [consent and deletion checks](specs/01-website-and-feedback.md#per-channel-readiness-p6-03) pass on team fixtures **before its first real participant or subscriber** (P6-03) |
-| **End of Phase 0** | Prototype acceptance cases for the [three settings, command channel and recovery](specs/02-commands-and-policy.md), and for [task-scoped help stages and grants](specs/03-modes-and-workflows.md#typing-edit-policy-type-phase-1); interviews confirm the problem; the [Phase 1 decision rules](specs/07-evaluation-and-studies.md#studies-p-07) are frozen |
+| **Opening any data collection** (newsletter, feedback form, survey, interviews, informal experiments, from Phase 0) | That channel's [consent and deletion checks](specs/01-website-and-feedback.md#per-channel-readiness-p6-03) pass on team fixtures **before its first real participant or subscriber** (P6-03) |
+| **End of Phase 0** | Prototype acceptance cases for the [three settings, command channel and recovery](specs/02-commands-and-policy.md), and for [task-scoped help stages and grants](specs/03-modes-and-workflows.md#typing-edit-policy-type-phase-1); interviews confirm the problem under the [interview gate rule](phase0/interview-guide.md#synthesis-and-decision-rules-set-before-the-first-interview); the [Phase 1 decision rules](specs/07-evaluation-and-studies.md#studies-p-07) are frozen |
 | **Distributing the Phase 1 pilot build** | [Data-flow and privacy acceptance](specs/05-data-flows-and-privacy.md#data-flow-inventory); [independent verification and verify-before-enable](specs/06-repo-and-release-trust.md#release-trust-from-signing-to-verified-installation-p-09), on **supported install routes**, with the route pre-flight (P6-02); the [interface registry](specs/02-commands-and-policy.md#interface-registry-p6-04) passes the clean-install check (P6-04) |
 | **Collecting Phase 1 pilot data** | [Grading sandbox fixtures](specs/04-assessment-and-grading.md); [behavior-review oracle](specs/07-evaluation-and-studies.md#behavior-review-oracle-p3-02); [manual-route trace test](specs/04-assessment-and-grading.md#phase-1-manual-route-p6-01) |
 | **First public update** | [Data-compatibility tests](specs/02-commands-and-policy.md#data-compatibility-across-versions-p3-01) |
@@ -127,7 +128,7 @@ Each gate must pass before the milestone it guards. Details and acceptance cases
 | Scorer (blind grading) | **Assigned** (name kept in a private team note) | ~20–30 min per assessment (estimate) | Grading host: TBD |
 | Safeguards sign-off (no performance use of pilot data) | TBD: someone in HR or management | One-off | — |
 
-**Capacity risk:** Ivan holds all three build roles with **10 hours a week**. The week estimates below assumed more capacity, so at this level **roughly double them**: Phase 0 is about 6–8 weeks, Phase 1 about 12–16 weeks. Re-baseline after the Phase 0 prototype. If capacity is tight, the order is:
+**Capacity risk:** Ivan holds all three build roles with **10 hours a week**. The durations in the phase table below are already doubled for that; the original full-capacity estimates are in brackets. Re-baseline after the Phase 0 prototype. If capacity is tight, the order is:
 1. the prototype (specs 02 and 03)
 2. privacy checks per collection channel
 3. only then, the website beyond a landing page
@@ -140,10 +141,10 @@ Otherwise blinding isn't possible, and the pilot report has to say so.
 
 | Phase | Scope | Exit gate (proceed / revise / stop) |
 |---|---|---|
-| **0. Discovery + prototype** (~3–4 weeks) | Domain and trademark check. Public repo skeleton. Landing page + newsletter + feedback + privacy page. **Recruitment plan:** internal recruitment of company juniors under the employer-pilot safeguards (written no-performance-use agreement, coordinator outside reporting lines), plus consent forms. 10 junior and 5 mentor interviews. **Prototype:** command router, session state and the edit decision table, tested from a clean install, with interaction tests covering the command channel, the three settings, recovery and exception consumption together. Draft the behavior-review checklist and freeze the Phase 1 pilot protocol and decision rules | **Proceed** if interviews confirm the "AI does it for me" difficulty as a top problem for the target audience *and* the prototype passes its acceptance cases. **Revise** if the friction concept is rejected in interviews. **Stop or pivot** if neither holds |
-| **1. Narrow MVP + formative pilot** (~6–8 weeks) | **Claude Code only, Python.** Recruited from your company's juniors under the [employer-pilot safeguards](#employer-pilot-safeguards). Edit policy `type`, `/jrdev:stuck` with one-call exceptions, a minimal Learning profile, `jrdev assess` on the **[manual route](specs/04-assessment-and-grading.md#phase-1-manual-route-p6-01)** (outside the AI session; a small vetted task bank; a coordinator plus a separate blind scorer; results are pilot-scored and unsigned), data-flow disclosure. Behavior-review regression **from the first release**. Formative pilot with 8–12 learners. Site: guides, catalog, install & verify. Newsletter every 2 weeks | Apply the [frozen decision table](specs/07-evaluation-and-studies.md#studies-p-07), plus the gates in section 4. No new modes until the gate says Proceed |
-| **2. Debug + full Learning** (~6–8 weeks) | Debug mode v1, FSRS reviews, progress report, a second stack, opt-in telemetry, research into the DAP option | Debug flow works end to end in two stacks. A second pilot round still passes the Phase 1 gates |
-| **3. Map + Test + efficacy study** (~8–10 weeks) | Map mode (static, labelled edges), Test mode (disposable fixtures, warnings, executed-lines view, optional tracing). Mentor/Team pack. Preregistered efficacy study | Study run and published as preregistered |
+| **0. Discovery + prototype** (~6–8 weeks [3–4]) | Domain and trademark check. Public repo skeleton. Landing page + newsletter + feedback + privacy page. **Recruitment plan:** internal recruitment of company juniors under the employer-pilot safeguards (written no-performance-use agreement, coordinator outside reporting lines), plus consent forms. 10 junior and 5 mentor interviews. **Prototype:** command router, session state and the edit decision table, tested from a clean install, with interaction tests covering the command channel, the three settings, recovery and exception consumption together. Draft the behavior-review checklist and freeze the Phase 1 pilot protocol and decision rules | **Proceed** if interviews confirm the "AI does it for me" difficulty as a top problem for the target audience *and* the prototype passes its acceptance cases. **Revise** if the friction concept is rejected in interviews. **Stop or pivot** if neither holds |
+| **1. Narrow MVP + formative pilot** (~12–16 weeks [6–8]) | **Claude Code only, Python.** Recruited from your company's juniors under the [employer-pilot safeguards](#employer-pilot-safeguards). Edit policy `type`, `/jrdev:stuck` with one-call exceptions, a minimal Learning profile, `jrdev assess` on the **[manual route](specs/04-assessment-and-grading.md#phase-1-manual-route-p6-01)** (outside the AI session; a small vetted task bank; a coordinator plus a separate blind scorer; results are pilot-scored and unsigned), data-flow disclosure. Behavior-review regression **from the first release**. Formative pilot with 8–12 learners, topped up with external juniors if fewer company juniors enroll ([fallback](specs/07-evaluation-and-studies.md#studies-p-07)). At most two early-signal candidates, chosen by the [promotion decision](specs/03-modes-and-workflows.md#candidate-promotion-p13-05). Site: guides, catalog, install & verify. Newsletter every 2 weeks | Apply the [frozen decision table](specs/07-evaluation-and-studies.md#studies-p-07), plus the gates in section 4. No new modes until the gate says Proceed |
+| **2. Debug + full Learning** (~12–16 weeks [6–8]) | Debug mode v1, FSRS reviews, progress report, a second stack, opt-in telemetry, research into the DAP option | Debug flow works end to end in two stacks. A second pilot round still passes the Phase 1 gates |
+| **3. Map + Test + efficacy study** (~16–20 weeks [8–10]) | Map mode (static, labelled edges), Test mode (disposable fixtures, warnings, executed-lines view, optional tracing). Mentor/Team pack. Preregistered efficacy study | Study run and published as preregistered |
 | **4. Expand** | Other tools (with honest per-tool enforcement labels), a sandboxed test execution boundary, Debug v2, community packs | Each addition ships with its own acceptance checks |
 
 ---
@@ -184,6 +185,7 @@ Otherwise blinding isn't possible, and the pilot report has to say so.
 - **Capacity budget:** owners are assigned (Ivan, plus a coordinator and a scorer named in a private team note), and Ivan has 10 h/week. Recurring costs, incentives, the HR/management sign-off person and the Phase 0 start date are still TBD in the [Roadmap](#5-roadmap) table.
 - **Brand:** test the name "jrdev" in the Phase 0 interviews, since some may find it patronizing. Keep the domain and org name flexible until then.
 - **Website code:** public or private (the content is public either way).
+- **Early-signal candidates:** which (at most two) join Phase 1. Decided by the [candidate promotion](specs/03-modes-and-workflows.md#candidate-promotion-p13-05) procedure after the Phase 0 interviews.
 
 ### Employer pilot safeguards
 Recruiting your company's juniors is the easiest route, but the employer relationship can undermine consent and honest feedback. Before recruitment:
@@ -214,6 +216,7 @@ Recruiting your company's juniors is the easiest route, but the employer relatio
 | 10 | P10-01, P10-02 | [adversarial-review-round-10.md](adversarial-review-round-10.md) |
 | 11 | P11-01 | [adversarial-review-round-11.md](adversarial-review-round-11.md) |
 | 12 | None; closes the design-review cycle. Further evidence comes from the Phase 0 prototype | [adversarial-review-round-12.md](adversarial-review-round-12.md) |
+| 13 | P13-01 to P13-08 (material added after round 12) | [adversarial-review-round-13.md](adversarial-review-round-13.md) |
 
 Each spec's header lists the findings it addresses, and the finding IDs appear in the relevant headings.
 

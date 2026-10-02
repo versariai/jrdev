@@ -1,6 +1,6 @@
 # Website, newsletter and feedback
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 3. Review findings addressed here: P-03, P3-06, P3-07, P6-03, P8-01, P9-01, P10-01, P11-01. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 3. Review findings addressed here: P-03, P3-06, P3-07, P6-03, P8-01, P9-01, P10-01, P11-01, P13-01. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates (P6-03):** each collection channel must pass its consent and deletion acceptance **before its first real participant or subscriber**. That **includes Phase 0 discovery**. Team-generated fixtures can be used while a channel is unfinished. See [Per-channel readiness](#per-channel-readiness-p6-03).
 
@@ -186,6 +186,7 @@ A channel opens to real people only after its checks pass on **team-generated fi
 | Website feedback form | Phase 0 | Consent record per scope. **Restore reconciliation test** passes (P8-01). **Withdrawal between queueing and job execution** skips the job. A deletion receipt removes the primary row, queued jobs, cluster memberships and derived summaries |
 | Onboarding survey | Phase 0 | The same consent and deletion checks as the feedback form |
 | Interviews (recordings and notes) | Phase 0 | Consent form with scopes. Defined storage for recordings and notes, and who holds them. Deletion removes the recording, notes, derived theme summaries that cite the participant, and the scheduling record. Transcription services are disclosed, along with their retention |
+| Informal experiments (e.g. [C6](../../experiments/c6-explain-changes/README.md)): feedback messages (P13-01) | Phase 0 | The experiment's own readiness checklist passes: employer safeguards confirmed, company AI policy allows the use, scoped consent per person, one private store with a single recipient, retention, and withdrawal that deletes the message, the stored copy and identifying derived notes. A synthetic message is taken through that whole lifecycle first. Team-only testing on synthetic repositories doesn't need this |
 | GitHub issues and Discussions | Phase 0–1 | Templates warn against pasting proprietary code. The triage process never copies private feedback into public threads |
 | In-tool `/jrdev:feedback` | Phase 1 | Opens the same form; no code or transcripts attached |
 | Pilot assessments (manual route) | Phase 1 | Covered by the [assessment spec's trace test](04-assessment-and-grading.md#phase-1-manual-route-p6-01) |

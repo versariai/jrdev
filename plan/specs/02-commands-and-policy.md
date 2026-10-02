@@ -1,6 +1,6 @@
 # Plugin commands, state and edit policy
 
-*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.1–5.3, 5.6, 5.7 and part of 5.4. Review findings addressed here: P-04, P-05, P-10, P2-01, P2-03, P2-04, P3-01, P4-04, P5-02, P6-04. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
+*Spec, part of the [jrdev.ai plan](../jrdev-ai-plan.md). Draft 2026-10-01. Moved from the single-file plan, where it was section 5.1–5.3, 5.6, 5.7 and part of 5.4. Review findings addressed here: P-04, P-05, P-10, P2-01, P2-03, P2-04, P3-01, P4-04, P5-02, P6-04, P13-06, P13-08. The finding IDs in headings refer to the [plan reviews](../jrdev-ai-plan.md#review-history).*
 
 **Gates:** the Phase 0 prototype must pass the acceptance cases for the three settings, the command channel and the recovery paths. Data-compatibility tests gate the first public **update**.
 
@@ -18,6 +18,7 @@
 **Composition rules:**
 - Workflows never change the edit policy. Debug + `type` means the learner inserts breakpoints themselves; Debug + `open` means the agent may insert them.
 - `/jrdev:off` sets **all three** to off/none/open, and says explicitly: "Edit enforcement is now OFF."
+- **Candidate C2 would add a fourth setting** (`checkin`). If it's adopted, every rule here that says "three" covers four, as listed in [C2 composition requirements](03-modes-and-workflows.md#c2-composition-requirements-p13-06) (P13-06).
 - **Any** change to the edit policy is announced in the conversation and shown in the status line.
 - The study treatment "Learning + Typing" = `learning:on` + `edit:type` with any workflow. Each session's configuration is logged, so the study can verify which treatment a participant actually received.
 
@@ -196,10 +197,22 @@ In every case, records are preserved, recovery works, and evidence categories ar
 
 ## Hook performance budget
 Signal (n = 1): learners can be **resource-constrained** (16 GB of RAM limiting parallel work). jrdev must not add noticeable load.
-- **Latency:** each hook handler runs in **≤ 100 ms at p95** on a reference laptop, and `SessionStart` in ≤ 300 ms.
-- **Memory:** **≤ 50 MB** resident per handler invocation.
+- **Latency:** each hook invocation takes **≤ 100 ms at p95**, and `SessionStart` ≤ 300 ms, on the reference machine.
+- **Aggregate:** all enabled hooks for one tool call together take **≤ 150 ms at p95**.
+- **Memory:** **≤ 50 MB** peak resident memory per invocation.
 - **No background processes,** and **no network calls** from hooks.
-- **CI:** measures these on Linux and macOS. A regression of more than 20% fails the build.
+
+**Benchmark contract (P13-08):**
+- **Reference machine:** the oldest supported Node LTS on a 16 GB laptop. The exact model and OS version are recorded in the repo during the Phase 0 prototype, and re-recorded if they change.
+- **What's timed:** the **whole invocation**, from process spawn to exit. That includes Node startup, module loading, state reads under the lock, and writing the JSON output. Handler logic alone isn't measured.
+- **Samples:** for each handler, 20 cold runs (first run after a fresh install) and 200 warm runs. p95 is reported separately for each.
+- **Memory:** peak resident memory of the hook process, measured with `/usr/bin/time` (`-l` on macOS, `-v` on Linux).
+- **Contention fixture:** two sessions firing hooks at the same time against shared state, to include lock waits.
+- **Inputs:** recorded hook inputs from the test suite, with every candidate hook that's enabled in the current phase turned on.
+- **CI checks:**
+  - **Absolute:** the budgets above, scaled by a CI-to-reference factor that's measured and recorded in the repo.
+  - **Relative:** a regression of more than 20% against the last approved baseline fails the build, but only if it reproduces on a rerun. The baseline changes only through a reviewed commit.
+- **Acceptance:** an artificial 150 ms startup delay, and an artificial 60 MB allocation, are both detected on the reference machine and in CI.
 
 ## Technical layout
 *Derived from the [interface registry](#interface-registry-p6-04). If the two disagree, the registry wins.*
