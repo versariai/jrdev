@@ -58,6 +58,25 @@ Public GitHub repo (github.com/versariai/jrdev, MIT)
 
 ---
 
+### Early signals (2026-10-02)
+**What this is:** informal written feedback from **two developers** at the company, both **backend**, who consented to its use. It was collected **before** Phase 0's channel checks. **Anecdotal: n = 2. Not pilot data.**
+- **Raw text:** kept outside this repo. Below are paraphrased themes only.
+- **Status:** these signals shape the Phase 0 interview guide, and they don't set priorities on their own.
+
+| Theme (paraphrased) | Who | Matches | Plan response |
+|---|---|---|---|
+| Slipping into an **autopilot fix loop**: hand over the problem, test, report the failure, let the AI fix it, repeat. Comfortable, but recognized as bad practice | 1 of 2 | The "iterative AI debugging" pattern (<40% in the Anthropic study) | Candidate C1, loop nudge |
+| **Not feeling like they learn.** Even in manual-approve mode, they skim the diff and accept if nothing looks odd | 1 of 2 | Rubber-stamp review | Candidates C2 (check-ins) and C3 (predict before approve) |
+| **Losing focus** by letting the AI run while doing something else | 1 of 2 | New theme, not in the research reports | Candidate C2, check-ins |
+| **Not understanding changes**, especially frontend ones | 1 of 2 | Immediate-comprehension findings | Candidates C6 (change summary) and C4 (frontend view, later) |
+| **Opaque decisions and no short, readable summary** before a PR | 1 of 2 | Converges with the theme above (**2 of 2** struggle to see what changed and why) | Candidate C6, change summary |
+| **Machine limits** (16 GB of RAM) stop them running tasks in parallel | 1 of 2 | Context, not learning | [Hook performance budget](specs/02-commands-and-policy.md#hook-performance-budget); don't push learners towards parallel agents |
+| Otherwise gets tasks done in **1–2 shots** | 1 of 2 | A delivery-mode user | Keep friction features **opt-in**, and serve delivery mode too (C6) |
+
+The feature candidates are detailed in [specs/03](specs/03-modes-and-workflows.md#feature-candidates-from-early-signals).
+
+---
+
 ## 3. Specs
 
 | Spec | What it covers | Key decisions |
@@ -148,7 +167,7 @@ Otherwise blinding isn't possible, and the pilot report has to say so.
 | # | Decision | Choice | Consequences in the plan |
 |---|---|---|---|
 | 1 | Tools for Phases 1–2 | **Claude Code only** | Other tools wait for Phase 4, each with honest per-tool enforcement labels |
-| 2 | First stack | **Python** | Phase 1 tasks, Typing coaching, `breakpoint()`/`pdb` debugging, `coverage.py`, and Python grading images |
+| 2 | First stack | **Python**. The pilot juniors are backend developers (confirmed 2026-10-02); **confirm in Phase 0 that their backend language is Python**, and switch if it isn't | Phase 1 tasks, Typing coaching, `breakpoint()`/`pdb` debugging, `coverage.py`, and Python grading images |
 | 3 | Business model | **Freemium**: individual learners free, team and mentor features paid later | The plugin and packs stay MIT and free. Paid features are later, **hosted** team capabilities (rollout, behavior-review tooling, consent-based progress exports). They never include manager surveillance, and they never weaken the learner-data rules in [specs/05](specs/05-data-flows-and-privacy.md). Accounts and billing aren't before Phase 3 |
 | 4 | Licence | **MIT** | Plugin, packs and docs. Reused third-party ideas are attributed |
 | 5 | Hook and library language | **TypeScript** (Node), with the recovery CLI in POSIX `sh` | Use `ts-fsrs` for reviews. The Node runtime is checked at `SessionStart`; if it's missing, edits fall through as documented in [specs/02](specs/02-commands-and-policy.md#state-layers-and-the-edit-decision-table-p-05) |

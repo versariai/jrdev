@@ -14,6 +14,7 @@
 | Does the tutor behave? | Behavior-review checklist on team-generated transcripts (answer leakage, useful hints, escalation), **run in CI-like fashion after every model, prompt or version change, from Phase 1** |
 | Do learners improve independently? | **Assessed transfer** results ([assessment & grading spec](04-assessment-and-grading.md)), delayed 1–2 weeks; kept separate from coached practice and self-report |
 | Are we listening? | "You said → we did" items per quarter |
+| Early-signal candidates (if adopted) | **C1:** fix-retry cycles per task, and the share of failure reports that include a hypothesis. **C2:** check-ins per session, and how often a check-in leads to `checkin off`. **C6:** use before PRs, and reviewer-rated clarity. These are descriptive Phase 1 measures, not gate rows |
 
 ## Studies (P-07)
 - **Phase 1, formative pilot (feasibility only):**

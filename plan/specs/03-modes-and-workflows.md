@@ -105,3 +105,22 @@ Their acceptance checks also carry over:
 - dynamic dispatch shows as unresolved edges
 
 Pending items, recaps and the `Stop` hook are covered in the [commands & policy spec](02-commands-and-policy.md#pending-items-recaps-and-stop-p-04).
+
+## Feature candidates from early signals
+These come from the [early signals](../jrdev-ai-plan.md#early-signals-2026-10-02) (n = 2). They're **candidates**, not commitments: each needs Phase 0 interview support and a design review before it's scheduled. Each one is labelled enforced or advisory.
+
+| ID | Candidate | Problem it targets | Mechanism | Label | Earliest phase |
+|---|---|---|---|---|---|
+| **C1** | **Loop nudge** | The autopilot fix loop | A `UserPromptSubmit` hook counts consecutive prompts **within a task** that report failure (pasted errors, "doesn't work") with no stated hypothesis. After N (default 2), it adds context telling the coach to ask "what do you think is causing it?" and to wait for an answer before proposing a fix | **Advisory.** The hook can't force the model; behavior review checks compliance | 1 |
+| **C2** | **Check-ins** | Losing focus and passive approval | A fourth, independent setting `checkin: off \| N`. A `PreToolUse` hook **denies** further `Edit`/`Write`/`Bash` calls after N tool calls with no learner message, and tells the agent to summarize progress and wait. The next learner prompt resets the counter | **Enforced** for those tool paths (a seatbelt for others) | 1 |
+| **C3** | **Predict before approve** | Rubber-stamp review in normal work (where the AI is allowed to edit) | Before applying a non-trivial change, the coach states what it will change and asks one prediction question (e.g. "which tests should now fail?"). It applies the change after the learner answers. It could later become a third edit policy, `review`, if the pilot shows value | **Advisory** at first | 2 |
+| **C4** | **Frontend comprehension view** | Not understanding UI changes | An extension of Map: component tree, props/state flow, and before/after screenshots of the affected UI | Advisory | 3+ (the pilot juniors are backend) |
+| **C5** | **No parallel agents while learning** | Focus, and machine limits | With `learning:on`, the coach is told not to start background agents. Documented guidance discourages parallel runs for learners | Advisory | 1 |
+| **C6** | **Readable change summary**, `/jrdev:explain-changes` | Opaque decisions, hard pre-PR review, not understanding changes (**2 of 2**) | A plain-language summary of **uncommitted changes plus the branch's commits** (avoiding the committed-only gap from [skills report R5-01](../../research/agent-skills-for-junior-devs.md)). It covers what changed, the **decisions taken and alternatives rejected**, the trade-offs, and what a reviewer should check. In learning mode it ends with one "why" or "predict" question. Also shipped as a **CLAUDE.md snippet** in the Starter pack asking for a decision log and a pre-PR summary | Advisory (a user-invoked skill) | 1 |
+
+**Before any candidate is scheduled:**
+- **Evidence:** test it in the Phase 0 interviews.
+- **Registry:** add it to the [interface registry](02-commands-and-policy.md#interface-registry-p6-04) with its phase.
+- **Oracle:** for C1 and C3, extend the behavior-review oracle with compliance scenarios.
+- **Policy table:** for C2, specify how it composes with the edit decision table. The check-in denial applies **after** the kill switch, control-file protection and recovery rows, and **never** blocks the recovery commands.
+

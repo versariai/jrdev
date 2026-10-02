@@ -173,6 +173,8 @@ In every case, records are preserved, recovery works, and evidence categories ar
 | `/jrdev:status [--context]` | Skill (user or model) | `skills/status` | specs 02, 05 | 0, 1 |
 | `/jrdev:feedback` | Skill (user or model) | `skills/feedback` | spec 01 | 1 |
 | `/jrdev:debug`, `/jrdev:map`, `/jrdev:test` | Skills (workflow guides) | `skills/{debug,map,test}` | spec 03 | 2–3 |
+| `/jrdev:explain-changes` (candidate C6) | Skill (user or model) | `skills/explain-changes` | spec 03 | candidate |
+| `/jrdev:checkin off\|N` (candidate C2) | Skill (user only) + expansion handler | `skills/checkin` | specs 02, 03 | candidate |
 | `jrdev off [--session\|--latest]`, `jrdev on --global` | CLI (POSIX sh, TTY-confirmed) | `bin/jrdev` | spec 02 | 0, 1 |
 | `jrdev assess start\|submit [--manual]` | CLI | `bin/jrdev` | specs 04, 05 | 1 (manual), 3 (service) |
 | `jrdev migrate`, `jrdev restore`, `jrdev reset`, `jrdev projects`, `jrdev verify-info` | CLI | `bin/jrdev` | specs 02, 05, 06 | 1+ |
@@ -189,6 +191,15 @@ In every case, records are preserved, recovery works, and evidence categories ar
 | `Stop` | — | One reminder for pending items | specs 02, 03 | 1 |
 | `PostModelSwitch` | — | Log model changes for configuration records | spec 07 | 1 (logging), 3 (study) |
 | `DirectoryAdded` | — | Record the added root; **don't** inject its private context; recommend a fresh session | spec 05 | 1 |
+| `UserPromptSubmit` (candidate C1) | — | Count failure reports with no hypothesis per task; add a loop-nudge context | spec 03 | candidate |
+| `PreToolUse` (candidate C2) | `Edit\|Write\|Bash` | Check-in denial after N tool calls with no learner message | spec 03 | candidate |
+
+## Hook performance budget
+Signal (n = 1): learners can be **resource-constrained** (16 GB of RAM limiting parallel work). jrdev must not add noticeable load.
+- **Latency:** each hook handler runs in **≤ 100 ms at p95** on a reference laptop, and `SessionStart` in ≤ 300 ms.
+- **Memory:** **≤ 50 MB** resident per handler invocation.
+- **No background processes,** and **no network calls** from hooks.
+- **CI:** measures these on Linux and macOS. A regression of more than 20% fails the build.
 
 ## Technical layout
 *Derived from the [interface registry](#interface-registry-p6-04). If the two disagree, the registry wins.*
