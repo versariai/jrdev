@@ -31,7 +31,7 @@ Baseline: `b1ca69a` (round-12 report). The additions through `f59160b` change ei
 
 ### P13-02 — Medium: the current-base branch loses committed changes
 
-**Evidence:** [C6 skill, step 1](../experiments/c6-explain-changes/skills/explain-changes/SKILL.md) correctly says that, when the current branch is the base, committed scope is the commits ahead of its upstream. Step 2 unconditionally recomputes `git merge-base HEAD <base>` and diffs that result against HEAD.
+**Evidence:** [C6 skill, step 1](../experiments/c6-explain-changes/skills/jrdev-explain-changes/SKILL.md) correctly says that, when the current branch is the base, committed scope is the commits ahead of its upstream. Step 2 unconditionally recomputes `git merge-base HEAD <base>` and diffs that result against HEAD.
 
 **Verified counterexample:** a temporary repository on `main`, with an upstream at its earlier commit and one local commit, invoked with explicit base `main`. `@{u}..HEAD` contains **one commit**. The prescribed step-2 merge base is HEAD, producing **zero commits and an empty diff**. The fixture was removed afterwards. This is command-level verification, not a model execution test.
 
@@ -41,7 +41,7 @@ Baseline: `b1ca69a` (round-12 report). The additions through `f59160b` change ei
 
 ### P13-03 — Medium: read-only does not define what may reach the model
 
-**Evidence:** [C6 skill](../experiments/c6-explain-changes/skills/explain-changes/SKILL.md) asks for all changes, full committed/uncommitted diffs, and reading relevant untracked files. Its exclusions address binaries, lockfiles, and generated files. The [README](../experiments/c6-explain-changes/README.md) warns against sending company details in feedback, but does not give an equivalent content boundary or AI-provider disclosure for summarization itself.
+**Evidence:** [C6 skill](../experiments/c6-explain-changes/skills/jrdev-explain-changes/SKILL.md) asks for all changes, full committed/uncommitted diffs, and reading relevant untracked files. Its exclusions address binaries, lockfiles, and generated files. The [README](../experiments/c6-explain-changes/README.md) warns against sending company details in feedback, but does not give an equivalent content boundary or AI-provider disclosure for summarization itself.
 
 **Failure case:** a tracked configuration change contains a credential, or a non-ignored untracked environment file appears in the candidate file list. Reading diffs/files makes their content available to the AI session even though no file is changed. Avoiding sensitive material in the later feedback message does not prevent this earlier disclosure.
 
