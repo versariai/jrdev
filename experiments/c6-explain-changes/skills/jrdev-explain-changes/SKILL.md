@@ -18,7 +18,7 @@ Arguments: `$ARGUMENTS`
 
 ## 1. Find the committed range
 
-Run these read-only git commands yourself. Stop and say so if this isn't a git repository.
+Run these read-only git commands yourself. Stop and say so if this isn't a git repository. **If any git command fails** (other than the documented "no match" exit code in step 2), stop and show the error. Don't treat empty output from a failed command as "no changes".
 
 **No configured helpers (P15-01).** Some Git commands can run helper programs from the user's Git config, which would break "read-only". So:
 - run **every** git command in this skill as `git -c core.fsmonitor=false …`
@@ -42,24 +42,27 @@ The commands below are written short; apply both rules to each one.
    - staged: `git diff --cached --name-status` and `git diff --cached --stat`
    - unstaged paths: `git diff-files --name-only`. This doesn't run filters, but it can list files whose timestamp changed with no real edit; their diff will simply be empty
    - untracked: `git ls-files --others --exclude-standard`
-2. **Filtered files (e.g. Git LFS).** Comparing working files runs any **clean filter** configured for them, even for statistics. Check first:
-   - `git config --get-regexp '^filter\..*\.(clean|process)$'`. If this prints nothing, no filter is configured; skip to substep 3.
-   - Otherwise, run `git check-attr filter -- <unstaged paths>`. Every path with a filter value other than `unspecified` or `unset` is **not compared in the unstaged layer**. List it under "Not read: uses a configured filter (<name>)". Its staged and committed diffs are still fine, because those compare stored versions and don't run the filter.
-   - Then get unstaged statistics only for the remaining paths: `git diff --stat -- <unfiltered unstaged paths>`.
+2. **Unstaged statistics, without running filters (e.g. Git LFS).** Comparing working files runs any **clean filter** configured for them, even for statistics. So first decide which unstaged paths are **safe to compare**, then count lines for those only. Always do this, whether or not filters are configured:
+   1. **Is any filter configured?** Run `git config --get-regexp '^filter\..*\.(clean|process)$'` and check its **exit code**:
+      - **1** (no match): no filter is configured. Every unstaged path is safe.
+      - **0** (match): run `git check-attr filter -- <unstaged paths>`. A path whose filter value is anything other than `unspecified` or `unset` is **not safe**. List it under "Not read: uses a configured filter (<name>)". Its staged and committed diffs are still fine, because those compare stored versions and don't run the filter.
+      - **Any other code** (an error): you can't tell which paths are filtered. Treat **no** unstaged path as safe, say so, and ask the user before comparing any of them.
+   2. **Count lines for the safe paths only:** `git diff --stat -- <safe unstaged paths>`, listing each path explicitly. **If there are no safe paths, don't run this command:** with an empty list after `--`, it would compare every file, filtered ones included.
+   3. **Unknown sizes count as large.** If some unstaged paths couldn't be counted (filtered, or the filter check failed), say their size is unknown, and treat that as "large" in substep 4.
    - If the user explicitly asks to include filtered files, run the normal command for them and say in "Scope covered" that their filter ran.
 3. **Never read the content of these paths.** List them under "Not read" without printing anything from them:
    - environment and secret files: `.env`, `.env.*`, `*.pem`, `*.key`, `*.p12`, `*.pfx`, `id_rsa*`, `id_ed25519*`, `.npmrc`, `.pypirc`, `.netrc`
    - any path containing `secret`, `credential`, `token` or `password` (case-insensitive)
    - binaries, lockfiles and generated files: list them and describe them from `--stat` only
 4. **Choose the scope before any content read.** Using only the lists and statistics from substeps 1 and 2, ask the user which parts to cover, and **wait for the answer**, if either applies:
-   - **large:** roughly 2,000 or more changed lines across all layers
+   - **large:** roughly 2,000 or more changed lines across all layers, or any layer whose size is unknown (substep 2)
    - **possibly sensitive:** configuration files that aren't excluded by name but may hold credentials, such as `settings.*`, `config.*`, `*.yaml`, `*.yml`, `*.toml`, `*.ini`, `*.conf`, `*.properties`, or anything under a `config/` directory
 
    Paths the user declines are added to the exclusions. Otherwise, continue with everything not excluded.
 5. **Read each layer separately,** with the same exclusions applied to all of them, e.g. `-- . ':(exclude).env*' ':(exclude)*.pem'` (add an exclude for each excluded or declined path):
    - committed: `git diff RANGE -- <pathspec>`
    - staged: `git diff --cached -- <pathspec>`
-   - unstaged: `git diff -- <pathspec>`, also excluding the filtered paths from substep 2
+   - unstaged: `git diff -- <safe unstaged paths>`, listing the safe paths from substep 2 explicitly, minus excluded or declined ones. Skip it if none are left
 6. **Untracked files aren't read automatically.** Read one only if it's clearly source code or docs that belong to this change, and it's within the chosen scope. If in doubt, list it and ask.
 7. **Limits:** these rules are instructions you follow, not a technical privacy boundary.
    - Path filtering isn't secret redaction: a secret in an ordinary source file will still be read. If you notice one, don't repeat it; tell the user to remove it.
