@@ -18,14 +18,24 @@ Arguments: `$ARGUMENTS`
 
 ## 1. Find the committed range
 
-Run these read-only git commands yourself. Stop and say so if this isn't a git repository. **If any git command fails** (other than the documented "no match" exit code in step 2), stop and show the error. Don't treat empty output from a failed command as "no changes".
+Run these read-only git commands yourself.
+
+**Start with a health check:** `git rev-parse --git-dir`. If it fails, stop and show the error: either this isn't a git repository, or Git can't read its configuration.
+
+**Failures (P17-02).** Only these commands may fail as a normal answer:
+- **base and upstream probes** in this section (`rev-parse --abbrev-ref origin/HEAD`, `rev-parse --verify --quiet <ref>`, `rev-parse --verify --quiet @{u}`): a nonzero exit means "that ref doesn't exist". Move to the next fallback described below
+- **the filter check** in step 2: follow its exit-code rules there
+
+**Any other git command that fails** (`log`, `diff`, `diff-files`, `ls-files`, `merge-base`, `check-attr`, `rev-parse HEAD`) means the inspection failed: stop and show the error. Never treat empty output from a failed command as "no changes".
 
 **No configured helpers (P15-01).** Some Git commands can run helper programs from the user's Git config, which would break "read-only". So:
 - run **every** git command in this skill as `git -c core.fsmonitor=false …`
 - add `--no-ext-diff --no-textconv` to **every** `git diff`, including `--stat` and `--name-status`
 - don't run `git status`; the layer lists in step 2 replace it
 
-The commands below are written short; apply both rules to each one.
+**Paths are literal (P17-01).** Whenever a command takes file paths, pass an explicit list of allowed files, each as its own argument, and add Git's global `--literal-pathspecs` option. Otherwise Git reads names like `[a].py` or `*.py` as patterns that can match other files. Never use `:(exclude)` or other pathspec patterns; leave excluded files out of the list instead. If the list is empty, skip the command: with nothing after `--`, Git compares every file.
+
+The commands below are written short; apply all three rules to each one. For example, the unstaged read in full is `git -c core.fsmonitor=false --literal-pathspecs diff --no-ext-diff --no-textconv -- <path1> <path2>`.
 
 1. **Base.** Use the base ref from the arguments if one was given. Otherwise try `git rev-parse --abbrev-ref origin/HEAD`, and if that fails, the first of `origin/main`, `origin/master`, `main` or `master` that exists (`git rev-parse --verify --quiet <ref>`). If no base can be found, ask the user for one rather than guessing.
 2. **Is the current branch the base?** Compare `git rev-parse --abbrev-ref HEAD` with the base name, after stripping a leading `origin/` (so `main` and `origin/main` both count as the base when you're on `main`). Then pick **exactly one** case and use its `RANGE` everywhere below:
@@ -38,7 +48,7 @@ The commands below are written short; apply both rules to each one.
 **Keep four layers separate** all the way through: **committed** (the range), **staged** (what the next `git commit` would include), **unstaged** (only in the working files), and **untracked**. Never merge staged and unstaged into one diff: an unstaged edit can undo a staged one, and a combined diff would then show nothing even though the next commit changes the file.
 
 1. **List paths and statistics only.** No content yet:
-   - committed: `git log --oneline RANGE` and `git diff --stat RANGE`
+   - committed: `git log --oneline RANGE`, `git diff --name-only RANGE` and `git diff --stat RANGE`
    - staged: `git diff --cached --name-status` and `git diff --cached --stat`
    - unstaged paths: `git diff-files --name-only`. This doesn't run filters, but it can list files whose timestamp changed with no real edit; their diff will simply be empty
    - untracked: `git ls-files --others --exclude-standard`
@@ -47,7 +57,7 @@ The commands below are written short; apply both rules to each one.
       - **1** (no match): no filter is configured. Every unstaged path is safe.
       - **0** (match): run `git check-attr filter -- <unstaged paths>`. A path whose filter value is anything other than `unspecified` or `unset` is **not safe**. List it under "Not read: uses a configured filter (<name>)". Its staged and committed diffs are still fine, because those compare stored versions and don't run the filter.
       - **Any other code** (an error): you can't tell which paths are filtered. Treat **no** unstaged path as safe, say so, and ask the user before comparing any of them.
-   2. **Count lines for the safe paths only:** `git diff --stat -- <safe unstaged paths>`, listing each path explicitly. **If there are no safe paths, don't run this command:** with an empty list after `--`, it would compare every file, filtered ones included.
+   2. **Count lines for the safe paths only:** `git diff --stat -- <safe unstaged paths>`, as a literal list. **If there are no safe paths, don't run this command:** with an empty list after `--`, it would compare every file, filtered ones included.
    3. **Unknown sizes count as large.** If some unstaged paths couldn't be counted (filtered, or the filter check failed), say their size is unknown, and treat that as "large" in substep 4.
    - If the user explicitly asks to include filtered files, run the normal command for them and say in "Scope covered" that their filter ran.
 3. **Never read the content of these paths.** List them under "Not read" without printing anything from them:
@@ -59,10 +69,10 @@ The commands below are written short; apply both rules to each one.
    - **possibly sensitive:** configuration files that aren't excluded by name but may hold credentials, such as `settings.*`, `config.*`, `*.yaml`, `*.yml`, `*.toml`, `*.ini`, `*.conf`, `*.properties`, or anything under a `config/` directory
 
    Paths the user declines are added to the exclusions. Otherwise, continue with everything not excluded.
-5. **Read each layer separately,** with the same exclusions applied to all of them, e.g. `-- . ':(exclude).env*' ':(exclude)*.pem'` (add an exclude for each excluded or declined path):
-   - committed: `git diff RANGE -- <pathspec>`
-   - staged: `git diff --cached -- <pathspec>`
-   - unstaged: `git diff -- <safe unstaged paths>`, listing the safe paths from substep 2 explicitly, minus excluded or declined ones. Skip it if none are left
+5. **Read each layer separately,** each with its own literal list of allowed files: the layer's paths from substep 1, minus the "never read" paths from substep 3 and any the user declined. Skip a layer whose list is empty:
+   - committed: `git diff RANGE -- <allowed committed paths>`
+   - staged: `git diff --cached -- <allowed staged paths>`
+   - unstaged: `git diff -- <allowed unstaged paths>`, starting from the safe paths in substep 2
 6. **Untracked files aren't read automatically.** Read one only if it's clearly source code or docs that belong to this change, and it's within the chosen scope. If in doubt, list it and ask.
 7. **Limits:** these rules are instructions you follow, not a technical privacy boundary.
    - Path filtering isn't secret redaction: a secret in an ordinary source file will still be read. If you notice one, don't repeat it; tell the user to remove it.

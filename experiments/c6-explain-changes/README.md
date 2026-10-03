@@ -85,7 +85,7 @@ Read both files before installing. They're short, and they contain no scripts.
 
 It runs only `git log`, `git diff`, `git diff-files`, `git rev-parse`, `git merge-base`, `git ls-files`, `git config --get-regexp` and `git check-attr`, and reads files. Staged and unstaged changes are reported separately, so you can see exactly what the next commit would include.
 
-**Configured Git helpers are switched off (P15-01).** Ordinary `git diff` can run helper programs from your Git config: fsmonitor, external diff drivers, text-conversion filters, and clean filters such as Git LFS. The skill disables the first three on every command. It skips the unstaged comparison for files with a clean filter and lists them as not read, unless you ask to include them. This covers the helpers known to run during these commands; it doesn't sandbox Git. Without text conversion, some formats show as raw or binary diffs. Claude Code may ask permission for those git commands, depending on your settings.
+**Configured Git helpers are switched off (P15-01).** Ordinary `git diff` can run helper programs from your Git config: fsmonitor, external diff drivers, text-conversion filters, and clean filters such as Git LFS. The skill disables the first three on every command. It skips the unstaged comparison for files with a clean filter and lists them as not read, unless you ask to include them. File names are passed to Git literally, so a name like `[a].py` can't match other files. This covers the helpers known to run during these commands; it doesn't sandbox Git. Without text conversion, some formats show as raw or binary diffs. Claude Code may ask permission for those git commands, depending on your settings.
 
 ## Duration and feedback
 

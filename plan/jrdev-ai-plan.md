@@ -1,6 +1,6 @@
 # jrdev.ai: Product Plan (overview)
 
-*Draft, 2026-10-01. This is the **overview**. Detailed designs live in [`specs/`](specs/), one file per area. Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md). The plan went through sixteen adversarial review rounds. Round 12 closed the core design with no findings; rounds 13–16 reviewed the material added afterwards (team, early signals, candidates, interview guide, C6 experiment), and their findings are addressed. See [Review history](#review-history).*
+*Draft, 2026-10-01. This is the **overview**. Detailed designs live in [`specs/`](specs/), one file per area. Builds on [the practices report](../research/ai-for-junior-devs.md) and [the skills report](../research/agent-skills-for-junior-devs.md). The plan went through seventeen adversarial review rounds. Round 12 closed the core design with no findings; rounds 13–17 reviewed the material added afterwards (team, early signals, candidates, interview guide, C6 experiment), and their findings are addressed. See [Review history](#review-history).*
 
 ## 1. Mission and principles
 
@@ -220,6 +220,7 @@ Recruiting your company's juniors is the easiest route, but the employer relatio
 | 14 | P14-01 to P14-04 | [adversarial-review-round-14.md](adversarial-review-round-14.md) |
 | 15 | P15-01 | [adversarial-review-round-15.md](adversarial-review-round-15.md) |
 | 16 | P16-01, P16-02. P16-01's double-backslash claim didn't reproduce: the committed regex already has one backslash per dot and detects `clean` and `process` filters. Its exit-code point was adopted | [adversarial-review-round-16.md](adversarial-review-round-16.md) |
+| 17 | P17-01, P17-02; also withdraws P16-01's regex claim | [adversarial-review-round-17.md](adversarial-review-round-17.md) |
 
 Each spec's header lists the findings it addresses, and the finding IDs appear in the relevant headings.
 
