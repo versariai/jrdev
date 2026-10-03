@@ -214,6 +214,34 @@ Signal (n = 1): learners can be **resource-constrained** (16 GB of RAM limiting 
   - **Relative:** a regression of more than 20% against the last approved baseline fails the build, but only if it reproduces on a rerun. The baseline changes only through a reviewed commit.
 - **Acceptance:** an artificial 150 ms startup delay, and an artificial 60 MB allocation, are both detected on the reference machine and in CI.
 
+## Mods spike (Phase 0)
+**Background.** On 2026-10-01 Anthropic launched **mods** for Claude Code 2.1.287 and later ([announcement](https://claude.com/blog/claude-code-mods), [getting-started guide](https://claude.dev/blog/getting-started-with-claude-code-mods/)). A mod is a TypeScript module inside a plugin:
+- **How it runs:** it's loaded once per session and runs in its own sandbox, with no Node. It reaches files, processes and the UI only through Claude Code's `$` API.
+- **What it hooks:** events such as `tool.call`, `prompt.submit`, `command.run`, `turn.start`/`turn.complete`, `session.start` and `ui.render`. A hook can watch an event, rewrite it, or answer it itself, for example by denying a tool call.
+- **What else it can do:** keep session state, register slash commands and tools, draw panes, buttons and status lines, and redact tool output before the model reads it.
+- **Limits:** the API "can change between releases". Mods run in load order, and each hook gets 10 seconds of its own time per event.
+
+Mods could replace the per-event hook processes in this spec. They would remove the Node runtime dependency and most of the [performance budget](#hook-performance-budget), and give the candidates real UI. **This spec stays hooks-based until the spike below says otherwise.**
+
+**Scope:** time-boxed to about **8 hours** of Phase 0 plugin time. Build the [edit decision table](#state-layers-and-the-edit-decision-table-p-05) and the command channel as a mod next to the hooks prototype, using `claude plugin validate` and `claude plugin test`, and answer these questions with tests:
+
+| # | Question | Test | If it fails |
+|---|---|---|---|
+| M1 | **Trusted channel:** does `command.run` for a jrdev command fire **only** when the user types it? | Model attempts through the `Skill` tool, a model-callable tool and prompt text never change state | State changes stay in the `UserPromptExpansion` hook |
+| M2 | **Failure behavior:** when the mod throws, hits the 10-second limit, or fails to load, is the tool call allowed or blocked? | A fixture mod for each case; observe the next `Edit` | The decision table's last row documents the observed behavior, as it does today for hooks |
+| M3 | **Load order:** can a mod that loads earlier answer `tool.call` without calling `next`, so jrdev never sees it? What changes when `sec-default` loads first (Team and Enterprise plans, or managed settings)? | A fixture mod that answers `Edit` itself; the same suite with managed settings on | The bypass is a documented gap in "What we promise", with a `/jrdev:status` warning if it's detectable |
+| M4 | **Recovery and state:** can control state stay in files under `~/.jrdev/`, so `jrdev off`, the kill switch and the [recovery cases](#state-layers-and-the-edit-decision-table-p-05) keep working without Claude Code? | Run every recovery acceptance case against the mod | Control state stays with the hooks version |
+| M5 | **Version floor:** what happens on a client older than 2.1.287? Do the pilot's machines meet it? | Install on an older client; survey pilot machines | Hooks remain the default, and the mod becomes optional |
+| M6 | **Release trust:** do `defaultEnabled: false`, SHA pinning and [verify-before-enable](06-repo-and-release-trust.md#release-trust-from-signing-to-verified-installation-p-09) work for a plugin that contains a mod? | The clean-install check on a mod build | No mod ships until they do |
+
+The [benchmark contract](#hook-performance-budget) also runs on the mod, so the two versions can be compared.
+
+**Decision rule** (recorded as decision 10 in the [overview](../jrdev-ai-plan.md#7-decisions) at the end of Phase 0):
+- **Enforcement** (edit decision table, trusted channel, recovery) moves to a mod only if M1–M4 and M6 pass.
+- **UI-only features** (the C2 check-in pane, C3's held edit, a C6 change view) can use mods if M2, M5 and M6 pass, even if enforcement stays in hooks.
+- **A hybrid is allowed:** hooks enforce, and mods draw.
+- **Redacting tool output** is a possible later upgrade to C6's content rules and [specs/05](05-data-flows-and-privacy.md#what-reaches-the-ai-provider). It's evaluated separately, and isn't claimed until tested.
+
 ## Technical layout
 *Derived from the [interface registry](#interface-registry-p6-04). If the two disagree, the registry wins.*
 ```

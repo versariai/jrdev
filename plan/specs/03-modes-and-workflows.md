@@ -118,6 +118,8 @@ These come from the [early signals](../jrdev-ai-plan.md#early-signals-2026-10-02
 | **C5** | **No parallel agents while learning** | Focus, and machine limits | With `learning:on`, the coach is told not to start background agents. Documented guidance discourages parallel runs for learners | Advisory | 1 |
 | **C6** | **Readable change summary**, `/jrdev:explain-changes` | Opaque decisions, hard pre-PR review, not understanding changes (**2 of 2**) | A plain-language summary of the **branch's commits plus staged, unstaged and untracked changes, kept separate** (avoiding the committed-only gap from [skills report R5-01](../../research/agent-skills-for-junior-devs.md)). It reads Git with configured helpers switched off (fsmonitor, external diff, text conversion; clean-filtered files skipped in the unstaged layer; P15-01). It covers what changed, the **decisions taken and alternatives rejected**, the trade-offs, and what a reviewer should check. In learning mode it ends with one "why" or "predict" question. Also shipped as a **CLAUDE.md snippet** in the Starter pack asking for a decision log and a pre-PR summary | Advisory (a user-invoked skill) | 1 |
 
+**Mods.** Claude Code mods (2.1.287 and later) could give C2 a check-in pane with a Continue button, let C3 hold an edit until the learner answers, and give C6 a step-through view of the turn's changes. Whether they're used is decided by the [mods spike](02-commands-and-policy.md#mods-spike-phase-0); until then, the mechanisms above are hooks and skills.
+
 ### Candidate promotion (P13-05)
 **One decision moves a candidate into a phase.** The interview eligibility rule, the C6 experiment and design reviews are **inputs** to it; none of them schedules a candidate on its own.
 
