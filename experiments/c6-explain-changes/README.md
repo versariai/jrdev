@@ -82,6 +82,7 @@ Read both files before installing. They're short, and they contain no scripts.
 - **Before a commit or PR:** `/jrdev-explain-changes`. The base branch is detected automatically.
 - **Against a specific base:** `/jrdev-explain-changes origin/develop`.
 - **To check your own understanding:** `/jrdev-explain-changes --learn`. It ends with one question for you to answer.
+- **To compare a changed choice with project conventions:** `/jrdev-explain-changes --conventions`. It lists up to three relevant reference files and waits for your approval before reading them; their contents are sent to your AI provider too. Combine with `--learn` to get one neutral question about a supported deviation: `/jrdev-explain-changes --learn --conventions`.
 
 It runs only `git log`, `git diff`, `git diff-files`, `git rev-parse`, `git merge-base`, `git ls-files`, `git config --get-regexp` and `git check-attr`, and reads files. Staged and unstaged changes are reported separately, so you can see exactly what the next commit would include.
 

@@ -1,7 +1,7 @@
 ---
 name: jrdev-explain-changes
 description: Explain the current changes in plain language before review or a PR. Covers staged, unstaged, untracked and branch-committed work, kept separate, plus the decisions made, rejected alternatives, trade-offs and what a reviewer should check. Use when the user asks what changed, wants a summary before committing or opening a PR, or says they don't understand a change.
-argument-hint: "[base-ref] [--learn]"
+argument-hint: "[base-ref] [--learn] [--conventions]"
 ---
 
 <!-- jrdev-experiment-c6: installed by the jrdev C6 experiment. Safe to delete with this folder. -->
@@ -15,6 +15,9 @@ Produce a short, plain-language explanation of **all** current changes so a deve
 Arguments: `$ARGUMENTS`
 - An optional base ref (e.g. `main`, `origin/develop`, `HEAD~3`) overrides base detection.
 - `--learn` adds one question at the end (see section 5).
+- `--conventions` offers a comparison with documented project rules and a few nearby examples (see section 3). It proposes extra files to read; you approve those paths before their contents are read and sent to your AI provider.
+
+**What reaches the model:** every diff or file you read becomes part of this conversation and is sent to the AI provider. With `--conventions`, the skill proposes relevant repository guidance and up to three nearby examples as extra reference files. Show those paths and ask the user whether to read them; wait for the answer before opening their contents. Apply the same exclusions and scope checks. It does not scan the whole repository for style.
 
 ## 1. Find the committed range
 
@@ -82,8 +85,17 @@ The commands below are written short; apply all three rules to each one. For exa
 ## 3. Find the reasons
 
 - **Recorded:** a reason that appears in **this conversation**, such as a decision you made or the user asked for, an error you fixed, or an option you rejected.
+- **Documented:** a reason or convention stated in repository guidance or a decision record. Name the file that documents it.
+- **Observed pattern:** a convention suggested by at least two comparable nearby examples. Name the examples and call this an observed pattern, not a required rule. One example is only an isolated precedent.
 - **Inferred:** a reason you're only guessing from the code. **Label it "inferred"** and don't present it as fact.
 - **Never invent a rationale.** If you can't tell why something was done, say "reason unknown, worth asking".
+
+### With `--conventions`
+
+- Look only for a **material** choice in the changed code that may conflict with a documented rule or a repeated nearby pattern. Ignore superficial differences that don't affect behavior, safety, maintainability or the project's stated conventions.
+- Using paths only, identify the directly relevant repository guidance and, if needed, at most **three** comparable files in the same feature area. Show all proposed reference paths to the user and wait for approval before reading any of their contents. After approval, check documented guidance first, then the examples. The usual large-change and sensitivity checks still apply. Never read the whole repository just to establish a style.
+- In the summary, say whether the comparison is a documented rule, an observed pattern, or an isolated precedent. Point to the evidence. A difference alone does not prove the change is wrong; don't call one choice better without a requirement or concrete trade-off to support that claim.
+- If no reason is documented or recorded, say **"reason unknown"**. Do not make up a rationale for the deviation.
 
 ## 4. Write the explanation
 
@@ -101,6 +113,9 @@ Use this structure. Keep it under about 400 words unless the change is large. Av
 
 ### Decisions and alternatives
 - Decision → alternatives considered → why this one (recorded / inferred)
+
+### Local conventions and notable deviations (only with `--conventions`, when evidence exists)
+- Change → documented rule / observed pattern / isolated precedent, with file paths → known reason or "reason unknown" → what to ask or consider
 
 ### Trade-offs and risks
 - What could break, what got more complex, what was deliberately left out
@@ -122,6 +137,10 @@ Use this structure. Keep it under about 400 words unless the change is large. Av
 
 ## 5. With `--learn`
 
-End with **one** question that checks understanding of the most important change, for example "Which input would now take the new branch in `parse_order`?" or "Why does this need a transaction?".
+End with **one** question that checks understanding of the most important change, for example "Which input would now take the new branch in `parse_order`?" If `--conventions` found a material difference supported by evidence, the question may instead ask about that choice. Keep it neutral and don't assume the new choice is better. For example:
+
+> "This change uses <choice>, while the documented rule / nearby examples use <pattern> ([paths]). Do you know what led to the difference? Is there a requirement or trade-off that justifies it here, or would following the existing pattern work?"
+
+Ask this only when the comparison is valid for the language and the evidence is available. If the reason is unknown, leave it unknown; the question is for the developer, not a prompt to invent a justification. Without `--conventions` or clear evidence, ask the usual behavior or prediction question.
 - **Don't answer it.** Wait for the user's reply.
 - **Then give feedback on the reply:** say what was right and what was missing.
