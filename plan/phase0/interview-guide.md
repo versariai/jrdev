@@ -51,7 +51,7 @@ Interviews are a data-collection channel, so the [per-channel readiness checks](
 | # | Section | Time | Questions and probes |
 |---|---|---|---|
 | 1 | Intro and consent | 3 min | Purpose, voluntary, no performance use, what we record. Confirm the consent scopes. **Don't mention any theme or feature yet** |
-| 2 | Background | 3 min | Role, time as a developer, main stack, which AI tools, how often |
+| 2 | Background | 3 min | Role, time as a developer, main stack, which AI tools, how often. "Do you use anything to help you understand code the AI wrote, such as an explainer app or extension? What for? Do you still use it?" |
 | 3 | **Spontaneous difficulties, ranked** | 4 min | **Before any theme is named:** "What's hardest for you about developing with AI?" (let them answer freely) → "Which three matter most to you, in order?" Write the list down as given; it's the only spontaneous ranking |
 | 4 | **Last task walkthrough** | 11 min | "Tell me about the last task you did with an AI tool, from start to finish." Probes:<br>• Who wrote the first version, you or the AI?<br>• **When something didn't work, what did you do next? And after that?** *(T1, autopilot loop)*<br>• **How did you decide whether to accept a change? What did you look at?** *(T2, approval)*<br>• Did you do anything else while the AI was working? *(T3, focus)*<br>• Could you explain what changed to a colleague right now? Which part would be hardest? *(T4, understanding)*<br>• How did you prepare the review or PR? *(T4, summary)*<br>• **For any instance above: "What did that cost you?"** (time, rework, a review comment, a bug later, not being able to explain it) **"How much does it matter to you?"** |
 | 5 | Learning and debugging | 8 min | • "Think of something you learned in the last month. How did you learn it?" *(T5)*<br>• "Tell me about the last bug you fixed. What did you do first?" *(T6)*<br>• "When you're stuck, who or what do you go to first? When did you last ask a person?" *(T7, silent silo)* |
@@ -151,6 +151,7 @@ Quotes (only with scope d): …
 **Contexto**
 - Qual seu papel e há quanto tempo você desenvolve?
 - Qual sua stack principal? Quais ferramentas de IA você usa, e com que frequência?
+- Você usa alguma coisa para entender o código que a IA escreveu, como um app ou extensão que explica código? Para quê? Ainda usa?
 
 **Dificuldades** (antes de mencionar qualquer tema)
 - O que é mais difícil para você em desenvolver com IA? (deixar responder livremente)

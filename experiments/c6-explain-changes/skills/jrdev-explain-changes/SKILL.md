@@ -101,6 +101,8 @@ The commands below are written short; apply all three rules to each one. For exa
 
 Use this structure. Keep it under about 400 words unless the change is large. Avoid jargon, and explain any term a junior developer might not know.
 
+**Riskiest first.** In "What changed" and "What a reviewer should check", put first the changes where a mistake costs most: authentication and permissions, payments, data migrations and deletions, dependency and lockfile changes, configuration, and public interfaces such as API routes or exported functions. Then order the rest by size, largest first. Mark each risky row with **⚠** and a few words on why it is risky.
+
 ```
 ### Summary
 2–3 sentences: what this change does and why, in plain language.
