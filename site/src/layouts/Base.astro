@@ -1,0 +1,92 @@
+---
+import { PLAUSIBLE_SCRIPT, REPO_URL, CONTACT_EMAIL } from '../config';
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {PLAUSIBLE_SCRIPT && (
+      <>
+        <script async src={PLAUSIBLE_SCRIPT}></script>
+        {/* Strips every query parameter before sending (plausible.io/docs/stop-tracking-utm-tags). */}
+        <script is:inline>
+          window.plausible = window.plausible || function () { (plausible.q = plausible.q || []).push(arguments); };
+          plausible.init = plausible.init || function (i) { plausible.o = i || {}; };
+          plausible.init({
+            transformRequest: function (payload) {
+              payload.u = location.href.split('?')[0].split('#')[0];
+              return payload;
+            },
+          });
+        </script>
+      </>
+    )}
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="wrap top">
+      <a href="/" class="wordmark">jrdev</a>
+    </header>
+    <main id="main" class="wrap">
+      <slot />
+    </main>
+    <footer class="wrap foot">
+      <a href="/privacy">Privacy</a>
+      <a href={REPO_URL}>GitHub</a>
+      <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #fbfbf9;
+    --fg: #1b1b1a;
+    --muted: #5a5a55;
+    --line: #dcdcd5;
+    --card: #ffffff;
+    --accent: #1f5fbf;
+    --accent-fg: #ffffff;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141413;
+      --fg: #ececea;
+      --muted: #a5a59f;
+      --line: #34342f;
+      --card: #1c1c1a;
+      --accent: #7aa7f0;
+      --accent-fg: #0d0d0c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 17px/1.6 system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  .wrap { max-width: 44rem; margin: 0 auto; padding: 0 16px; }
+  a { color: var(--accent); }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .skip { position: absolute; left: -999px; }
+  .skip:focus { left: 16px; top: 8px; background: var(--card); padding: 4px 8px; }
+  .top { padding-top: 24px; }
+  .wordmark { font-weight: 700; font-size: 1.2rem; color: var(--fg); text-decoration: none; }
+  h1 { font-size: clamp(2rem, 6vw, 2.8rem); line-height: 1.15; margin: 48px 0 12px; }
+  h2 { font-size: 1.4rem; margin: 56px 0 12px; }
+  .lede { font-size: 1.15rem; color: var(--muted); margin: 0 0 24px; }
+  .muted { color: var(--muted); font-size: 0.95rem; }
+  .foot { display: flex; flex-wrap: wrap; gap: 20px; padding-top: 48px; padding-bottom: 48px; margin-top: 64px; border-top: 1px solid var(--line); }
+</style>

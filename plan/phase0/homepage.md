@@ -35,7 +35,7 @@ Nothing joins analytics to email addresses.
 | Hosting | Cloudflare Pages (or Vercel) | Free tier, deploy on push |
 | Newsletter | **Buttondown** | Built-in double opt-in, tags for track segmentation, full export, API deletion. The form posts straight to its embed endpoint, so there's **no backend and no database of ours** |
 | Analytics | **Plausible**, script only, no custom properties, query strings stripped with its `transformRequest` option | No cookies and no form contents; reports are aggregate. It still processes IP and User-Agent to make a daily visitor hash (see the privacy page). The script is the page's only client JS. PostHog would need cookieless mode, person profiles off, autocapture and replay off and URL allowlisting; not worth it for one page |
-| Spam | Buttondown's own checks plus a honeypot field | Matches the feedback form's abuse controls |
+| Spam | Buttondown's own checks (validation and CAPTCHA), verified with a fixture | No honeypot: with no backend of ours, nothing would enforce one, and Buttondown's docs don't support it |
 
 **Skipped:** a custom signup API, our own subscriber table, a CMS, A/B testing, social login.
 
@@ -64,11 +64,10 @@ Single column, readable on a phone, one form repeated at top and bottom.
 | Email | Yes | Buttondown subscriber |
 | Tracks: learning / onboarding / delivery (checkboxes) | No | Buttondown tags. Purpose, stated next to the boxes: pick which newsletter sections you get first |
 | Source and consent version (hidden) | — | Tags `src-home` and `consent-vN`. Check that the embed accepts several hidden `tag` fields |
-| Honeypot (hidden) | — | Rejected by Buttondown's checks; verified with a fixture, not assumed |
 
 **Consent record:** Buttondown keeps the signup, confirmation and unsubscribe dates and the source. The `consent-vN` tag links that to the exact text the person saw. A **consent bundle** is the set of consent-relevant copy: the signup promise and form text (including cadence), the track purpose, the privacy page and the confirmation email. Rules:
 - any change to the bundle bumps `N`, including the monthly-cadence fallback
-- `consent/vN.md` in the site repo holds a copy of the whole bundle and the commit it shipped in; it never contains subscriber data Subscribing is the consent action, so no extra checkbox.
+- `site/consent/vN.md` records the commit it shipped in, which pins the page and privacy text, and holds the confirmation and welcome email text, which live only in Buttondown. It never contains subscriber data Subscribing is the consent action, so no extra checkbox.
 
 No name, role or company. The onboarding survey collects those later, under its own consent.
 
@@ -104,7 +103,7 @@ Run on team fixtures (test inboxes) before the domain is announced:
 - [ ] Any CSV export made during admin is deleted after use; erasure requests include it
 - [ ] Buttondown's DPA covers this account; its transfer safeguard and subprocessor list are linked
 - [ ] Provider backup retention confirmed in writing and written on the privacy page
-- [ ] Honeypot submission is rejected
+- [ ] A scripted burst of fixture sign-ups hits Buttondown's validation or CAPTCHA
 - [ ] Page works with JS off (plain form POST) and passes a keyboard-only and screen-reader pass
 - [ ] Analytics: no cookies or storage set. Visits with `?utm_source=fixture&e=test@example.com` and from a referring page send no query string; a signup and an error send no email or tracks (DevTools → Application and Network). The privacy text matches what's sent and the derived fields and retention in Plausible's current data policy and account settings
 - [ ] Copy check: every factual card has a public source and its limits, no early-signal content, no names

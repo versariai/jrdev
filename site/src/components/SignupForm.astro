@@ -1,0 +1,80 @@
+---
+import { BUTTONDOWN_USERNAME, CONSENT_VERSION, CADENCE } from '../config';
+
+interface Props {
+  id: string; // unique per page, keeps label/input ids distinct
+  tracks?: boolean;
+}
+const { id, tracks = false } = Astro.props;
+const tracksList = [
+  ['learning', 'Learning with AI'],
+  ['onboarding', 'Onboarding to a codebase'],
+  ['delivery', 'Delivering work with AI'],
+];
+---
+<form
+  class="signup"
+  action={`https://buttondown.com/api/emails/embed-subscribe/${BUTTONDOWN_USERNAME}`}
+  method="post"
+>
+  <div class="row">
+    <label for={`${id}-email`} class="visually-hidden">Email address</label>
+    <input
+      id={`${id}-email`}
+      type="email"
+      name="email"
+      required
+      autocomplete="email"
+      placeholder="you@example.com"
+    />
+    <button type="submit">Subscribe</button>
+  </div>
+  <input type="hidden" name="tag" value="src-home" />
+  <input type="hidden" name="tag" value={CONSENT_VERSION} />
+  {tracks && (
+    <fieldset>
+      <legend>Optional: which topics should come first in your issues?</legend>
+      {tracksList.map(([value, label]) => (
+        <label class="check">
+          <input type="checkbox" name="tag" value={`track-${value}`} /> {label}
+        </label>
+      ))}
+    </fieldset>
+  )}
+  <p class="muted">
+    A free newsletter, {CADENCE}. You confirm by email first (double opt-in), and every issue has a
+    one-click unsubscribe. <a href="/privacy">What we store</a>.
+  </p>
+</form>
+
+<style>
+  .signup { margin: 0 0 8px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  input[type='email'] {
+    flex: 1 1 16rem;
+    min-width: 0;
+    font: inherit;
+    padding: 10px 12px;
+    border: 1px solid var(--muted);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--fg);
+  }
+  button {
+    font: inherit;
+    font-weight: 600;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--accent);
+    color: var(--accent-fg);
+    cursor: pointer;
+  }
+  fieldset { border: 0; padding: 0; margin: 16px 0 0; }
+  legend { font-weight: 600; margin-bottom: 4px; }
+  .check { display: block; padding: 2px 0; }
+  .visually-hidden {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap;
+  }
+</style>
