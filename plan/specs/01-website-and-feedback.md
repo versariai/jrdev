@@ -9,7 +9,7 @@
 ## Pages
 | Page | Purpose | Phase |
 |---|---|---|
-| **Home** | Value proposition; the three modes of using AI (learning / onboarding / delivery); subscribe and install CTAs | 0 |
+| **Home** | Value proposition; the three modes of using AI (learning / onboarding / delivery); subscribe and install CTAs. Phase 0 plan: [homepage](../phase0/homepage.md) | 0 |
 | **Newsletter** | Double opt-in signup, archive | 0 |
 | **Feedback** | See [website & feedback: feedback system](#feedback-system) | 0 |
 | **Privacy & data flows** | The data-flow inventory ([data flows & privacy spec](05-data-flows-and-privacy.md)) in plain language | 0 |
@@ -20,13 +20,13 @@
 | **For mentors/teams** | Rollout guidance, the behavior-review practice | 2+ |
 
 ## Newsletter
-- **Cadence:** every 2 weeks. Fixed sections:
+- **Cadence:** every 2 weeks, or monthly under the [Phase 0 capacity fallback](../phase0/homepage.md#constraints-from-the-plan). Fixed sections:
   - one practice
   - one tool or mode tip
   - one "stuck of the week" (a paraphrased theme, never a quoted submission without consent)
   - a changelog
 - **Segmentation:** by the learning tracks chosen at signup.
-- **Every issue ends with a one-question pulse survey.**
+- **Every issue ends with a one-question pulse survey**, once the pulse-answer deletion check in [per-channel readiness](#per-channel-readiness-p6-03) passes. Until then, issues carry no survey ([homepage plan](../phase0/homepage.md#constraints-from-the-plan)).
 
 ## Feedback system
 **Inputs:**
@@ -182,7 +182,7 @@ A channel opens to real people only after its checks pass on **team-generated fi
 
 | Channel | Opens in | Consent and deletion checks before opening |
 |---|---|---|
-| Newsletter (chosen provider) | Phase 0 | Double opt-in works. Unsubscribe and **subscriber deletion** in the provider actually remove the record; the provider's backup retention is documented. Pulse-survey answers can be deleted |
+| Newsletter (chosen provider) | Phase 0 | Double opt-in works. Unsubscribe and **subscriber deletion** in the provider actually remove the record; the provider's backup retention is documented. Before the **first pulse response** (not the first subscriber): pulse-survey answers can be deleted. Until then the row records "pulses deferred; no collection in templates" |
 | Website feedback form | Phase 0 | Consent record per scope. **Restore reconciliation test** passes (P8-01). **Withdrawal between queueing and job execution** skips the job. A deletion receipt removes the primary row, queued jobs, cluster memberships and derived summaries |
 | Onboarding survey | Phase 0 | The same consent and deletion checks as the feedback form |
 | Interviews (recordings and notes) | Phase 0 | Consent form with scopes, including a separate, optional scope for public paraphrases (P14-04). Defined storage for recordings and notes, and who holds them. Deletion removes the recording, notes, derived theme summaries that cite the participant, and the scheduling record. Transcription services are disclosed, along with their retention |
