@@ -1,5 +1,5 @@
 // Fill these in before running the launch checklist (plan/phase0/homepage.md).
-export const BUTTONDOWN_USERNAME = 'TODO-buttondown-username';
+export const BUTTONDOWN_USERNAME = 'jrdev';
 // The per-site script URL from Plausible → Site installation. Empty = no analytics loaded.
 export const PLAUSIBLE_SCRIPT = 'https://plausible.io/js/pa-7PkFvnug6qW5qn-WaZgca.js';
 export const CONTACT_EMAIL = 'privacy@jrdev.ai';
