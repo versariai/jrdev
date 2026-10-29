@@ -1,0 +1,77 @@
+---
+import Base from '../layouts/Base.astro';
+import SignupForm from '../components/SignupForm.astro';
+import { REPO_URL } from '../config';
+---
+<Base
+  title="jrdev: use AI coding tools without skipping the learning"
+  description="A free, open-source project for junior developers. Practical habits for AI coding tools, backed by research, in a newsletter."
+>
+  <h1>Use AI coding tools without skipping the learning.</h1>
+  <p class="lede">
+    A free, open-source project for junior developers. Practical habits, backed by research, in your inbox.
+  </p>
+  <SignupForm id="top" />
+
+  <h2>The problem</h2>
+  <div class="cards">
+    <article class="card">
+      <h3>Debugging by pasting errors back</h3>
+      <p>
+        In an <a href="https://www.anthropic.com/research/AI-assistance-coding-skills">Anthropic study of developers learning a new library</a>,
+        people who looped errors back to the AI without forming a hypothesis scored lowest on the later quiz.
+      </p>
+      <p class="tag">RCT, post hoc. The patterns weren't randomized and the groups were small (n = 4), so this is an association.</p>
+    </article>
+    <article class="card">
+      <h3>Assisted gains, unaided losses</h3>
+      <p>
+        In a <a href="https://doi.org/10.1073/pnas.2422633122">math study with high-school students</a>, unrestricted AI help raised
+        practice scores, but the same students did worse on a closed-book exam later that session. A tutor with safeguards mostly avoided the drop.
+      </p>
+      <p class="tag">RCT, math, not coding. Applying it to coding is our extrapolation.</p>
+    </article>
+    <article class="card">
+      <h3>A self-check</h3>
+      <p>Could you explain the last diff you approved?</p>
+      <p class="tag">A question for you, not a statistic.</p>
+    </article>
+  </div>
+
+  <h2>Three ways to use AI</h2>
+  <dl class="modes">
+    <dt>Learning</dt>
+    <dd>You do the thinking; the AI questions, hints and checks.</dd>
+    <dt>Onboarding</dt>
+    <dd>Using AI to find your way around a codebase that's new to you.</dd>
+    <dt>Delivery</dt>
+    <dd>Shipping work with AI while still understanding what changed and why.</dd>
+  </dl>
+
+  <h2>What you get</h2>
+  <ul>
+    <li>One practice to try</li>
+    <li>One tool or mode tip</li>
+    <li>One "stuck of the week" theme</li>
+    <li>What changed in the project</li>
+  </ul>
+
+  <h2>Built in the open</h2>
+  <p>
+    MIT-licensed, with the research and plans on <a href={REPO_URL}>GitHub</a>. When we say a tool
+    <em>enforces</em> something, we mean a specific, tested block. Everything else is labelled as advice.
+  </p>
+
+  <h2>Subscribe</h2>
+  <SignupForm id="bottom" tracks />
+</Base>
+
+<style>
+  .cards { display: grid; gap: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+  .card h3 { font-size: 1.05rem; margin: 0 0 8px; line-height: 1.3; }
+  .card p { margin: 0 0 8px; }
+  .tag { font-size: 0.85rem; color: var(--muted); }
+  .modes dt { font-weight: 700; margin-top: 12px; }
+  .modes dd { margin: 0; }
+</style>

@@ -1,0 +1,65 @@
+---
+import Base from '../layouts/Base.astro';
+import { CONTACT_EMAIL, CONTROLLER, CONSENT_VERSION } from '../config';
+// Values marked TBD come from the launch checklist in plan/phase0/homepage.md. Don't launch with any left.
+---
+<Base title="Privacy: jrdev" description="What the jrdev newsletter and website collect, why, and how to delete it.">
+  <h1>Privacy</h1>
+  <p class="muted">Version {CONSENT_VERSION}.</p>
+
+  <h2>Who is responsible</h2>
+  <p>{CONTROLLER}. Privacy requests: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>
+
+  <h2>What we collect when you subscribe</h2>
+  <p>
+    Your email address, the topics you ticked (if any), and two tags saying you signed up on this page and
+    which version of this notice you saw. Buttondown, our newsletter provider, also records the signup,
+    confirmation and unsubscribe dates, plus the IP address and referrer of your signup. Open and click
+    tracking is off.
+  </p>
+
+  <h2>Why, and on what basis</h2>
+  <p>
+    To send you the newsletter, based on your consent: the click in the confirmation email. You can withdraw
+    at any time with the unsubscribe link in every issue.
+  </p>
+
+  <h2>Who receives it</h2>
+  <ul>
+    <li>The project maintainer.</li>
+    <li>
+      <a href="https://buttondown.com/legal/gdpr-eu-compliance">Buttondown</a> and its listed subprocessors, as processors under
+      <a href="https://marketing.buttondown.com/legal/data-processing-agreement">Buttondown's DPA</a>.
+    </li>
+    <li>Cloudflare, which hosts this site and sees standard request logs.</li>
+    <li>
+      <a href="https://plausible.io/data-policy">Plausible</a> (hosted in the EU), our analytics. It receives each page view:
+      the address without its query string, the referrer, and your IP address and browser User-Agent. From those it derives
+      approximate location (country, region, city), browser, operating system and device type, and a visitor hash that changes
+      every day. It stores event and session records with those derived fields, not your raw IP address or User-Agent. We only
+      see aggregate reports. Retention: TBD.
+    </li>
+  </ul>
+
+  <h2>Transfers outside the EU</h2>
+  <p>
+    Buttondown is in the US. Transfers are covered by the standard contractual clauses in Buttondown's DPA; ask us for a copy.
+  </p>
+
+  <h2>How long we keep it</h2>
+  <ul>
+    <li><strong>Unconfirmed sign-ups:</strong> permanently deleted after 30 days. TBD: confirm hard deletion with Buttondown.</li>
+    <li><strong>After you unsubscribe:</strong> a suppression record, so you aren't added again by mistake, kept for TBD, unless you ask for erasure.</li>
+    <li><strong>Erasure on request:</strong> permanent deletion at Buttondown within 30 days of your request.</li>
+    <li><strong>Provider backups:</strong> up to TBD days.</li>
+  </ul>
+
+  <h2>What can't be undone</h2>
+  <p>Emails that were already sent, and backups until they expire.</p>
+
+  <h2>Your rights</h2>
+  <p>
+    You can ask to access, correct or erase your data, and withdraw consent, by writing to
+    <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. You can also complain to your data protection authority.
+  </p>
+</Base>
