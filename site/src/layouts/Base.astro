@@ -18,13 +18,14 @@ const { title, description } = Astro.props;
     {PLAUSIBLE_SCRIPT && (
       <>
         <script async src={PLAUSIBLE_SCRIPT}></script>
-        {/* Strips every query parameter before sending (plausible.io/docs/stop-tracking-utm-tags). */}
+        {/* Strips query strings from the page URL and referrer (plausible.io/docs/stop-tracking-utm-tags). */}
         <script is:inline>
           window.plausible = window.plausible || function () { (plausible.q = plausible.q || []).push(arguments); };
           plausible.init = plausible.init || function (i) { plausible.o = i || {}; };
           plausible.init({
             transformRequest: function (payload) {
               payload.u = location.href.split('?')[0].split('#')[0];
+              if (payload.r) payload.r = payload.r.split('?')[0].split('#')[0];
               return payload;
             },
           });
@@ -43,7 +44,7 @@ const { title, description } = Astro.props;
     <footer class="wrap foot">
       <a href="/privacy">Privacy</a>
       <a href={REPO_URL}>GitHub</a>
-      <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+      <!--email_off--><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a><!--/email_off-->
     </footer>
   </body>
 </html>

@@ -92,9 +92,11 @@ Plain language, one screen. It adds the newsletter rows to the [data-flow invent
 
 ## Launch checklist
 
-Run on team fixtures (test inboxes) before the domain is announced:
+Run on team fixtures (test inboxes) before the domain is announced.
 
-- [ ] Domain bought; trademark search on "jrdev" done ([Phase 0 scope](../jrdev-ai-plan.md#5-roadmap))
+Status 2026-10-30: site is public at `jrdev.ai` but **not launch-ready**. Do not share the link. Privacy TBDs are gone in this branch (`consent-v2`); the live deploy still shows v1 until this merges.
+
+- [x] Domain bought (`jrdev.ai` live). Trademark: text search found no live USPTO registration for JRDEV; `jrdev.com` is a live AI-coding course. Official TESS/EUIPO UIs were not finished
 - [ ] Double opt-in: an unconfirmed address gets no newsletter
 - [ ] Tracks arrive as tags on the subscriber
 - [ ] Hidden tags (`src-home`, `consent-vN`) arrive on the subscriber. Two fixtures signed up either side of a copy change resolve to their own `consent/vN.md`
@@ -103,13 +105,13 @@ Run on team fixtures (test inboxes) before the domain is announced:
   - **Unconfirmed expiry:** cleanup is enabled and the fixture is gone after 30 days (start this one first). Buttondown confirms in writing that it was hard-deleted, or what remains; the privacy line matches
   - **Erasure:** a hard delete through the API or support. Written confirmation from Buttondown says what remains afterwards. Absence from the export is not enough, because cleanup soft-deletes by default
 - [ ] Any CSV export made during admin is deleted after use; erasure requests include it
-- [ ] Buttondown's DPA covers this account; its transfer safeguard and subprocessor list are linked
-- [ ] Provider backup retention confirmed in writing and written on the privacy page
+- [x] Buttondown's public DPA uses SCCs (Module 2) and lists [subprocessors](https://buttondown.com/legal/subprocessors). Still need the dashboard to confirm this account is covered
+- [ ] Provider backup retention confirmed in writing. Public docs are now on the privacy page (Buttondown backups up to 2 days; Plausible service backups 30 days); written confirmation is still open
 - [ ] A scripted burst of fixture sign-ups hits Buttondown's validation or CAPTCHA
-- [ ] Page works with JS off (plain form POST) and passes a keyboard-only and screen-reader pass
-- [ ] Analytics: no cookies or storage set. Visits with `?utm_source=fixture&e=test@example.com` and from a referring page send no query string; a signup and an error send no email or tracks (DevTools → Application and Network). The privacy text matches what's sent and the derived fields and retention in Plausible's current data policy and account settings
-- [ ] Copy check: every factual card has a public source and its limits, no early-signal content, no names
-- [ ] First issue drafted; the welcome email and issue template have no poll or survey
+- [ ] Page works with JS off (plain form POST: yes) and passes a keyboard-only and screen-reader pass. Cloudflare email obfuscation still rewrites `info@versari.ai` on the live deploy; `<!--email_off-->` is in this branch
+- [ ] Analytics: `transformRequest` strips query strings on the page URL and the referrer. Network/cookie fixtures and the Plausible account retention setting are still unrun
+- [x] Copy check: every factual card has a public source and its limits, no early-signal content, no names
+- [x] First issue drafted in `newsletter/issue-001.md`; template in `newsletter/template.md` has no poll or survey. Welcome email is still Buttondown's default (capture from a fixture inbox)
 
 The [readiness table](../specs/01-website-and-feedback.md#per-channel-readiness-p6-03) records the pass date.
 

@@ -5,6 +5,6 @@ export const PLAUSIBLE_SCRIPT = 'https://plausible.io/js/pa-7PkFvnug6qW5qn-WaZgc
 export const CONTACT_EMAIL = 'info@versari.ai';
 export const CONTROLLER = 'Versari AI, LLC, 3345 Lemp Ave, Saint Louis, MO 63118-3214';
 // Bump with every change to consent-relevant copy, and add site/consent/vN.md.
-export const CONSENT_VERSION = 'consent-v1';
+export const CONSENT_VERSION = 'consent-v2';
 export const CADENCE = 'every two weeks';
 export const REPO_URL = 'https://github.com/versariai/jrdev';

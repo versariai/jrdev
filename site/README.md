@@ -8,6 +8,6 @@ npm run dev     # http://localhost:4321
 npm run build   # static files in dist/
 ```
 
-Before launch, set the values in `src/config.ts`, replace every `TBD` on the privacy page, and run the plan's launch checklist. Changing any consent-relevant copy means bumping `CONSENT_VERSION` and adding `consent/vN.md`.
+Before launch, set the values in `src/config.ts` and run the plan's launch checklist. Changing any consent-relevant copy means bumping `CONSENT_VERSION` and adding `consent/vN.md`.
 
 Deploy: Cloudflare Pages, root directory `site`, build command `npm run build`, output `dist`.
