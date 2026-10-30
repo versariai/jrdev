@@ -21,7 +21,7 @@ Nothing joins analytics to email addresses.
 - **Capacity:** the [roadmap](../jrdev-ai-plan.md#5-roadmap) gives site, newsletter and feedback about 2 h/week together, and puts "the website beyond a landing page" last. Budget:
   - **Build and launch checks:** about 8 h once, spread over four weeks.
   - **Recurring:** one issue every two weeks (about 1.5 h each) plus subscriber requests, so about 1 h/week.
-  - **Fallback:** if a four-week window can't fit two issues, the cadence becomes monthly. The page, confirmation and welcome email all say so, under a new consent version, *before* more sign-ups. The first issue is drafted before launch, so the commitment is visible.
+  - **Fallback:** if a four-week window can't fit two issues, the cadence becomes monthly. The page and any email copy we control say so, under a new consent version, *before* more sign-ups. The first issue is drafted before launch, so the commitment is visible.
 - **No overclaiming (principles 3 and 4):** nothing exists to install yet. The copy promises a newsletter and an open project, never learning outcomes.
 - **Early signals stay private:** the [early-signal themes](../jrdev-ai-plan.md#early-signals-2026-10-02) lack publication consent (P13-01). The page cites only the public research.
 - **No pulse survey in Phase 0:** [spec 01](../specs/01-website-and-feedback.md#newsletter) ends each issue with a one-question pulse, but its answers are a separate store with a deletion check. Phase 0 issues and the welcome email collect no answers, polls or reply surveys; pulses start when that check passes.
@@ -67,7 +67,9 @@ Single column, readable on a phone, one form repeated at top and bottom.
 
 **Consent record:** Buttondown keeps the signup, confirmation and unsubscribe dates and the source. The `consent-vN` tag links that to the exact text the person saw. A **consent bundle** is the set of consent-relevant copy: the signup promise and form text (including cadence), the track purpose, the privacy page and the confirmation email. Rules:
 - any change to the bundle bumps `N`, including the monthly-cadence fallback
-- `site/consent/vN.md` records the commit it shipped in, which pins the page and privacy text, and holds the confirmation and welcome email text, which live only in Buttondown. It never contains subscriber data Subscribing is the consent action, so no extra checkbox.
+- `site/consent/vN.md` records the commit it shipped in, which pins the page and privacy text, and holds the text of every email Buttondown sends to sign-ups (confirmation, one reminder after 24 hours, welcome), which lives only in Buttondown. On the free plan these are Buttondown's defaults, captured from a test inbox. It never contains subscriber data.
+
+Subscribing is the consent action, so no extra checkbox.
 
 No name, role or company. The onboarding survey collects those later, under its own consent.
 
@@ -114,7 +116,7 @@ The [readiness table](../specs/01-website-and-feedback.md#per-channel-readiness-
 ## After launch
 
 - **Where traffic comes from:** the GitHub README, the research reports, and Ivan's own posts. No paid ads in Phase 0.
-- **Welcome email:** one short email after confirmation linking the two research reports. It states the current cadence, the same one as the page and confirmation email.
+- **Welcome email:** Buttondown's default on the free plan (custom transactional emails need its Standard plan). The research links go in the first issue instead. If the plan is upgraded, a custom welcome email that states the cadence becomes a new consent version.
 - **Review after 4 weeks:** the [success measures](#goal) and the track split. A low confirm rate is a reason to look at the confirmation email, not proof it's the cause. The split feeds newsletter segmentation and gives a weak demand signal next to the interviews. It doesn't replace them.
 
 ## Open decisions
