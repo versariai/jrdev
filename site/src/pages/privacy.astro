@@ -1,14 +1,14 @@
 ---
 import Base from '../layouts/Base.astro';
 import { CONTACT_EMAIL, CONTROLLER, CONSENT_VERSION } from '../config';
-// Values marked TBD come from the launch checklist in plan/phase0/homepage.md. Don't launch with any left.
+// Retention numbers from public provider docs. Account settings and written confirmations are still launch-checklist items.
 ---
 <Base title="Privacy: jrdev" description="What the jrdev newsletter and website collect, why, and how to delete it.">
   <h1>Privacy</h1>
   <p class="muted">Version {CONSENT_VERSION}.</p>
 
   <h2>Who is responsible</h2>
-  <p>{CONTROLLER}. Privacy requests: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>
+  <p>{CONTROLLER}. Privacy requests: <!--email_off--><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a><!--/email_off-->.</p>
 
   <h2>What we collect when you subscribe</h2>
   <p>
@@ -28,16 +28,15 @@ import { CONTACT_EMAIL, CONTROLLER, CONSENT_VERSION } from '../config';
   <ul>
     <li>The project maintainer.</li>
     <li>
-      <a href="https://buttondown.com/legal/gdpr-eu-compliance">Buttondown</a> and its listed subprocessors, as processors under
-      <a href="https://marketing.buttondown.com/legal/data-processing-agreement">Buttondown's DPA</a>.
+      <a href="https://buttondown.com/legal/gdpr-eu-compliance">Buttondown</a> and its listed subprocessors, as processors under <a href="https://marketing.buttondown.com/legal/data-processing-agreement">Buttondown's DPA</a>.
     </li>
     <li>Cloudflare, which hosts this site and sees standard request logs.</li>
     <li>
       <a href="https://plausible.io/data-policy">Plausible</a> (hosted in the EU), our analytics. It receives each page view:
-      the address without its query string, the referrer, and your IP address and browser User-Agent. From those it derives
+      the address and referring page without their query strings, and your IP address and browser User-Agent. From those it derives
       approximate location (country, region, city), browser, operating system and device type, and a visitor hash that changes
       every day. It stores event and session records with those derived fields, not your raw IP address or User-Agent. We only
-      see aggregate reports. Retention: TBD.
+      see aggregate reports. Retention: no automatic limit while the site exists; we can delete this site's analytics data at any time.
     </li>
   </ul>
 
@@ -49,10 +48,10 @@ import { CONTACT_EMAIL, CONTROLLER, CONSENT_VERSION } from '../config';
 
   <h2>How long we keep it</h2>
   <ul>
-    <li><strong>Unconfirmed sign-ups:</strong> one reminder email after 24 hours, then permanently deleted after 30 days. TBD: confirm hard deletion with Buttondown.</li>
-    <li><strong>After you unsubscribe:</strong> a suppression record, so you aren't added again by mistake, kept for TBD, unless you ask for erasure.</li>
+    <li><strong>Unconfirmed sign-ups:</strong> Buttondown can send one reminder after 24 hours. With cleanup enabled, unconfirmed addresses leave the visible list after 30 days. Cleanup keeps a hidden record by default; permanent deletion needs a support request or an API delete.</li>
+    <li><strong>After you unsubscribe:</strong> with cleanup enabled, the address leaves the visible list after 7 days. A hidden suppression record remains so you aren't added again by mistake. Public docs do not give an end date for that record; write to us to ask for permanent deletion.</li>
     <li><strong>Erasure on request:</strong> permanent deletion at Buttondown within 30 days of your request.</li>
-    <li><strong>Provider backups:</strong> up to TBD days.</li>
+    <li><strong>Provider backups:</strong> after permanent deletion, subscriber data may remain in Buttondown's database backups for up to 2 days; Plausible keeps encrypted service backups for 30 days.</li>
   </ul>
 
   <h2>What can't be undone</h2>
@@ -60,7 +59,6 @@ import { CONTACT_EMAIL, CONTROLLER, CONSENT_VERSION } from '../config';
 
   <h2>Your rights</h2>
   <p>
-    You can ask to access, correct or erase your data, and withdraw consent, by writing to
-    <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. You can also complain to your data protection authority.
+    You can ask to access, correct or erase your data, and withdraw consent, by writing to <!--email_off--><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a><!--/email_off-->. You can also complain to your data protection authority.
   </p>
 </Base>
